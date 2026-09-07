@@ -92,15 +92,16 @@ class _SpikeDrawer extends ConsumerWidget {
       _DrawerItem(icon: LucideIcons.home, label: 'الرئيسية', onTap: () => _go(context, '/')),
       _DrawerItem(icon: LucideIcons.store, label: 'المتاجر', onTap: () => _go(context, '/stores')),
       _DrawerItem(icon: LucideIcons.badgePercent, label: 'العروض والخصومات', onTap: () => _go(context, '/offers')),
-      _DrawerItem(icon: LucideIcons.heart, label: 'المفضلة', onTap: () => _go(context, '/favorites')),
-      _DrawerItem(icon: LucideIcons.mapPin, label: 'عناويني', onTap: () => _go(context, '/addresses')),
-      _DrawerItem(icon: LucideIcons.messageCircle, label: 'خدمة العملاء', onTap: () => _go(context, '/support')),
+      _DrawerItem(icon: LucideIcons.heart, label: 'المفضلة', onTap: () => _protectedGo(context, user, '/favorites')),
+      _DrawerItem(icon: LucideIcons.mapPin, label: 'عناويني', onTap: () => _protectedGo(context, user, '/addresses')),
+      _DrawerItem(icon: LucideIcons.messageCircle, label: 'خدمة العملاء', onTap: () => _protectedGo(context, user, '/support')),
       const Spacer(),
-      _DrawerItem(icon: LucideIcons.settings2, label: 'الإعدادات', onTap: () => _go(context, '/settings')),
+      _DrawerItem(icon: LucideIcons.settings2, label: 'الإعدادات', onTap: () => _protectedGo(context, user, '/settings')),
       const SizedBox(height: 16),
     ])));
   }
   void _go(BuildContext context, String route) { Navigator.pop(context); context.go(route); }
+  void _protectedGo(BuildContext context, Map<String, dynamic>? user, String route) { Navigator.pop(context); if (user == null) { showSpikeToast(context, 'سجّل الدخول أولاً للمتابعة'); context.push('/login'); } else { context.go(route); } }
 }
 class _DrawerItem extends StatelessWidget {
   const _DrawerItem({required this.icon, required this.label, required this.onTap});
