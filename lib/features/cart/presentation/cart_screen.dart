@@ -18,6 +18,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   final _coupon = TextEditingController();
   CartSnapshot? _cart;
   bool _loading = true;
+  bool _guest = false;
+  String? _error;
 
   @override
   void initState() {
@@ -32,8 +34,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    setState(() { _loading = true; _error = null; _guest = false; });
     try {
+      final user = await ref.read(currentUserProvider.future);
+      if (user == null) { if (mounted) setState(() => _guest = true); return; }
       final c = await ref.read(cartRepositoryProvider).load();
       ref.invalidate(cartCountProvider);
       if (mounted) {
@@ -43,7 +47,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         });
       }
     } catch (e) {
-      if (mounted) showSpikeToast(context, e.toString());
+      if (mounted) setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -113,8 +117,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const SafeArea(child: SpikeLoading());
+    if (_guest) return SafeArea(child: _GuestCart(onLogin: () => context.push('/login')));
     final cart = _cart;
-    if (cart == null) return SafeArea(child: SpikeErrorState(onRetry: _load));
+    if (cart == null) return SafeArea(child: SpikeErrorState(message: _error ?? 'تعذر تحميل بيانات السلة', onRetry: _load));
 
     if (cart.items.isEmpty) {
       return SafeArea(
@@ -414,4 +419,23 @@ class _Item extends StatelessWidget {
       ),
     );
   }
+}
+
+
+class _GuestCart extends StatelessWidget {
+  const _GuestCart({required this.onLogin});
+  final VoidCallback onLogin;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(24),
+    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      const Icon(LucideIcons.shoppingBag, size: 52),
+      const SizedBox(height: 16),
+      const Text('سجّل الدخول لعرض حقيبة التسوق', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+      const SizedBox(height: 7),
+      const Text('سيتم حفظ منتجاتك ومتابعة طلبك من حسابك.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: spikeMuted)),
+      const SizedBox(height: 24),
+      SizedBox(width: double.infinity, height: 38, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: onLogin, child: const Text('تسجيل الدخول'))),
+    ]),
+  );
 }
