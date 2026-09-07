@@ -318,7 +318,7 @@ Widget _head(BuildContext context, String title) => Padding(
         height: 60,
         child: Stack(alignment: Alignment.center, children: [
           Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-          Align(alignment: Alignment.centerRight, child: SizedBox(width: 50, height: 40, child: IconButton(onPressed: () => context.pop(), icon: const Icon(LucideIcons.arrowRight, size: 22)))),
+          Align(alignment: Alignment.centerRight, child: SizedBox(width: 50, height: 40, child: IconButton(onPressed: () => context.canPop() ? context.pop() : context.go('/profile'), icon: const Icon(LucideIcons.arrowRight, size: 22)))),
         ]),
       ),
     );
