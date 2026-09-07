@@ -1,0 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../app/providers.dart';
+import '../../../core/theme.dart';
+import '../../../core/widgets/async_state_widgets.dart';
+
+class PasswordResetScreen extends ConsumerStatefulWidget{const PasswordResetScreen({super.key});@override ConsumerState<PasswordResetScreen> createState()=>_PasswordResetScreenState();}
+class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen>{final email=TextEditingController(),code=TextEditingController(),password=TextEditingController();bool sent=false,busy=false;
+@override void dispose(){email.dispose();code.dispose();password.dispose();super.dispose();}
+Future<void> _request()async{if(email.text.trim().isEmpty){showSpikeToast(context,'أدخل البريد الإلكتروني');return;}setState(()=>busy=true);try{await ref.read(authRepositoryProvider).requestPasswordReset(email.text);if(mounted){setState(()=>sent=true);showSpikeToast(context,'تم إرسال رمز الاستعادة إذا كان الحساب موجوداً');}}catch(e){if(mounted)showSpikeToast(context,e.toString());}finally{if(mounted)setState(()=>busy=false);}}
+Future<void> _confirm()async{if(code.text.trim().length!=6||password.text.length<8){showSpikeToast(context,'أدخل رمزاً من 6 أرقام وكلمة مرور من 8 أحرف على الأقل');return;}setState(()=>busy=true);try{await ref.read(authRepositoryProvider).confirmPasswordReset(email:email.text,code:code.text,password:password.text);if(mounted){showSpikeToast(context,'تم تغيير كلمة المرور');Navigator.pop(context);}}catch(e){if(mounted)showSpikeToast(context,e.toString());}finally{if(mounted)setState(()=>busy=false);}}
+@override Widget build(BuildContext context)=>Scaffold(appBar:AppBar(backgroundColor:Colors.transparent,title:const Text('استعادة كلمة المرور'),centerTitle:true),body:ListView(padding:const EdgeInsets.all(17),children:[TextField(controller:email,keyboardType:TextInputType.emailAddress,enabled:!sent,decoration:_d('البريد الإلكتروني')),const SizedBox(height:12),if(sent)...[TextField(controller:code,keyboardType:TextInputType.number,maxLength:6,decoration:_d('رمز التحقق')),const SizedBox(height:8),TextField(controller:password,obscureText:true,decoration:_d('كلمة المرور الجديدة')),const SizedBox(height:12)],SizedBox(height:48,child:FilledButton(style:FilledButton.styleFrom(backgroundColor:spikeRed),onPressed:busy?null:(sent?_confirm:_request),child:busy?const SizedBox.square(dimension:20,child:CircularProgressIndicator(strokeWidth:2,color:Colors.white)):Text(sent?'تأكيد كلمة المرور':'إرسال رمز الاستعادة'))),if(sent)TextButton(onPressed:busy?_request:_request,child:const Text('إعادة إرسال الرمز'))]));
+InputDecoration _d(String h)=>InputDecoration(hintText:h,filled:true,fillColor:spikeField,border:const OutlineInputBorder(borderSide:BorderSide.none,borderRadius:BorderRadius.all(Radius.circular(18))));
+}
