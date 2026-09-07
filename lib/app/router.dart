@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import '../features/auth/presentation/auth_screen.dart';
+import '../features/auth/presentation/password_reset_screen.dart';
 import '../features/cart/presentation/cart_screen.dart';
 import '../features/catalog/presentation/categories_screen.dart';
 import '../features/catalog/presentation/product_details_screen.dart';
@@ -15,6 +16,7 @@ import '../features/favorites/presentation/favorites_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/offers/presentation/offers_screen.dart';
 import '../features/orders/presentation/orders_screen.dart';
+import '../features/profile/presentation/personal_data_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/search/presentation/search_screen.dart';
 import '../features/shell/presentation/main_shell.dart';
@@ -30,6 +32,8 @@ final appRouter=GoRouter(routes:[
   ]),
   GoRoute(path:'/login',builder:(_,__)=>const AuthScreen(mode:'login')),
   GoRoute(path:'/signup',builder:(_,__)=>const AuthScreen(mode:'signup')),
+  GoRoute(path:'/password-reset',builder:(_,__)=>const PasswordResetScreen()),
+  GoRoute(path:'/personal-data',builder:(_,__)=>const PersonalDataScreen()),
   GoRoute(path:'/favorites',builder:(_,__)=>const FavoritesScreen()),
   GoRoute(path:'/addresses',builder:(_,__)=>const AddressesScreen()),
   GoRoute(path:'/address-form',builder:(_,state)=>AddressFormScreen(address:state.extra is AddressModel?state.extra as AddressModel:null)),
