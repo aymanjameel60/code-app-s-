@@ -97,9 +97,11 @@ class _SpikeDrawer extends ConsumerWidget {
       _DrawerItem(icon: LucideIcons.messageCircle, label: 'خدمة العملاء', onTap: () => _protectedGo(context, user, '/support')),
       const Spacer(),
       _DrawerItem(icon: LucideIcons.settings2, label: 'الإعدادات', onTap: () => _protectedGo(context, user, '/settings')),
+      if (user != null) _DrawerItem(icon: LucideIcons.logOut, label: 'تسجيل الخروج', onTap: () => _logout(context, ref)),
       const SizedBox(height: 16),
     ])));
   }
+  Future<void> _logout(BuildContext context, WidgetRef ref) async { Navigator.pop(context); await ref.read(authRepositoryProvider).logout(); ref.invalidate(currentUserProvider); if (context.mounted) context.go('/'); }
   void _go(BuildContext context, String route) { Navigator.pop(context); context.go(route); }
   void _protectedGo(BuildContext context, Map<String, dynamic>? user, String route) { Navigator.pop(context); if (user == null) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('سجّل الدخول أولاً للمتابعة'))); context.push('/login'); } else { context.go(route); } }
 }
