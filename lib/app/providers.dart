@@ -31,6 +31,14 @@ final favoritesProvider=FutureProvider<List<ProductModel>>((ref)async{final ids=
 final commerceRepositoryProvider=Provider<CommerceRepository>((ref)=>CommerceRepository(ref.watch(apiClientProvider)));
 final citiesProvider=FutureProvider<List<CityModel>>((ref)=>ref.watch(commerceRepositoryProvider).cities());
 final addressesProvider=FutureProvider<List<AddressModel>>((ref)=>ref.watch(commerceRepositoryProvider).addresses());
+final activeAddressProvider=Provider<AsyncValue<AddressModel?>>((ref){
+  final addresses=ref.watch(addressesProvider);
+  return addresses.whenData((list){
+    if(list.isEmpty)return null;
+    for(final address in list){if(address.isActive)return address;}
+    return list.first;
+  });
+});
 final paymentMethodsProvider=FutureProvider<List<PaymentMethodModel>>((ref)=>ref.watch(commerceRepositoryProvider).paymentMethods());
 final currenciesProvider=FutureProvider<List<CurrencyModel>>((ref)=>ref.watch(commerceRepositoryProvider).currencies());
 final ordersProvider=FutureProvider<List<OrderModel>>((ref)=>ref.watch(commerceRepositoryProvider).orders());
