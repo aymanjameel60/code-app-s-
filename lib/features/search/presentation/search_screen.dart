@@ -22,7 +22,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   String _query = '';
   String _sort = 'relevance';
   String _category = 'الكل';
-  bool _offersOnly = false;
 
   @override
   void initState() {
@@ -179,7 +178,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 reverse: true,
                 scrollDirection: Axis.horizontal,
                 children: [
-                  _QuickChip(label: 'عروض', selected: _offersOnly, onTap: () => setState(() => _offersOnly = !_offersOnly)),
+                  _QuickChip(label: 'عروض', selected: _category == 'عروض', onTap: () => setState(() => _category = 'عروض')),
                   const SizedBox(width: 8),
                   _QuickChip(label: 'الكل', selected: _category == 'الكل', onTap: () => setState(() => _category = 'الكل')),
                   for (final c in categories) ...[
@@ -198,7 +197,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 final q = _query.toLowerCase();
                 final list = products.where((p) {
                   final matches = q.isEmpty || p.name.toLowerCase().contains(q) || p.storeName.toLowerCase().contains(q) || (p.categoryName ?? '').toLowerCase().contains(q);
-                  return matches && (_category == 'الكل' || p.categoryName == _category) && (!_offersOnly || _discount(p) > 0);
+                  return matches && (_category == 'الكل' || _category == 'عروض' || p.categoryName == _category) && (_category != 'عروض' || _discount(p) > 0);
                 }).toList();
 
                 if (_sort == 'price-low') list.sort((a, b) => a.price.compareTo(b.price));
