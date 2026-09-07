@@ -6,7 +6,12 @@ class AddressModel{const AddressModel({required this.id,required this.cityId,req
 class PaymentMethodModel{const PaymentMethodModel({required this.method,required this.instructions});final String method,instructions;factory PaymentMethodModel.fromJson(Map<String,dynamic> j)=>PaymentMethodModel(method:'${j['method']??''}',instructions:'${j['instructions']??''}');String get label=>method=='cod'?'الدفع عند الاستلام':'حوالة مالية';}
 class CurrencyModel{const CurrencyModel({required this.code,required this.name,required this.symbol});final String code,name,symbol;factory CurrencyModel.fromJson(Map<String,dynamic> j)=>CurrencyModel(code:'${j['code']??''}'.toUpperCase(),name:'${j['name']??''}',symbol:'${j['symbol']??''}');}
 class DeliveryQuote{const DeliveryQuote({required this.shippingYerOld,required this.quotes});final double shippingYerOld;final List<Map<String,dynamic>> quotes;factory DeliveryQuote.fromJson(Map<String,dynamic> j)=>DeliveryQuote(shippingYerOld:double.tryParse('${j['shipping_yer_old']??0}')??0,quotes:(j['quotes'] as List? ?? const []).whereType<Map>().map((e)=>Map<String,dynamic>.from(e)).toList());}
-class OrderModel{const OrderModel({required this.id,required this.status,required this.paymentMethod,required this.paymentStatus,required this.currencyCode,required this.total,required this.createdAt});final String id,status,paymentMethod,paymentStatus,currencyCode,createdAt;final double total;factory OrderModel.fromJson(Map<String,dynamic> j)=>OrderModel(id:'${j['id']??''}',status:'${j['status']??''}',paymentMethod:'${j['payment_method']??''}',paymentStatus:'${j['payment_status']??''}',currencyCode:'${j['currency_code']??''}',total:double.tryParse('${j['total']??0}')??0,createdAt:'${j['created_at']??''}');}
+class OrderModel{
+  const OrderModel({required this.id,required this.status,required this.paymentMethod,required this.paymentStatus,required this.currencyCode,required this.total,required this.createdAt});
+  final String id,status,paymentMethod,paymentStatus,currencyCode,createdAt;final double total;
+  factory OrderModel.fromJson(Map<String,dynamic> j)=>OrderModel(id:'${j['id']??''}',status:'${j['status']??''}',paymentMethod:'${j['payment_method']??''}',paymentStatus:'${j['payment_status']??''}',currencyCode:'${j['currency_code']??''}',total:double.tryParse('${j['total']??0}')??0,createdAt:'${j['created_at']??''}');
+  String get displayDate{final d=DateTime.tryParse(createdAt)?.toLocal();if(d==null)return '';String two(int v)=>v.toString().padLeft(2,'0');return '${d.year}/${two(d.month)}/${two(d.day)} • ${two(d.hour)}:${two(d.minute)}';}
+}
 
 class CommerceRepository{
   CommerceRepository(this._api);final ApiClient _api;
