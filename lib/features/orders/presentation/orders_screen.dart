@@ -36,8 +36,9 @@ class OrdersScreen extends ConsumerWidget {
                     const SizedBox(width: 11),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text('طلب #${_short(o.id)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
-                      const SizedBox(height: 3),
-                      Row(children: [_pill(_status(o.status), _statusColor(o.status)), const SizedBox(width: 6), Text(o.paymentMethod == 'cod' ? 'عند الاستلام' : 'حوالة مالية', style: const TextStyle(fontSize: 9, color: spikeMuted))]),
+                      if (o.displayDate.isNotEmpty) ...[const SizedBox(height: 2), Text(o.displayDate, style: const TextStyle(fontSize: 9, color: spikeMuted))],
+                      const SizedBox(height: 5),
+                      Wrap(spacing: 6, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [_pill(_status(o.status), _statusColor(o.status)), Text(o.paymentMethod == 'cod' ? 'عند الاستلام' : 'حوالة مالية', style: const TextStyle(fontSize: 9, color: spikeMuted))]),
                     ])),
                     Column(crossAxisAlignment: CrossAxisAlignment.end, children: [Text('${o.total.toStringAsFixed(2)} ${o.currencyCode}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)), const SizedBox(height: 5), const Icon(LucideIcons.chevronLeft, size: 17, color: spikeMuted)]),
                   ])),
@@ -144,6 +145,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
           final items = (d['items'] as List? ?? const []).whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
           final transfer = order['payment_method'] == 'transfer';
           final needsReceipt = transfer && order['status'] == 'pending_admin_review' && (order['receipt_url'] == null || '${order['receipt_url']}'.isEmpty);
+          final orderDate = _dateTime(order['created_at']);
           return RefreshIndicator(
             onRefresh: () async { ref.invalidate(orderDetailsProvider(widget.id)); ref.invalidate(orderTimelineProvider(widget.id)); await ref.read(orderDetailsProvider(widget.id).future); },
             child: ListView(padding: const EdgeInsets.fromLTRB(17, 10, 17, 24), children: [
@@ -153,6 +155,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                   Text('${order['total'] ?? 0} ${order['currency_code'] ?? ''}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
                 ]),
                 const Divider(height: 24),
+                if (orderDate.isNotEmpty) _info(LucideIcons.calendarDays, 'تاريخ الطلب', orderDate),
                 _info(LucideIcons.walletCards, 'الدفع', '${transfer ? 'حوالة مالية' : 'عند الاستلام'} • ${_payment('${order['payment_status'] ?? ''}')}'),
                 if (order['address_line'] != null) _info(LucideIcons.mapPin, 'التوصيل', '${order['address_line']}'),
               ])),
@@ -172,9 +175,14 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                 error: (e, _) => Text(e.toString()),
                 data: (rows) => rows.isEmpty ? const _MiniEmpty('لا توجد تحديثات بعد') : Column(children: List.generate(rows.length, (i) {
                   final x = rows[i], last = i == rows.length - 1;
+                  final status = '${x['status'] ?? ''}';
+                  final date = _dateTime(x['created_at']);
+                  final store = '${x['store_name'] ?? ''}'.trim();
+                  final meta = [if (store.isNotEmpty) store, if (date.isNotEmpty) date].join(' • ');
+                  final color = _statusColor(status);
                   return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    SizedBox(width: 28, child: Column(children: [Container(width: 12, height: 12, decoration: const BoxDecoration(color: spikeRed, shape: BoxShape.circle)), if (!last) Container(width: 2, height: 45, color: const Color(0x22E00000))])),
-                    Expanded(child: Padding(padding: const EdgeInsets.only(bottom: 12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(_status('${x['status'] ?? ''}'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)), Text('${x['store_name'] ?? ''}${x['created_at'] == null ? '' : ' • ${x['created_at']}'}', style: const TextStyle(fontSize: 9, color: spikeMuted))]))),
+                    SizedBox(width: 28, child: Column(children: [Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)), if (!last) Container(width: 2, height: 45, color: color.withValues(alpha: .18))])),
+                    Expanded(child: Padding(padding: const EdgeInsets.only(bottom: 12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(_status(status), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: color)), if (meta.isNotEmpty) Text(meta, style: const TextStyle(fontSize: 9, color: spikeMuted))]))),
                   ]);
                 })),
               ),
@@ -225,7 +233,8 @@ Widget _sectionTitle(IconData icon, String title) => Padding(padding: const Edge
 Widget _info(IconData icon, String label, String value) => Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(icon, size: 15, color: spikeMuted), const SizedBox(width: 6), Text('$label: ', style: const TextStyle(fontSize: 10, color: spikeMuted)), Expanded(child: Text(value, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)))]));
 Widget _pill(String text, Color color) => Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: color.withValues(alpha: .12), borderRadius: BorderRadius.circular(10)), child: Text(text, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: color)));
 String _short(String s) => s.length > 8 ? s.substring(0, 8) : s;
-Color _statusColor(String s) => s == 'delivered' || s == 'approved' ? Colors.green : s == 'rejected' || s == 'returned' ? spikeRed : Colors.orange;
+String _dateTime(dynamic raw) { final value = '${raw ?? ''}'.trim(); if (value.isEmpty) return ''; final parsed = DateTime.tryParse(value); if (parsed == null) return value; final d = parsed.toLocal(); String two(int n) => n.toString().padLeft(2, '0'); return '${d.year}/${two(d.month)}/${two(d.day)} • ${two(d.hour)}:${two(d.minute)}'; }
+Color _statusColor(String s) { if (s == 'delivered' || s == 'approved' || s == 'accepted') return Colors.green; if (s == 'rejected' || s == 'returned') return spikeRed; if (s == 'assigned' || s == 'picked_up' || s == 'with_courier' || s == 'ready_for_delivery') return Colors.blue; return Colors.orange; }
 String _status(String s) => const {'pending_admin_review':'قيد مراجعة الإدارة','accepted':'مقبول','approved':'تمت الموافقة','processing':'قيد التجهيز','ready_for_delivery':'جاهز للتوصيل','assigned':'تم تعيين مكتب التوصيل','picked_up':'تم استلامه من المتجر','with_courier':'مع المندوب','delivered':'تم التوصيل','rejected':'مرفوض','returned':'مرتجع'}[s] ?? s;
 String _payment(String s) => const {'pending_review':'قيد مراجعة السند','approved':'تم اعتماد الدفع','pending_collection':'يُحصّل عند الاستلام','paid':'مدفوع','rejected':'مرفوض'}[s] ?? s;
 
