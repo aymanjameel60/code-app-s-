@@ -67,7 +67,7 @@ class _StoreDetailsScreenState extends ConsumerState<StoreDetailsScreen> {
   Future<void> _add(ProductModel p)async{
     final v=p.cheapestVariant;
     if(v==null||!p.purchasable)return;
-    try{await ref.read(cartRepositoryProvider).add(variantId:v.id);ref.invalidate(cartCountProvider);if(mounted)showSpikeToast(context,'تمت إضافة المنتج إلى السلة');}catch(e){if(mounted)showSpikeToast(context,e.toString());}
+    try{await ref.read(cartRepositoryProvider).add(variantId:v.id,product:p);ref.invalidate(cartCountProvider);if(mounted)showSpikeToast(context,'تمت إضافة المنتج إلى السلة');}catch(e){if(mounted)showSpikeToast(context,e.toString());}
   }
 
   @override Widget build(BuildContext context){
