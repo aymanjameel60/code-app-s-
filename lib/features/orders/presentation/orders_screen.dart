@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
+import '../../../core/api_config.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 
@@ -59,6 +61,8 @@ class OrderDetailsScreen extends ConsumerStatefulWidget {
 class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
   bool receiptBusy = false;
   String? returnBusyId;
+
+  String _asset(String raw) => raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw;
 
   Future<void> _receipt() async {
     final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 88, maxWidth: 1800);
@@ -187,9 +191,21 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
               _sectionTitle(LucideIcons.package, 'المنتجات'),
               for (final item in items) _box(context, Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 Row(children: [
-                  Container(width: 42, height: 42, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(12)), child: const Icon(LucideIcons.package, size: 18)),
+                  InkWell(
+                    onTap: '${item['product_id']??''}'.isEmpty ? null : () => context.push('/product/${item['product_id']}'),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(12)),
+                      child: '${item['image_url']??''}'.trim().isEmpty
+                          ? const Icon(LucideIcons.package, size: 18)
+                          : CachedNetworkImage(imageUrl: _asset('${item['image_url']}'), fit: BoxFit.cover, errorWidget: (_,__,___)=>const Icon(LucideIcons.package,size:18)),
+                    ),
+                  ),
                   const SizedBox(width: 10),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('${item['product_name'] ?? ''}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)), Text('${item['store_name'] ?? ''}${'${item['variant_title'] ?? ''}'.isEmpty ? '' : ' • ${item['variant_title']}'}', style: const TextStyle(fontSize: 9, color: spikeMuted))])),
+                  Expanded(child: InkWell(onTap: '${item['product_id']??''}'.isEmpty ? null : () => context.push('/product/${item['product_id']}'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('${item['product_name'] ?? ''}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)), Text('${item['store_name'] ?? ''}${'${item['variant_title'] ?? ''}'.isEmpty ? '' : ' • ${item['variant_title']}'}', style: const TextStyle(fontSize: 9, color: spikeMuted))]))),
                   Text('×${item['quantity'] ?? 1}', style: const TextStyle(fontWeight: FontWeight.w900)),
                 ]),
                 if (item['can_return'] == true) Padding(padding: const EdgeInsets.only(top: 10), child: OutlinedButton.icon(onPressed: returnBusyId == '${item['id']}' ? null : () => _requestReturn(item), icon: const Icon(LucideIcons.rotateCcw, size: 16), label: Text(returnBusyId == '${item['id']}' ? 'جاري الإرسال...' : 'طلب إرجاع'))),
