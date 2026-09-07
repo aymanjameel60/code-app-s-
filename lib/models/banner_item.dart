@@ -1,3 +1,5 @@
+import '../core/api_config.dart';
+
 class BannerItem {
   const BannerItem({
     required this.id,
@@ -21,7 +23,7 @@ class BannerItem {
     final rawEnd='${json['ends_at']??''}'.trim();
     return BannerItem(
       id: '${json['id'] ?? ''}',
-      imageUrl: '${json['image_url'] ?? ''}',
+      imageUrl: _imageUrl(json),
       actionType: '${json['action_type'] ?? json['target_type'] ?? 'none'}',
       target: '${json['target'] ?? json['target_id'] ?? ''}',
       targetUrl: '${json['target_url'] ?? ''}',
@@ -30,3 +32,5 @@ class BannerItem {
     );
   }
 }
+
+String _imageUrl(Map<String, dynamic> json) { final raw = '${json['image_url'] ?? json['image'] ?? json['mobile_image_url'] ?? json['desktop_image_url'] ?? ''}'.trim(); if (raw.isEmpty) return ''; if (raw.startsWith('http://') || raw.startsWith('https://')) return raw; return raw.startsWith('/') ? '${ApiConfig.assetBaseUrl}$raw' : '${ApiConfig.assetBaseUrl}/$raw'; }
