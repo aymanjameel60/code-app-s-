@@ -55,7 +55,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen>{
     _field(name,'اسم المستلم *',LucideIcons.user),const SizedBox(height:10),
     _field(phone,'رقم الجوال *',LucideIcons.phone,keyboard:TextInputType.phone),const SizedBox(height:10),
     DropdownButtonFormField<String>(value:cityId,decoration:_dec('اختر مدينة التغطية *',LucideIcons.map),items:list.map((c)=>DropdownMenuItem(value:c.id,child:Text(c.name))).toList(),onChanged:(v)=>setState(()=>cityId=v)),const SizedBox(height:10),
-    _field(line,'العنوان بالتفصيل *',LucideIcons.house),const SizedBox(height:10),
+    _field(line,'العنوان بالتفصيل *',Icons.home_outlined),const SizedBox(height:10),
     _field(maps,'رابط Google Maps للموقع *',LucideIcons.mapPin,keyboard:TextInputType.url),const Padding(padding:EdgeInsets.only(top:6),child:Text('انسخ رابط موقعك من Google Maps والصقه هنا. النظام يحدد الإحداثيات تلقائياً.',style:TextStyle(fontSize:10,color:Colors.black54))),const SizedBox(height:16),
     const Text('حفظ العنوان باسم',style:TextStyle(fontSize:16,fontWeight:FontWeight.w800)),const SizedBox(height:8),Wrap(spacing:8,children:['المنزل','مكتب','أخرى'].map((x)=>ChoiceChip(label:Text(x),selected:label==x,onSelected:(_)=>setState(()=>label=x))).toList()),
     SwitchListTile(contentPadding:EdgeInsets.zero,title:const Text('تعيين كعنوان التوصيل الافتراضي',style:TextStyle(fontWeight:FontWeight.w700)),value:active,onChanged:(v)=>setState(()=>active=v),activeColor:spikeRed),const SizedBox(height:10),
