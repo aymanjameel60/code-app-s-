@@ -5,9 +5,13 @@ import '../features/cart/presentation/cart_screen.dart';
 import '../features/catalog/presentation/categories_screen.dart';
 import '../features/catalog/presentation/product_details_screen.dart';
 import '../features/catalog/presentation/products_screen.dart';
+import '../features/checkout/data/commerce_repository.dart';
+import '../features/checkout/presentation/addresses_screen.dart';
+import '../features/checkout/presentation/checkout_screen.dart';
 import '../features/favorites/presentation/favorites_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/offers/presentation/offers_screen.dart';
+import '../features/orders/presentation/orders_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/search/presentation/search_screen.dart';
 import '../features/shell/presentation/main_shell.dart';
@@ -24,6 +28,11 @@ final appRouter=GoRouter(routes:[
   GoRoute(path:'/login',builder:(_,__)=>const AuthScreen(mode:'login')),
   GoRoute(path:'/signup',builder:(_,__)=>const AuthScreen(mode:'signup')),
   GoRoute(path:'/favorites',builder:(_,__)=>const FavoritesScreen()),
+  GoRoute(path:'/addresses',builder:(_,__)=>const AddressesScreen()),
+  GoRoute(path:'/address-form',builder:(_,state)=>AddressFormScreen(address:state.extra is AddressModel?state.extra as AddressModel:null)),
+  GoRoute(path:'/checkout',builder:(_,__)=>const CheckoutScreen()),
+  GoRoute(path:'/orders',builder:(_,__)=>const OrdersScreen()),
+  GoRoute(path:'/order/:id',builder:(_,state)=>OrderDetailsScreen(id:state.pathParameters['id']!)),
   GoRoute(path:'/categories',builder:(_,__)=>const CategoriesScreen()),
   GoRoute(path:'/stores',builder:(_,__)=>const StoresScreen()),
   GoRoute(path:'/store/:id',builder:(_,state)=>StoreDetailsScreen(id:state.pathParameters['id']!)),
