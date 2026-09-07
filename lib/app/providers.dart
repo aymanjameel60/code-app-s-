@@ -10,34 +10,4 @@ import '../features/engagement/data/engagement_repository.dart';
 import '../features/home/data/home_repository.dart';
 import '../models/product.dart';
 import '../models/store.dart';
-
-final secureStorageProvider=Provider<FlutterSecureStorage>((ref)=>const FlutterSecureStorage(aOptions:AndroidOptions(encryptedSharedPreferences:true)));
-final tokenStorageProvider=Provider<TokenStorage>((ref)=>TokenStorage(ref.watch(secureStorageProvider)));
-final apiClientProvider=Provider<ApiClient>((ref)=>ApiClient(tokenStorage:ref.watch(tokenStorageProvider)));
-
-final authRepositoryProvider=Provider<AuthRepository>((ref)=>AuthRepository(ref.watch(apiClientProvider),ref.watch(tokenStorageProvider)));
-final currentUserProvider=FutureProvider<Map<String,dynamic>?>((ref)=>ref.watch(authRepositoryProvider).me());
-
-final homeRepositoryProvider=Provider<HomeRepository>((ref)=>HomeRepository(ref.watch(apiClientProvider)));
-final homeDataProvider=FutureProvider<HomeData>((ref)=>ref.watch(homeRepositoryProvider).load());
-
-final catalogRepositoryProvider=Provider<CatalogRepository>((ref)=>CatalogRepository(ref.watch(apiClientProvider)));
-final productsProvider=FutureProvider.family<List<ProductModel>,(String?,String?)>((ref,q)=>ref.watch(catalogRepositoryProvider).products(categoryId:q.$1,collectionId:q.$2));
-final productProvider=FutureProvider.family<ProductModel?,String>((ref,id)=>ref.watch(catalogRepositoryProvider).product(id));
-final storesProvider=FutureProvider<List<StoreModel>>((ref)=>ref.watch(catalogRepositoryProvider).stores());
-final allProductsProvider=FutureProvider<List<ProductModel>>((ref)=>ref.watch(catalogRepositoryProvider).products());
-
-final cartRepositoryProvider=Provider<CartRepository>((ref)=>CartRepository(ref.watch(apiClientProvider)));
-final engagementRepositoryProvider=Provider<EngagementRepository>((ref)=>EngagementRepository(ref.watch(apiClientProvider)));
-final favoritesProvider=FutureProvider<List<ProductModel>>((ref)async{final ids=await ref.watch(engagementRepositoryProvider).wishlistIds();final products=await ref.watch(allProductsProvider.future);final set=ids.toSet();return products.where((p)=>set.contains(p.id)).toList();});
-
-final commerceRepositoryProvider=Provider<CommerceRepository>((ref)=>CommerceRepository(ref.watch(apiClientProvider)));
-final citiesProvider=FutureProvider<List<CityModel>>((ref)=>ref.watch(commerceRepositoryProvider).cities());
-final addressesProvider=FutureProvider<List<AddressModel>>((ref)=>ref.watch(commerceRepositoryProvider).addresses());
-final paymentMethodsProvider=FutureProvider<List<PaymentMethodModel>>((ref)=>ref.watch(commerceRepositoryProvider).paymentMethods());
-final currenciesProvider=FutureProvider<List<CurrencyModel>>((ref)=>ref.watch(commerceRepositoryProvider).currencies());
-final ordersProvider=FutureProvider<List<OrderModel>>((ref)=>ref.watch(commerceRepositoryProvider).orders());
-final orderDetailsProvider=FutureProvider.family<Map<String,dynamic>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderDetails(id));
-final returnsHistoryProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).returnsHistory());
-final refundsHistoryProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).refundsHistory());
-final cartBannersProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).cartBanners());
+final secureStorageProvider=Provider<FlutterSecureStorage>((ref)=>const FlutterSecureStorage(aOptions:AndroidOptions(encryptedSharedPreferences:true)));final tokenStorageProvider=Provider<TokenStorage>((ref)=>TokenStorage(ref.watch(secureStorageProvider)));final apiClientProvider=Provider<ApiClient>((ref)=>ApiClient(tokenStorage:ref.watch(tokenStorageProvider)));final authRepositoryProvider=Provider<AuthRepository>((ref)=>AuthRepository(ref.watch(apiClientProvider),ref.watch(tokenStorageProvider)));final currentUserProvider=FutureProvider<Map<String,dynamic>?>((ref)=>ref.watch(authRepositoryProvider).me());final homeRepositoryProvider=Provider<HomeRepository>((ref)=>HomeRepository(ref.watch(apiClientProvider)));final homeDataProvider=FutureProvider<HomeData>((ref)=>ref.watch(homeRepositoryProvider).load());final catalogRepositoryProvider=Provider<CatalogRepository>((ref)=>CatalogRepository(ref.watch(apiClientProvider)));final productsProvider=FutureProvider.family<List<ProductModel>,(String?,String?)>((ref,q)=>ref.watch(catalogRepositoryProvider).products(categoryId:q.$1,collectionId:q.$2));final productProvider=FutureProvider.family<ProductModel?,String>((ref,id)=>ref.watch(catalogRepositoryProvider).product(id));final storesProvider=FutureProvider<List<StoreModel>>((ref)=>ref.watch(catalogRepositoryProvider).stores());final allProductsProvider=FutureProvider<List<ProductModel>>((ref)=>ref.watch(catalogRepositoryProvider).products());final cartRepositoryProvider=Provider<CartRepository>((ref)=>CartRepository(ref.watch(apiClientProvider)));final engagementRepositoryProvider=Provider<EngagementRepository>((ref)=>EngagementRepository(ref.watch(apiClientProvider)));final favoritesProvider=FutureProvider<List<ProductModel>>((ref)async{final ids=await ref.watch(engagementRepositoryProvider).wishlistIds();final products=await ref.watch(allProductsProvider.future);final set=ids.toSet();return products.where((p)=>set.contains(p.id)).toList();});final commerceRepositoryProvider=Provider<CommerceRepository>((ref)=>CommerceRepository(ref.watch(apiClientProvider)));final citiesProvider=FutureProvider<List<CityModel>>((ref)=>ref.watch(commerceRepositoryProvider).cities());final addressesProvider=FutureProvider<List<AddressModel>>((ref)=>ref.watch(commerceRepositoryProvider).addresses());final paymentMethodsProvider=FutureProvider<List<PaymentMethodModel>>((ref)=>ref.watch(commerceRepositoryProvider).paymentMethods());final currenciesProvider=FutureProvider<List<CurrencyModel>>((ref)=>ref.watch(commerceRepositoryProvider).currencies());final ordersProvider=FutureProvider<List<OrderModel>>((ref)=>ref.watch(commerceRepositoryProvider).orders());final orderDetailsProvider=FutureProvider.family<Map<String,dynamic>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderDetails(id));final orderTimelineProvider=FutureProvider.family<List<Map<String,dynamic>>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderTimeline(id));final returnsHistoryProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).returnsHistory());final refundsHistoryProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).refundsHistory());final cartBannersProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).cartBanners());
