@@ -8,17 +8,141 @@ import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 import '../data/cart_repository.dart';
 
-class CartScreen extends ConsumerStatefulWidget{const CartScreen({super.key});@override ConsumerState<CartScreen>createState()=>_CartScreenState();}
-class _CartScreenState extends ConsumerState<CartScreen>{final _coupon=TextEditingController();CartSnapshot?_cart;bool _loading=true;@override void initState(){super.initState();_load();}@override void dispose(){_coupon.dispose();super.dispose();}Future<void>_load()async{setState(()=>_loading=true);try{final c=await ref.read(cartRepositoryProvider).load();if(mounted)setState((){_cart=c;_coupon.text=c.couponCode??'';});}catch(e){if(mounted)showSpikeToast(context,e.toString());}finally{if(mounted)setState(()=>_loading=false);}}Future<void>_qty(CartItemModel item,int qty)async{try{final c=await ref.read(cartRepositoryProvider).update(variantId:item.variantId,quantity:qty);if(mounted)setState(()=>_cart=c);}catch(e){if(mounted)showSpikeToast(context,e.toString());}}String money(double v)=>'\$${v.toStringAsFixed(2)}';String _asset(String raw)=>raw.startsWith('/uploads/')?'${ApiConfig.assetBaseUrl}$raw':raw;
- void _openBanner(Map<String,dynamic>b){final type='${b['target_type']??''}',id='${b['target_id']??''}',url='${b['target_url']??''}';if(type=='product'&&id.isNotEmpty)context.push('/product/$id');else if(type=='category'&&id.isNotEmpty)context.push('/products?category=$id&title=المنتجات');else if(type=='collection'&&id.isNotEmpty)context.push('/products?collection=$id&title=المنتجات');else if(type=='store'&&id.isNotEmpty)context.push('/store/$id');else if(type=='internal'&&url.startsWith('/'))context.push(url);}
- Widget _banner(){final state=ref.watch(cartBannersProvider);return state.maybeWhen(data:(items){if(items.isEmpty)return const SizedBox.shrink();final b=items.first,src=_asset('${b['image_url']??''}');if(src.isEmpty)return const SizedBox.shrink();return Padding(padding:const EdgeInsets.only(bottom:12),child:InkWell(borderRadius:BorderRadius.circular(12),onTap:()=>_openBanner(b),child:ClipRRect(borderRadius:BorderRadius.circular(12),child:Image.network(src,width:double.infinity,height:54,fit:BoxFit.cover,errorBuilder:(_,__,___)=>const SizedBox.shrink()))));},orElse:()=>const SizedBox.shrink());}
- @override Widget build(BuildContext context){if(_loading)return const SafeArea(child:SpikeLoading());final cart=_cart;if(cart==null)return SafeArea(child:SpikeErrorState(onRetry:_load));if(cart.items.isEmpty)return SafeArea(child:Column(children:[const Padding(padding:EdgeInsets.fromLTRB(17,14,17,0),child:_Title()),const Expanded(child:SpikeEmptyState(message:'حقيبة التسوق فارغة\nأضف منتجاتك المفضلة وارجع هنا لإتمام الطلب.')),Padding(padding:const EdgeInsets.all(17),child:SizedBox(width:double.infinity,height:48,child:FilledButton(style:FilledButton.styleFrom(backgroundColor:spikeRed),onPressed:()=>context.go('/'),child:const Text('ابدأ التسوق'))))]));final groups=<String,List<CartItemModel>>{};for(final i in cart.items){(groups[i.storeName]??=[]).add(i);}final active=ref.watch(activeAddressProvider).valueOrNull;
- return SafeArea(child:Column(children:[Expanded(child:ListView(padding:const EdgeInsets.fromLTRB(17,12,17,18),children:[const _Title(),const SizedBox(height:12),Container(padding:const EdgeInsets.symmetric(horizontal:14,vertical:12),decoration:BoxDecoration(color:spikePanel,borderRadius:BorderRadius.circular(18)),child:Row(children:[const Icon(LucideIcons.mapPin,size:20),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('التوصيل إلى',style:TextStyle(fontSize:10,color:spikeMuted)),const SizedBox(height:2),Text(active==null?'اختر عنوان التوصيل':'${active.label} - ${active.cityName}',maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontWeight:FontWeight.w800,fontSize:12))])),TextButton(onPressed:()=>context.push('/addresses'),child:Text(active==null?'اختيار':'تغيير'))])),const SizedBox(height:12),_banner(),
- for(final e in groups.entries)...[Container(margin:const EdgeInsets.only(bottom:12),padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:spikePanel,borderRadius:BorderRadius.circular(22)),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[Text(e.key,style:const TextStyle(fontWeight:FontWeight.w800,fontSize:14)),const SizedBox(height:5),for(final item in e.value)_Item(item:item,onQty:(q)=>_qty(item,q),money:money)]))],
- Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:spikePanel,borderRadius:BorderRadius.circular(22)),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[const Text('لديك كوبون؟',style:TextStyle(fontWeight:FontWeight.w800)),const SizedBox(height:8),Row(children:[Expanded(child:SizedBox(height:43,child:TextField(controller:_coupon,decoration:InputDecoration(hintText:'أدخل الكود',filled:true,fillColor:Colors.white,contentPadding:const EdgeInsets.symmetric(horizontal:13),border:OutlineInputBorder(borderSide:BorderSide.none,borderRadius:BorderRadius.circular(14)))))),const SizedBox(width:8),SizedBox(height:43,child:FilledButton(style:FilledButton.styleFrom(backgroundColor:Colors.black,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(14))),onPressed:()async{try{final c=await ref.read(cartRepositoryProvider).updateMeta(couponCode:_coupon.text);if(mounted){setState(()=>_cart=c);showSpikeToast(context,_coupon.text.trim().isEmpty?'تم إزالة الكوبون':'تم تطبيق الكوبون');}}catch(e){if(mounted)showSpikeToast(context,e.toString());}},child:const Text('تطبيق')))])])),const SizedBox(height:12),
- Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:spikePanel,borderRadius:BorderRadius.circular(22)),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[const Text('ملخص الطلب',style:TextStyle(fontSize:16,fontWeight:FontWeight.w900)),const SizedBox(height:12),_line('إجمالي المنتجات',money(cart.originalSubtotal)),if(cart.saving>0)_line('الخصم','- ${money(cart.saving)}'),const Divider(height:24),_line('المجموع قبل الشحن',money(cart.subtotal),bold:true),if(cart.saving>0)Padding(padding:const EdgeInsets.only(top:10),child:Container(padding:const EdgeInsets.symmetric(vertical:8,horizontal:10),decoration:BoxDecoration(color:const Color(0xFFFFF0F0),borderRadius:BorderRadius.circular(12)),child:Text('وفرت ${money(cart.saving)}',textAlign:TextAlign.center,style:const TextStyle(color:spikeRed,fontWeight:FontWeight.w800))))]))])),
- Container(padding:const EdgeInsets.fromLTRB(17,9,17,10),decoration:BoxDecoration(color:Theme.of(context).scaffoldBackgroundColor,border:const Border(top:BorderSide(color:Color(0x11000000)))),child:SafeArea(top:false,child:SizedBox(width:double.infinity,height:49,child:FilledButton(style:FilledButton.styleFrom(backgroundColor:spikeRed,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16))),onPressed:()=>context.push('/checkout'),child:Text('متابعة إلى الدفع • ${money(cart.subtotal)}',style:const TextStyle(fontWeight:FontWeight.w800))))))]));}
- Widget _line(String a,String b,{bool bold=false})=>Padding(padding:const EdgeInsets.symmetric(vertical:4),child:Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[Text(a,style:TextStyle(fontWeight:bold?FontWeight.w800:FontWeight.w400)),Text(b,style:TextStyle(fontWeight:bold?FontWeight.w900:FontWeight.w700))]));}
-class _Title extends StatelessWidget{const _Title();@override Widget build(BuildContext context)=>SizedBox(height:42,child:Stack(alignment:Alignment.center,children:[const Text('حقيبة التسوق',style:TextStyle(fontSize:19,fontWeight:FontWeight.w800)),Align(alignment:Alignment.centerRight,child:IconButton(onPressed:()=>context.canPop()?context.pop():context.go('/'),icon:const Icon(LucideIcons.arrowRight,size:22))) ]));}
-class _Item extends StatelessWidget{const _Item({required this.item,required this.onQty,required this.money});final CartItemModel item;final ValueChanged<int>onQty;final String Function(double)money;@override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.symmetric(vertical:9),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[InkWell(onTap:()=>context.push('/product/${item.productId}'),borderRadius:BorderRadius.circular(15),child:Container(width:76,height:76,decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(15)),child:const Icon(LucideIcons.image,color:Colors.black26))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[InkWell(onTap:()=>context.push('/product/${item.productId}'),child:Text(item.productName,maxLines:2,overflow:TextOverflow.ellipsis,style:const TextStyle(fontWeight:FontWeight.w700,fontSize:12))),if(item.storeName.isNotEmpty)Padding(padding:const EdgeInsets.only(top:3),child:Text(item.storeName,style:const TextStyle(fontSize:10,color:spikeMuted))),if(item.variantTitle.isNotEmpty)Text(item.variantTitle,style:const TextStyle(fontSize:10,color:spikeMuted)),const SizedBox(height:4),Text(money(item.unitPrice),style:const TextStyle(fontWeight:FontWeight.w900,fontSize:13)),const SizedBox(height:7),Row(children:[Container(height:30,decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(12)),child:Row(children:[IconButton(padding:EdgeInsets.zero,constraints:const BoxConstraints.tightFor(width:30,height:30),onPressed:()=>onQty(item.quantity-1),icon:const Icon(Icons.remove,size:15)),Text('${item.quantity}',style:const TextStyle(fontWeight:FontWeight.w800)),IconButton(padding:EdgeInsets.zero,constraints:const BoxConstraints.tightFor(width:30,height:30),onPressed:item.quantity<item.stock?()=>onQty(item.quantity+1):null,icon:const Icon(Icons.add,size:15))])),const SizedBox(width:8),TextButton.icon(style:TextButton.styleFrom(foregroundColor:spikeRed,padding:const EdgeInsets.symmetric(horizontal:5)),onPressed:()=>onQty(0),icon:const Icon(LucideIcons.trash2,size:14),label:const Text('حذف',style:TextStyle(fontSize:11)))])]))]));}
+class CartScreen extends ConsumerStatefulWidget {
+  const CartScreen({super.key});
+  @override
+  ConsumerState<CartScreen> createState() => _CartScreenState();
+}
 
+class _CartScreenState extends ConsumerState<CartScreen> {
+  final _coupon = TextEditingController();
+  CartSnapshot? _cart;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _coupon.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final c = await ref.read(cartRepositoryProvider).load();
+      if (mounted) setState(() { _cart = c; _coupon.text = c.couponCode ?? ''; });
+    } catch (e) {
+      if (mounted) showSpikeToast(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _qty(CartItemModel item, int qty) async {
+    try {
+      final c = await ref.read(cartRepositoryProvider).update(variantId: item.variantId, quantity: qty);
+      if (mounted) setState(() => _cart = c);
+    } catch (e) {
+      if (mounted) showSpikeToast(context, e.toString());
+    }
+  }
+
+  String _money(double value, String currency) {
+    final code = currency.trim().toUpperCase();
+    final symbol = switch (code) { 'USD' => r'$', 'SAR' => 'ر.س', 'YER' => 'ر.ي', 'TRY' => '₺', _ => code };
+    return '${value.toStringAsFixed(2)} $symbol'.trim();
+  }
+
+  String _asset(String raw) => raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw;
+
+  void _openBanner(Map<String, dynamic> b) {
+    final type = '${b['target_type'] ?? ''}', id = '${b['target_id'] ?? ''}', url = '${b['target_url'] ?? ''}';
+    if (type == 'product' && id.isNotEmpty) context.push('/product/$id');
+    else if (type == 'category' && id.isNotEmpty) context.push('/products?category=$id&title=المنتجات');
+    else if (type == 'collection' && id.isNotEmpty) context.push('/products?collection=$id&title=المنتجات');
+    else if (type == 'store' && id.isNotEmpty) context.push('/store/$id');
+    else if (type == 'internal' && url.startsWith('/')) context.push(url);
+  }
+
+  Widget _banner() {
+    final state = ref.watch(cartBannersProvider);
+    return state.maybeWhen(
+      data: (items) {
+        if (items.isEmpty) return const SizedBox.shrink();
+        final b = items.first, src = _asset('${b['image_url'] ?? ''}');
+        if (src.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () => _openBanner(b), child: ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(src, width: double.infinity, height: 54, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const SizedBox.shrink()))),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
+
+  Color _panel(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const SafeArea(child: SpikeLoading());
+    final cart = _cart;
+    if (cart == null) return SafeArea(child: SpikeErrorState(onRetry: _load));
+    if (cart.items.isEmpty) {
+      return SafeArea(child: Column(children: [const Padding(padding: EdgeInsets.fromLTRB(17, 14, 17, 0), child: _Title()), const Expanded(child: SpikeEmptyState(message: 'حقيبة التسوق فارغة\nأضف منتجاتك المفضلة وارجع هنا لإتمام الطلب.')), Padding(padding: const EdgeInsets.all(17), child: SizedBox(width: double.infinity, height: 48, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: () => context.go('/'), child: const Text('ابدأ التسوق'))))]));
+    }
+    final groups = <String, List<CartItemModel>>{};
+    for (final i in cart.items) { (groups[i.storeName] ??= []).add(i); }
+    final active = ref.watch(activeAddressProvider).valueOrNull;
+    String money(double value) => _money(value, cart.currencyCode);
+
+    return SafeArea(child: Column(children: [
+      Expanded(child: ListView(padding: const EdgeInsets.fromLTRB(17, 12, 17, 18), children: [
+        const _Title(), const SizedBox(height: 12),
+        Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12), decoration: BoxDecoration(color: _panel(context), borderRadius: BorderRadius.circular(18)), child: Row(children: [const Icon(LucideIcons.mapPin, size: 20), const SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('التوصيل إلى', style: TextStyle(fontSize: 10, color: spikeMuted)), const SizedBox(height: 2), Text(active == null ? 'اختر عنوان التوصيل' : '${active.label} - ${active.cityName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12))])), TextButton(onPressed: () => context.push('/addresses'), child: Text(active == null ? 'اختيار' : 'تغيير'))])),
+        const SizedBox(height: 12), _banner(),
+        for (final e in groups.entries) Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: _panel(context), borderRadius: BorderRadius.circular(22)), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          InkWell(onTap: e.value.first.storeId.isEmpty ? null : () => context.push('/store/${e.value.first.storeId}'), child: Row(children: [const Icon(LucideIcons.store, size: 17), const SizedBox(width: 7), Expanded(child: Text(e.key, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14))), if (e.value.first.storeId.isNotEmpty) const Icon(LucideIcons.chevronLeft, size: 16, color: spikeMuted)])),
+          const SizedBox(height: 5),
+          for (final item in e.value) _Item(item: item, onQty: (q) => _qty(item, q), money: money),
+        ])),
+        Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: _panel(context), borderRadius: BorderRadius.circular(22)), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [const Text('لديك كوبون؟', style: TextStyle(fontWeight: FontWeight.w800)), const SizedBox(height: 8), Row(children: [Expanded(child: SizedBox(height: 43, child: TextField(controller: _coupon, decoration: InputDecoration(hintText: 'أدخل الكود', filled: true, fillColor: Theme.of(context).colorScheme.surface, contentPadding: const EdgeInsets.symmetric(horizontal: 13), border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(14)))))), const SizedBox(width: 8), SizedBox(height: 43, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))), onPressed: () async { try { final c = await ref.read(cartRepositoryProvider).updateMeta(couponCode: _coupon.text); if (mounted) { setState(() => _cart = c); showSpikeToast(context, _coupon.text.trim().isEmpty ? 'تم إزالة الكوبون' : 'تم تطبيق الكوبون'); } } catch (e) { if (mounted) showSpikeToast(context, e.toString()); } }, child: const Text('تطبيق')))])])),
+        const SizedBox(height: 12),
+        Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: _panel(context), borderRadius: BorderRadius.circular(22)), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [const Text('ملخص الطلب', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)), const SizedBox(height: 12), _line('إجمالي المنتجات', money(cart.originalSubtotal)), if (cart.saving > 0) _line('الخصم', '- ${money(cart.saving)}'), const Divider(height: 24), _line('المجموع قبل الشحن', money(cart.subtotal), bold: true), if (cart.saving > 0) Padding(padding: const EdgeInsets.only(top: 10), child: Container(padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10), decoration: BoxDecoration(color: spikeRed.withValues(alpha: .08), borderRadius: BorderRadius.circular(12)), child: Text('وفرت ${money(cart.saving)}', textAlign: TextAlign.center, style: const TextStyle(color: spikeRed, fontWeight: FontWeight.w800))))])),
+      ])),
+      Container(padding: const EdgeInsets.fromLTRB(17, 9, 17, 10), decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, border: const Border(top: BorderSide(color: Color(0x11000000)))), child: SafeArea(top: false, child: SizedBox(width: double.infinity, height: 49, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))), onPressed: () => context.push('/checkout'), child: Text('متابعة إلى الدفع • ${money(cart.subtotal)}', style: const TextStyle(fontWeight: FontWeight.w800))))))
+    ]));
+  }
+
+  Widget _line(String a, String b, {bool bold = false}) => Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(a, style: TextStyle(fontWeight: bold ? FontWeight.w800 : FontWeight.w400)), Text(b, style: TextStyle(fontWeight: bold ? FontWeight.w900 : FontWeight.w700))]));
+}
+
+class _Title extends StatelessWidget {
+  const _Title();
+  @override
+  Widget build(BuildContext context) => SizedBox(height: 42, child: Stack(alignment: Alignment.center, children: [const Text('حقيبة التسوق', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800)), Align(alignment: Alignment.centerRight, child: IconButton(onPressed: () => context.canPop() ? context.pop() : context.go('/'), icon: const Icon(LucideIcons.arrowRight, size: 22)))]));
+}
+
+class _Item extends StatelessWidget {
+  const _Item({required this.item, required this.onQty, required this.money});
+  final CartItemModel item;
+  final ValueChanged<int> onQty;
+  final String Function(double) money;
+
+  @override
+  Widget build(BuildContext context) => Padding(padding: const EdgeInsets.symmetric(vertical: 9), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    InkWell(onTap: () => context.push('/product/${item.productId}'), borderRadius: BorderRadius.circular(15), child: Container(width: 76, height: 76, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(15)), child: const Icon(LucideIcons.image, color: Colors.black26))),
+    const SizedBox(width: 10),
+    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      InkWell(onTap: () => context.push('/product/${item.productId}'), child: Text(item.productName, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12))),
+      if (item.storeName.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 3), child: InkWell(onTap: item.storeId.isEmpty ? null : () => context.push('/store/${item.storeId}'), child: Text(item.storeName, style: const TextStyle(fontSize: 10, color: spikeMuted, fontWeight: FontWeight.w600)))),
+      if (item.variantTitle.isNotEmpty) Text(item.variantTitle, style: const TextStyle(fontSize: 10, color: spikeMuted)),
+      const SizedBox(height: 4), Text(money(item.unitPrice), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13)), const SizedBox(height: 7),
+      Row(children: [Container(height: 30, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(12)), child: Row(children: [IconButton(padding: EdgeInsets.zero, constraints: const BoxConstraints.tightFor(width: 30, height: 30), onPressed: () => onQty(item.quantity - 1), icon: const Icon(Icons.remove, size: 15)), Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.w800)), IconButton(padding: EdgeInsets.zero, constraints: const BoxConstraints.tightFor(width: 30, height: 30), onPressed: item.quantity < item.stock ? () => onQty(item.quantity + 1) : null, icon: const Icon(Icons.add, size: 15))])), const SizedBox(width: 8), TextButton.icon(style: TextButton.styleFrom(foregroundColor: spikeRed, padding: const EdgeInsets.symmetric(horizontal: 5)), onPressed: () => onQty(0), icon: const Icon(LucideIcons.trash2, size: 14), label: const Text('حذف', style: TextStyle(fontSize: 11)))])
+    ]))
+  ]));
+}
