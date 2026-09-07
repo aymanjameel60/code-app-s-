@@ -36,6 +36,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final home = ref.watch(homeDataProvider);
     final activeAddress = ref.watch(activeAddressProvider).valueOrNull;
     final settings = ref.watch(appSettingsProvider);
+    final announcements = ref.watch(announcementsProvider).valueOrNull ?? const <Map<String,dynamic>>[];
     ref.watch(wishlistIdsProvider);
 
     return SafeArea(child: home.when(
@@ -48,6 +49,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ref.invalidate(homeDataProvider);
             ref.invalidate(addressesProvider);
             ref.invalidate(wishlistIdsProvider);
+            ref.invalidate(announcementsProvider);
             await ref.read(homeDataProvider.future);
           },
           child: ListView(padding: EdgeInsets.zero, children: [
@@ -59,6 +61,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onNotifications: () => context.push('/notifications'),
               onCurrency: _openCurrencySheet,
             ),
+            if (announcements.isNotEmpty) _AnnouncementCard(item: announcements.first, onDismiss: () => _dismissAnnouncement('${announcements.first['id'] ?? ''}')),
             if (data.banners.isNotEmpty) _BannerCarousel(items: data.banners, controller: _bannerController, index: _bannerIndex, onPageChanged: (i) => setState(() => _bannerIndex = i), onTap: _openBanner),
             _SectionTitle(title: 'تسوق حسب الفئة', showAll: data.categories.isNotEmpty, onShowAll: () => context.push('/categories')),
             _CategoriesGrid(categories: data.categories.take(8).toList(), onTap: (c) => context.push('/products?category=${Uri.encodeComponent(c.id)}&title=${Uri.encodeComponent(c.name)}')),
@@ -89,6 +92,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       },
     ));
+  }
+
+  Future<void> _dismissAnnouncement(String id) async {
+    if (id.isEmpty) return;
+    try {
+      await ref.read(engagementRepositoryProvider).dismissAnnouncement(id);
+      ref.invalidate(announcementsProvider);
+    } catch (e) {
+      if (mounted) showSpikeToast(context, e.toString());
+    }
   }
 
   bool _hasOffer(ProductModel p) {
@@ -228,6 +241,27 @@ class _Header extends StatelessWidget {
         const SizedBox(width: 9),
         InkWell(onTap: onCurrency, borderRadius: BorderRadius.circular(22), child: Container(width: 53, height: 39, alignment: Alignment.center, decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikeField, borderRadius: BorderRadius.circular(22)), child: Text(currency, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)))),
       ]),
+    ]),
+  );
+}
+
+class _AnnouncementCard extends StatelessWidget {
+  const _AnnouncementCard({required this.item, required this.onDismiss});
+  final Map<String,dynamic> item;
+  final VoidCallback onDismiss;
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.fromLTRB(17, 14, 17, 0),
+    padding: const EdgeInsets.fromLTRB(13, 10, 8, 10),
+    decoration: BoxDecoration(color: spikeRed.withValues(alpha: .08), borderRadius: BorderRadius.circular(18), border: Border.all(color: spikeRed.withValues(alpha: .15))),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Padding(padding: EdgeInsets.only(top: 2), child: Icon(LucideIcons.megaphone, size: 18, color: spikeRed)),
+      const SizedBox(width: 9),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('${item['title'] ?? ''}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+        if ('${item['body'] ?? ''}'.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 3), child: Text('${item['body']}', style: const TextStyle(fontSize: 10, height: 1.5))),
+      ])),
+      IconButton(onPressed: onDismiss, icon: const Icon(LucideIcons.x, size: 17), visualDensity: VisualDensity.compact),
     ]),
   );
 }
