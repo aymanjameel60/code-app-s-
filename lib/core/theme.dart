@@ -20,7 +20,7 @@ ThemeData _theme(Brightness brightness)=>ThemeData(
   brightness:brightness,
   scaffoldBackgroundColor:brightness==Brightness.dark?spikeDarkBg:spikeBg,
   colorScheme:ColorScheme.fromSeed(seedColor:spikeRed,brightness:brightness),
-  fontFamily:'Graphik Arabic',
+  fontFamily:'GraphikArabic',
   fontFamilyFallback:const ['Tahoma','Arial'],
   splashFactory:InkRipple.splashFactory,
   textTheme:_textTheme(brightness),
