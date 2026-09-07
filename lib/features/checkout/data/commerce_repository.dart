@@ -26,5 +26,7 @@ class CommerceRepository {
   Future<OrderModel> createOrder({required CartSnapshot cart,required String addressId,required String paymentMethod,required String currencyCode}) async{final d=await _api.post('/orders',auth:true,data:{'address_id':addressId,'payment_method':paymentMethod,'currency_code':currencyCode,'coupon_code':cart.couponCode,'items':cart.items.map((e)=>{'variant_id':e.variantId,'quantity':e.quantity}).toList()});return OrderModel.fromJson(Map<String,dynamic>.from(d['order'] as Map));}
   Future<List<OrderModel>> orders() async{final d=await _api.get('/orders',auth:true);return (d['orders'] as List? ?? const []).whereType<Map>().map((e)=>OrderModel.fromJson(Map<String,dynamic>.from(e))).toList();}
   Future<Map<String,dynamic>> orderDetails(String id)=>_api.get('/customer-orders/$id',auth:true);
+  Future<List<Map<String,dynamic>>> returnsHistory() async{final d=await _api.get('/customer-orders/returns/list',auth:true);return (d['returns'] as List? ?? const []).whereType<Map>().map((e)=>Map<String,dynamic>.from(e)).toList();}
+  Future<List<Map<String,dynamic>>> refundsHistory() async{final d=await _api.get('/refunds',auth:true);return (d['refunds'] as List? ?? const []).whereType<Map>().map((e)=>Map<String,dynamic>.from(e)).toList();}
   Future<List<Map<String,dynamic>>> cartBanners() async{final d=await _api.get('/banners',query:{'placement':'cart'});return (d['banners'] as List? ?? const []).whereType<Map>().map((e)=>Map<String,dynamic>.from(e)).toList();}
 }
