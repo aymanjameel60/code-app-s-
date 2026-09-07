@@ -35,6 +35,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     setState(() => _loading = true);
     try {
       final c = await ref.read(cartRepositoryProvider).load();
+      ref.invalidate(cartCountProvider);
       if (mounted) setState(() { _cart = c; _coupon.text = c.couponCode ?? ''; });
     } catch (e) {
       if (mounted) showSpikeToast(context, e.toString());
@@ -46,6 +47,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Future<void> _qty(CartItemModel item, int qty) async {
     try {
       final c = await ref.read(cartRepositoryProvider).update(variantId: item.variantId, quantity: qty);
+      ref.invalidate(cartCountProvider);
       if (mounted) setState(() => _cart = c);
     } catch (e) {
       if (mounted) showSpikeToast(context, e.toString());
