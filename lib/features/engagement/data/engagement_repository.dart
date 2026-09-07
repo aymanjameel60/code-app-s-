@@ -25,6 +25,8 @@ class EngagementRepository {
   Future<void> reviewProduct({required String orderItemId,required int rating,String? comment}) async{await _api.post('/reviews/product',auth:true,data:{'order_item_id':orderItemId,'rating':rating,'comment':comment});}
   Future<void> reviewStore({required String suborderId,required int rating,String? comment}) async{await _api.post('/reviews/store',auth:true,data:{'suborder_id':suborderId,'rating':rating,'comment':comment});}
 
+  Future<Map<String,dynamic>> publicSettings() async => await _api.get('/settings/public');
+
   Future<String> ensureSupportThread() async{final d=await _api.post('/support/threads',auth:true,data:{'subject':'محادثة مع الإدارة'});return '${(d['thread'] as Map?)?['id']??''}';}
   Future<List<Map<String,dynamic>>> supportMessages(String threadId) async{final d=await _api.get('/support/threads/$threadId/messages',auth:true);return (d['messages'] as List? ?? const []).whereType<Map>().map((e)=>Map<String,dynamic>.from(e)).toList();}
   Future<void> sendSupportMessage(String threadId,String body) async{await _api.post('/support/threads/$threadId/messages',auth:true,data:{'body':body});}
