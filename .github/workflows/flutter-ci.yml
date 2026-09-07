@@ -22,6 +22,7 @@ jobs:
       - name: Ensure native platform scaffolding
         run: |
           flutter create . --platforms=android,ios --org com.spike --project-name spike_flutter_app
+          rm -rf android/app/src/main/kotlin/com/spike/spike_flutter_app
           grep -RIl 'com.spike.spike_flutter_app' android ios | xargs -r sed -i 's/com\.spike\.spike_flutter_app/com.spike.customer/g'
           rm -f test/widget_test.dart
       - name: Install dependencies
