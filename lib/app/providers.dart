@@ -19,6 +19,7 @@ final authRepositoryProvider=Provider<AuthRepository>((ref)=>AuthRepository(ref.
 final currentUserProvider=FutureProvider<Map<String,dynamic>?>((ref)=>ref.watch(authRepositoryProvider).me());
 final homeRepositoryProvider=Provider<HomeRepository>((ref)=>HomeRepository(ref.watch(apiClientProvider)));
 final homeDataProvider=FutureProvider<HomeData>((ref)=>ref.watch(homeRepositoryProvider).load());
+final brandingLogoProvider=FutureProvider<String?>((ref)=>ref.watch(homeRepositoryProvider).brandingLogo());
 final catalogRepositoryProvider=Provider<CatalogRepository>((ref)=>CatalogRepository(ref.watch(apiClientProvider)));
 final categoriesProvider=FutureProvider<List<CategoryModel>>((ref)=>ref.watch(catalogRepositoryProvider).categories());
 final productsProvider=FutureProvider.family<List<ProductModel>,(String?,String?)>((ref,q)=>ref.watch(catalogRepositoryProvider).products(categoryId:q.$1,collectionId:q.$2));
