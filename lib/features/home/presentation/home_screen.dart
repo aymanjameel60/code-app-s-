@@ -22,6 +22,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _bannerController = PageController();
+  final Set<String> _favoriteBusy = {};
   int _bannerIndex = 0;
 
   @override
@@ -35,6 +36,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final home = ref.watch(homeDataProvider);
     final activeAddress = ref.watch(activeAddressProvider).valueOrNull;
     final settings = ref.watch(appSettingsProvider);
+    ref.watch(wishlistIdsProvider);
 
     return SafeArea(child: home.when(
       loading: () => const SpikeLoading(),
@@ -45,6 +47,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onRefresh: () async {
             ref.invalidate(homeDataProvider);
             ref.invalidate(addressesProvider);
+            ref.invalidate(wishlistIdsProvider);
             await ref.read(homeDataProvider.future);
           },
           child: ListView(padding: EdgeInsets.zero, children: [
@@ -157,37 +160,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _favorite(ProductModel p) async {
+  Future<void> _toggleFavorite(ProductModel p) async {
+    if (_favoriteBusy.contains(p.id)) return;
+    setState(() => _favoriteBusy.add(p.id));
+    final current = ref.read(wishlistIdsProvider).valueOrNull ?? <String>{};
+    final active = current.contains(p.id);
     try {
-      await ref.read(engagementRepositoryProvider).addWishlist(p.id);
-      if (mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى المفضلة');
+      if (active) {
+        await ref.read(engagementRepositoryProvider).removeWishlist(p.id);
+      } else {
+        await ref.read(engagementRepositoryProvider).addWishlist(p.id);
+      }
+      ref.invalidate(wishlistIdsProvider);
+      ref.invalidate(favoritesProvider);
+      if (mounted) showSpikeToast(context, active ? 'تمت إزالة المنتج من المفضلة' : 'تمت إضافة المنتج إلى المفضلة');
     } catch (e) {
       if (mounted) showSpikeToast(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _favoriteBusy.remove(p.id));
     }
   }
 
-  Widget _productsStrip({required List<ProductModel> products, required String emptyMessage}) => SizedBox(
-    height: 246,
-    child: products.isEmpty
-        ? SpikeEmptyState(message: emptyMessage)
-        : ListView.separated(
-            reverse: true,
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 17),
-            itemCount: products.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (context, i) {
-              final p = products[i];
-              return SpikeProductCard(
-                product: p,
-                onTap: () => context.push('/product/${p.id}'),
-                onAdd: !p.purchasable || p.cheapestVariant == null ? null : () => _add(p),
-                onFavorite: () => _favorite(p),
-                onStore: p.storeId == null ? null : () => context.push('/store/${p.storeId}'),
-              );
-            },
-          ),
-  );
+  Widget _productsStrip({required List<ProductModel> products, required String emptyMessage}) {
+    final favorites = ref.watch(wishlistIdsProvider).valueOrNull ?? <String>{};
+    return SizedBox(
+      height: 246,
+      child: products.isEmpty
+          ? SpikeEmptyState(message: emptyMessage)
+          : ListView.separated(
+              reverse: true,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 17),
+              itemCount: products.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (context, i) {
+                final p = products[i];
+                return SpikeProductCard(
+                  product: p,
+                  isFavorite: favorites.contains(p.id),
+                  onTap: () => context.push('/product/${p.id}'),
+                  onAdd: !p.purchasable || p.cheapestVariant == null ? null : () => _add(p),
+                  onFavorite: _favoriteBusy.contains(p.id) ? null : () => _toggleFavorite(p),
+                  onStore: p.storeId == null ? null : () => context.push('/store/${p.storeId}'),
+                );
+              },
+            ),
+    );
+  }
 }
 
 class _Header extends StatelessWidget {
@@ -290,6 +309,41 @@ class _StoresStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (stores.isEmpty) return const SpikeEmptyState(message: 'لا توجد متاجر منشورة بعد');
-    return SizedBox(height: 69, child: ListView.separated(reverse: true, scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 17), itemCount: stores.length, separatorBuilder: (_, __) => const SizedBox(width: 11), itemBuilder: (context, i) => InkWell(onTap: () => onTap(stores[i]), borderRadius: BorderRadius.circular(22), child: Container(width: 154, height: 69, alignment: Alignment.center, decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(22)), child: Text(stores[i].name, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800))))));
+    return SizedBox(
+      height: 76,
+      child: ListView.separated(
+        reverse: true,
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 17),
+        itemCount: stores.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 11),
+        itemBuilder: (context, i) {
+          final store = stores[i];
+          return InkWell(
+            onTap: () => onTap(store),
+            borderRadius: BorderRadius.circular(22),
+            child: Container(
+              width: 164,
+              height: 76,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(22)),
+              child: Row(children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, shape: BoxShape.circle),
+                  child: store.logoUrl == null
+                      ? const Icon(LucideIcons.store, size: 20, color: spikeMuted)
+                      : CachedNetworkImage(imageUrl: store.logoUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => const Icon(LucideIcons.store, size: 20, color: spikeMuted)),
+                ),
+                const SizedBox(width: 9),
+                Expanded(child: Text(store.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800))),
+              ]),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
