@@ -47,9 +47,9 @@ final activeAddressProvider=Provider<AsyncValue<AddressModel?>>((ref){
 });
 final paymentMethodsProvider=FutureProvider<List<PaymentMethodModel>>((ref)=>ref.watch(commerceRepositoryProvider).paymentMethods());
 final currenciesProvider=FutureProvider<List<CurrencyModel>>((ref)=>ref.watch(commerceRepositoryProvider).currencies());
-final ordersProvider=FutureProvider<List<OrderModel>>((ref)=>ref.watch(commerceRepositoryProvider).orders());
-final orderDetailsProvider=FutureProvider.family<Map<String,dynamic>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderDetails(id));
-final orderTimelineProvider=FutureProvider.family<List<Map<String,dynamic>>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderTimeline(id));
-final returnsHistoryProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).returnsHistory());
-final refundsHistoryProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).refundsHistory());
+final ordersProvider=FutureProvider.autoDispose<List<OrderModel>>((ref)=>ref.watch(commerceRepositoryProvider).orders());
+final orderDetailsProvider=FutureProvider.autoDispose.family<Map<String,dynamic>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderDetails(id));
+final orderTimelineProvider=FutureProvider.autoDispose.family<List<Map<String,dynamic>>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderTimeline(id));
+final returnsHistoryProvider=FutureProvider.autoDispose<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).returnsHistory());
+final refundsHistoryProvider=FutureProvider.autoDispose<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).refundsHistory());
 final cartBannersProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).cartBanners());
