@@ -12,7 +12,9 @@ class ProfileScreen extends ConsumerWidget{const ProfileScreen({super.key});
   _tile(LucideIcons.heart,'المفضلة',()=>context.push('/favorites')),
   _tile(LucideIcons.shoppingBag,'الطلبات',()=>context.push('/orders')),
   _tile(LucideIcons.mapPin,'العناوين',()=>context.push('/addresses')),
-  _tile(LucideIcons.bell,'الإشعارات',()=>showSpikeToast(context,'الإشعارات في المرحلة التالية')),
+  _tile(LucideIcons.star,'التقييمات',()=>context.push('/reviews')),
+  _tile(LucideIcons.bell,'الإشعارات',()=>context.push('/notifications')),
+  _tile(LucideIcons.messageCircle,'خدمة العملاء',()=>context.push('/support')),
   _tile(LucideIcons.settings,'الإعدادات',()=>showSpikeToast(context,'الإعدادات في المرحلة التالية')),
   const SizedBox(height:12),TextButton(onPressed:()async{await ref.read(authRepositoryProvider).logout();ref.invalidate(currentUserProvider);if(context.mounted)context.go('/profile');},child:const Text('تسجيل الخروج',style:TextStyle(color:spikeRed,fontWeight:FontWeight.w800)))
 ]);}));}
