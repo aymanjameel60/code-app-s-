@@ -24,6 +24,7 @@ android {
     }
 
     buildTypes {
+        // Temporary CI/local release signing. Replace with the production keystore before Play Store publication.
         release { signingConfig = signingConfigs.getByName("debug") }
     }
 }
