@@ -128,18 +128,27 @@ class SpikeProductCard extends StatelessWidget {
                     ? (hasDiscount
                         ? Row(
                             children: [
-                              Text(
-                                _money(current, product.currency),
-                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                              Expanded(
+                                child: Text(
+                                  _money(current, product.currency),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                                ),
                               ),
-                              const SizedBox(width: 10),
-                              Text(
-                                _money(old, product.currency),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 10,
-                                  color: spikeMuted,
-                                  decoration: TextDecoration.lineThrough,
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  _money(old, product.currency),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.left,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 10,
+                                    color: spikeMuted,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
                                 ),
                               ),
                             ],
