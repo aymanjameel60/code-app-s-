@@ -8,6 +8,9 @@ import '../features/catalog/presentation/products_screen.dart';
 import '../features/checkout/data/commerce_repository.dart';
 import '../features/checkout/presentation/addresses_screen.dart';
 import '../features/checkout/presentation/checkout_screen.dart';
+import '../features/engagement/presentation/notifications_screen.dart';
+import '../features/engagement/presentation/reviews_screen.dart';
+import '../features/engagement/presentation/support_chat_screen.dart';
 import '../features/favorites/presentation/favorites_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/offers/presentation/offers_screen.dart';
@@ -33,6 +36,9 @@ final appRouter=GoRouter(routes:[
   GoRoute(path:'/checkout',builder:(_,__)=>const CheckoutScreen()),
   GoRoute(path:'/orders',builder:(_,__)=>const OrdersScreen()),
   GoRoute(path:'/order/:id',builder:(_,state)=>OrderDetailsScreen(id:state.pathParameters['id']!)),
+  GoRoute(path:'/notifications',builder:(_,__)=>const NotificationsScreen()),
+  GoRoute(path:'/reviews',builder:(_,__)=>const ReviewsScreen()),
+  GoRoute(path:'/support',builder:(_,__)=>const SupportChatScreen()),
   GoRoute(path:'/categories',builder:(_,__)=>const CategoriesScreen()),
   GoRoute(path:'/stores',builder:(_,__)=>const StoresScreen()),
   GoRoute(path:'/store/:id',builder:(_,state)=>StoreDetailsScreen(id:state.pathParameters['id']!)),
