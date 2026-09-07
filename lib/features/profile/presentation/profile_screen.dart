@@ -12,6 +12,7 @@ class ProfileScreen extends ConsumerWidget{const ProfileScreen({super.key});
   _tile(LucideIcons.heart,'المفضلة',()=>context.push('/favorites')),
   _tile(LucideIcons.shoppingBag,'الطلبات',()=>context.push('/orders')),
   _tile(LucideIcons.mapPin,'العناوين',()=>context.push('/addresses')),
+  _tile(LucideIcons.rotateCcw,'المرتجعات والاستردادات',()=>context.push('/returns-refunds')),
   _tile(LucideIcons.star,'التقييمات',()=>context.push('/reviews')),
   _tile(LucideIcons.bell,'الإشعارات',()=>context.push('/notifications')),
   _tile(LucideIcons.messageCircle,'خدمة العملاء',()=>context.push('/support')),
