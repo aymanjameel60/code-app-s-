@@ -1,14 +1,25 @@
+import '../../../core/api_config.dart';
 import '../../../core/network/api_client.dart';
 
+String? _absoluteImage(Object? value) {
+  final raw = '${value ?? ''}'.trim();
+  if (raw.isEmpty) return null;
+  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+  if (raw.startsWith('/uploads/')) return '${ApiConfig.assetBaseUrl}$raw';
+  return raw;
+}
+
 class CartItemModel {
-  const CartItemModel({required this.id, required this.variantId, required this.quantity, required this.productId, required this.productName, required this.storeId, required this.storeName, required this.variantTitle, required this.unitPrice, required this.originalPrice, required this.stock});
+  const CartItemModel({required this.id, required this.variantId, required this.quantity, required this.productId, required this.productName, required this.storeId, required this.storeName, required this.variantTitle, required this.unitPrice, required this.originalPrice, required this.stock, this.imageUrl});
   final String id, variantId, productId, productName, storeId, storeName, variantTitle;
   final int quantity, stock;
   final double unitPrice, originalPrice;
+  final String? imageUrl;
   factory CartItemModel.fromJson(Map<String,dynamic> j)=>CartItemModel(
     id:'${j['id']??''}', variantId:'${j['variant_id']??''}', quantity:int.tryParse('${j['quantity']??1}')??1,
     productId:'${j['product_id']??''}', productName:'${j['product_name']??''}', storeId:'${j['store_id']??''}', storeName:'${j['store_name']??''}', variantTitle:'${j['variant_title']??''}',
-    unitPrice:double.tryParse('${j['current_price_usd']??j['price_usd']??0}')??0, originalPrice:double.tryParse('${j['price_usd']??0}')??0, stock:int.tryParse('${j['stock']??0}')??0);
+    unitPrice:double.tryParse('${j['current_price_usd']??j['price_usd']??0}')??0, originalPrice:double.tryParse('${j['price_usd']??0}')??0, stock:int.tryParse('${j['stock']??0}')??0,
+    imageUrl:_absoluteImage(j['image_url']));
 }
 
 class CartSnapshot {
