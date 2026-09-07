@@ -4,58 +4,10 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../core/theme.dart';
 import '../models/product.dart';
 
-class SpikeProductCard extends StatelessWidget {
-  const SpikeProductCard({super.key, required this.product, this.onTap, this.onAdd, this.onFavorite, this.onStore});
-  final ProductModel product;
-  final VoidCallback? onTap;
-  final VoidCallback? onAdd;
-  final VoidCallback? onFavorite;
-  final VoidCallback? onStore;
-
-  String _money(double amount, String currency) {
-    final code = currency.toUpperCase();
-    if (code == 'USD') return '\$${amount.toStringAsFixed(2)}';
-    if (code == 'SAR') return '${amount.toStringAsFixed(2)} ر.س';
-    if (code.startsWith('YER')) return '${amount.round()} ر.ي';
-    return '${amount.toStringAsFixed(2)} $code';
-  }
-
-  @override Widget build(BuildContext context) {
-    final old = product.originalPrice;
-    final current = product.price;
-    final discount = old != null && old > current && current > 0 ? ((1 - current / old) * 100).round() : 0;
-    final rating = product.reviewCount > 0 && product.rating > 0 ? product.rating : 4.5;
-    return SizedBox(
-      width: 154,
-      child: Material(
-        color: spikePanel,
-        borderRadius: BorderRadius.circular(22),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Stack(children: [
-              Container(height: 134, width: double.infinity, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)), clipBehavior: Clip.antiAlias, child: product.imageUrl == null ? const Center(child: Icon(LucideIcons.image, size: 38, color: Colors.black26)) : CachedNetworkImage(imageUrl: product.imageUrl!, fit: BoxFit.contain, placeholder: (_, __) => const Center(child: SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 1.8))), errorWidget: (_, __, ___) => const Icon(LucideIcons.image, color: Colors.black26))),
-              Positioned(top: 9, right: 9, child: _CircleButton(icon: LucideIcons.heart, onTap: onFavorite)),
-              if (discount > 0) Positioned(top: 10, left: 10, child: Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4), decoration: BoxDecoration(color: spikeRed, borderRadius: BorderRadius.circular(12)), child: Text('-$discount%', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)))),
-              Positioned(left: 8, bottom: 8, child: _CircleButton(icon: LucideIcons.plus, onTap: product.purchasable ? onAdd : null, background: product.purchasable ? Colors.black : Colors.black26, foreground: Colors.white)),
-            ]),
-            Padding(padding: const EdgeInsets.fromLTRB(12, 9, 12, 0), child: Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.right, style: const TextStyle(fontSize: 12, height: 1.45))),
-            const Spacer(),
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: current > 0 ? old != null && old > current ? Row(children: [Text(_money(current, product.currency), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)), const SizedBox(width: 6), Text(_money(old, product.currency), style: const TextStyle(fontSize: 8, color: Colors.red, decoration: TextDecoration.lineThrough))]) : Text(_money(current, product.currency), textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)) : const Text('السعر غير متاح', textAlign: TextAlign.right, style: TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.w600))),
-            Padding(padding: const EdgeInsets.fromLTRB(11, 6, 11, 10), child: Directionality(textDirection: TextDirection.ltr, child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Row(children: [const Icon(Icons.star_rounded, size: 15, color: Color(0xFFF5B400)), const SizedBox(width: 3), Text(rating.toStringAsFixed(1), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)), if (product.reviewCount > 0) Text(' (${product.reviewCount})', style: const TextStyle(fontSize: 9, color: spikeMuted))]), Flexible(child: GestureDetector(onTap: onStore, child: Text(product.storeName, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFFC2C2C2), fontSize: 10))))]))),
-          ]),
-        ),
-      ),
-    );
-  }
+class SpikeProductCard extends StatelessWidget{
+  const SpikeProductCard({super.key,required this.product,this.onTap,this.onAdd,this.onFavorite,this.onStore});
+  final ProductModel product;final VoidCallback? onTap,onAdd,onFavorite,onStore;
+  String _money(double amount,String currency){final c=currency.toUpperCase();if(c=='USD')return '\$${amount.toStringAsFixed(2)}';if(c=='SAR')return '${amount.toStringAsFixed(2)} ر.س';if(c.startsWith('YER'))return '${amount.round()} ر.ي';return '${amount.toStringAsFixed(2)} $c';}
+  @override Widget build(BuildContext context){final old=product.originalPrice,current=product.price,discount=old!=null&&old>current&&current>0?((1-current/old)*100).round():0;return SizedBox(width:154,child:Material(color:Theme.of(context).brightness==Brightness.dark?spikeDarkPanel:spikePanel,borderRadius:BorderRadius.circular(22),clipBehavior:Clip.antiAlias,child:InkWell(onTap:onTap,child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[Stack(children:[Container(height:134,width:double.infinity,decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(22)),clipBehavior:Clip.antiAlias,child:product.imageUrl==null?const Center(child:Icon(LucideIcons.image,size:38,color:Colors.black26)):CachedNetworkImage(imageUrl:product.imageUrl!,fit:BoxFit.contain,placeholder:(_,__)=>const Center(child:SizedBox.square(dimension:18,child:CircularProgressIndicator(strokeWidth:1.8))),errorWidget:(_,__,___)=>const Icon(LucideIcons.image,color:Colors.black26))),Positioned(top:9,right:9,child:_CircleButton(icon:LucideIcons.heart,onTap:onFavorite)),if(discount>0)Positioned(top:10,left:10,child:Container(padding:const EdgeInsets.symmetric(horizontal:7,vertical:4),decoration:BoxDecoration(color:spikeRed,borderRadius:BorderRadius.circular(12)),child:Text('-$discount%',style:const TextStyle(color:Colors.white,fontSize:10,fontWeight:FontWeight.w700)))),Positioned(left:8,bottom:8,child:_CircleButton(icon:LucideIcons.plus,onTap:product.purchasable?onAdd:null,background:product.purchasable?Colors.black:Colors.black26,foreground:Colors.white))]),Padding(padding:const EdgeInsets.fromLTRB(12,9,12,0),child:Text(product.name,maxLines:2,overflow:TextOverflow.ellipsis,textAlign:TextAlign.right,style:const TextStyle(fontSize:12,height:1.45))),const Spacer(),Padding(padding:const EdgeInsets.symmetric(horizontal:12),child:current>0?(old!=null&&old>current?Row(children:[Text(_money(current,product.currency),style:const TextStyle(fontWeight:FontWeight.w800,fontSize:14)),const SizedBox(width:6),Text(_money(old,product.currency),style:const TextStyle(fontSize:8,color:Colors.red,decoration:TextDecoration.lineThrough))]):Text(_money(current,product.currency),textAlign:TextAlign.right,style:const TextStyle(fontWeight:FontWeight.w800,fontSize:14))):const Text('السعر غير متاح',textAlign:TextAlign.right,style:TextStyle(fontSize:11,color:Colors.black54,fontWeight:FontWeight.w600))),Padding(padding:const EdgeInsets.fromLTRB(11,6,11,10),child:Directionality(textDirection:TextDirection.ltr,child:Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[Row(children:[const Icon(Icons.star_rounded,size:15,color:Color(0xFFF5B400)),const SizedBox(width:3),Text(product.reviewCount>0?product.rating.toStringAsFixed(1):'—',style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700)),if(product.reviewCount>0)Text(' (${product.reviewCount})',style:const TextStyle(fontSize:9,color:spikeMuted))]),Flexible(child:GestureDetector(onTap:onStore,child:Text(product.storeName,overflow:TextOverflow.ellipsis,style:const TextStyle(color:Color(0xFFC2C2C2),fontSize:10))))])))]))));}
 }
-
-class _CircleButton extends StatelessWidget {
-  const _CircleButton({required this.icon, this.onTap, this.background = Colors.white, this.foreground = Colors.black});
-  final IconData icon;
-  final VoidCallback? onTap;
-  final Color background;
-  final Color foreground;
-  @override Widget build(BuildContext context) => Material(color: background, shape: CircleBorder(side: BorderSide(color: onTap == null ? Colors.transparent : const Color(0xFFE5E5E5))), child: InkWell(onTap: onTap, customBorder: const CircleBorder(), child: SizedBox(width: 35, height: 35, child: Icon(icon, size: 19, color: foreground))));
-}
+class _CircleButton extends StatelessWidget{const _CircleButton({required this.icon,this.onTap,this.background=Colors.white,this.foreground=Colors.black});final IconData icon;final VoidCallback? onTap;final Color background,foreground;@override Widget build(BuildContext context)=>Material(color:background,shape:CircleBorder(side:BorderSide(color:onTap==null?Colors.transparent:const Color(0xFFE5E5E5))),child:InkWell(onTap:onTap,customBorder:const CircleBorder(),child:SizedBox(width:35,height:35,child:Icon(icon,size:19,color:foreground))));}
