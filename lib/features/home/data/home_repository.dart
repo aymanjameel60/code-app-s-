@@ -47,6 +47,15 @@ class HomeRepository {
     }
   }
 
+  Future<String?> brandingLogo() async {
+    final data = await _cachedGet('branding', '/branding');
+    final value = '${data['app_logo_url'] ?? data['logo_url'] ?? ''}'.trim();
+    if (value.isEmpty) return null;
+    if (value.startsWith('http://') || value.startsWith('https://')) return value;
+    if (value.startsWith('/uploads/')) return 'https://spike2.aymanjameel60.deno.net$value';
+    return value;
+  }
+
   Future<HomeData> load() async {
     final results = await Future.wait<Map<String, dynamic>>([
       _cachedGet('categories', '/categories'),
