@@ -123,6 +123,7 @@ class OrderDetailsScreen extends ConsumerStatefulWidget {
 class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
   bool receiptBusy = false;
   String? returnBusyId;
+  String? reviewBusyId;
 
   String _asset(String raw) => raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw;
 
@@ -138,6 +139,46 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
       if (mounted) showSpikeToast(context, e.toString());
     } finally {
       if (mounted) setState(() => receiptBusy = false);
+    }
+  }
+
+  Future<void> _reviewProduct(Map<String, dynamic> item) async {
+    final comment = TextEditingController();
+    int rating = 5;
+    final submit = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (_, setSheetState) => Padding(
+          padding: EdgeInsets.fromLTRB(17, 18, 17, MediaQuery.viewInsetsOf(sheetContext).bottom + 20),
+          child: SafeArea(top: false, child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            const Text('تقييم المنتج', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<int>(
+              value: rating,
+              items: [5, 4, 3, 2, 1].map((v) => DropdownMenuItem(value: v, child: Text('${'★' * v}${'☆' * (5 - v)}'))).toList(),
+              onChanged: (v) => setSheetState(() => rating = v ?? 5),
+            ),
+            const SizedBox(height: 10),
+            TextField(controller: comment, maxLines: 3, decoration: const InputDecoration(hintText: 'تعليقك - اختياري')),
+            const SizedBox(height: 12),
+            FilledButton(onPressed: () => Navigator.pop(sheetContext, true), style: FilledButton.styleFrom(backgroundColor: spikeRed), child: const Text('إرسال تقييم المنتج')),
+          ])),
+        ),
+      ),
+    );
+    if (submit != true) { comment.dispose(); return; }
+    final id = '${item['id'] ?? ''}';
+    setState(() => reviewBusyId = id);
+    try {
+      await ref.read(engagementRepositoryProvider).reviewProduct(orderItemId: id, rating: rating, comment: comment.text.trim().isEmpty ? null : comment.text.trim());
+      ref.invalidate(orderDetailsProvider(widget.id));
+      if (mounted) showSpikeToast(context, 'تم إرسال تقييم المنتج');
+    } catch (e) {
+      if (mounted) showSpikeToast(context, e.toString());
+    } finally {
+      comment.dispose();
+      if (mounted) setState(() => reviewBusyId = null);
     }
   }
 
@@ -301,6 +342,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                       Text('×${item['quantity'] ?? 1}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
                     ]))),
                   ]),
+                  if (item['can_review_product'] == true) Padding(padding: const EdgeInsets.only(top: SpikeSpacing.md), child: OutlinedButton.icon(onPressed: reviewBusyId == '${item['id']}' ? null : () => _reviewProduct(item), icon: const Icon(LucideIcons.star, size: 16), label: Text(reviewBusyId == '${item['id']}' ? 'جاري الإرسال...' : 'إرسال تقييم المنتج'))),
                   if (item['can_return'] == true) Padding(padding: const EdgeInsets.only(top: SpikeSpacing.md), child: OutlinedButton.icon(onPressed: returnBusyId == '${item['id']}' ? null : () => _requestReturn(item), icon: const Icon(LucideIcons.rotateCcw, size: 16), label: Text(returnBusyId == '${item['id']}' ? 'جاري الإرسال...' : 'طلب إرجاع'))),
                   if (item['has_return_request'] == true) const Padding(padding: EdgeInsets.only(top: SpikeSpacing.sm), child: Row(children: [Icon(LucideIcons.clock3, size: 15, color: Colors.orange), SizedBox(width: SpikeSpacing.sm), Text('تم تسجيل طلب إرجاع لهذا المنتج', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.orange))])),
                 ])),
