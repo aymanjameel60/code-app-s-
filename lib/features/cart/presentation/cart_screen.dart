@@ -135,7 +135,21 @@ class _Item extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(padding: const EdgeInsets.symmetric(vertical: 9), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    InkWell(onTap: () => context.push('/product/${item.productId}'), borderRadius: BorderRadius.circular(15), child: Container(width: 76, height: 76, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(15)), child: const Icon(LucideIcons.image, color: Colors.black26))),
+    InkWell(
+      onTap: () => context.push('/product/${item.productId}'),
+      borderRadius: BorderRadius.circular(15),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: Container(
+          width: 76,
+          height: 76,
+          color: Theme.of(context).colorScheme.surface,
+          child: item.imageUrl == null
+              ? const Icon(LucideIcons.image, color: Colors.black26)
+              : Image.network(item.imageUrl!, fit: BoxFit.contain, errorBuilder: (_, __, ___) => const Icon(LucideIcons.image, color: Colors.black26)),
+        ),
+      ),
+    ),
     const SizedBox(width: 10),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       InkWell(onTap: () => context.push('/product/${item.productId}'), child: Text(item.productName, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12))),
