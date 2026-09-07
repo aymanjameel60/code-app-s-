@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/api_config.dart';
 import '../../../models/banner_item.dart';
 import '../../../models/category.dart';
 import '../../../models/collection.dart';
@@ -52,7 +53,7 @@ class HomeRepository {
     final value = '${data['app_logo_url'] ?? data['logo_url'] ?? ''}'.trim();
     if (value.isEmpty) return null;
     if (value.startsWith('http://') || value.startsWith('https://')) return value;
-    if (value.startsWith('/uploads/')) return 'https://spike2.aymanjameel60.deno.net$value';
+    if (value.startsWith('/uploads/')) return '${ApiConfig.assetBaseUrl}$value';
     return value;
   }
 
