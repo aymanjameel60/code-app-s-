@@ -1,54 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
-
-class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key});
-
-  @override Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(appSettingsProvider);
-    final ctrl = ref.read(appSettingsProvider.notifier);
-    final currencies = ref.watch(currenciesProvider);
-    final ar = s.language == 'ar';
-    return Scaffold(
-      appBar: AppBar(title: Text(ar ? 'الإعدادات المتقدمة' : 'Advanced settings'), centerTitle: true),
-      body: ListView(padding: const EdgeInsets.all(17), children: [
-        _section(context, title: ar ? 'المظهر' : 'Appearance', subtitle: ar ? 'اختر الوضع المناسب لك' : 'Choose your preferred appearance', child: Row(children: [
-          Expanded(child: _choice(context, label: ar ? 'الوضع الفاتح' : 'Light mode', selected: s.themeMode == ThemeMode.light, onTap: () => ctrl.setTheme(ThemeMode.light))),
-          const SizedBox(width: 8),
-          Expanded(child: _choice(context, label: ar ? 'الوضع الداكن' : 'Dark mode', selected: s.themeMode == ThemeMode.dark, onTap: () => ctrl.setTheme(ThemeMode.dark))),
-        ])),
-        const SizedBox(height: 12),
-        _section(context, title: ar ? 'اللغة' : 'Language', subtitle: ar ? 'لغة واجهة التطبيق' : 'App interface language', child: Column(children: [
-          _radioRow('العربية', 'Arabic', s.language == 'ar', () => ctrl.setLanguage('ar')),
-          _radioRow('English', 'الإنجليزية', s.language == 'en', () => ctrl.setLanguage('en')),
-        ])),
-        const SizedBox(height: 12),
-        _section(
-          context,
-          title: ar ? 'العملة' : 'Currency',
-          subtitle: ar ? 'اختر العملة التي تريد عرض الأسعار بها' : 'Choose the currency used to display prices',
-          child: currencies.when(
-            loading: () => const Padding(padding: EdgeInsets.all(12), child: SpikeLoading()),
-            error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(currenciesProvider)),
-            data: (items) => DropdownButtonFormField<String>(
-              initialValue: items.any((x) => x.code == s.currency) ? s.currency : (items.isNotEmpty ? items.first.code : null),
-              decoration: InputDecoration(filled: true, fillColor: Theme.of(context).colorScheme.surface, border: const OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(18)))),
-              items: items.map((c) => DropdownMenuItem(value: c.code, child: Text('${c.name} (${c.code})'))).toList(),
-              onChanged: (v) { if (v != null) ctrl.setCurrency(v); },
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(ar ? 'يتم حفظ هذه الإعدادات على الجهاز وتطبيق المظهر واللغة مباشرة. العملة المختارة تُستخدم في عملية الدفع وتبقى مرتبطة بالعملات المفعلة من الخادم.' : 'These settings are saved on this device. Theme and language apply immediately, and checkout uses the selected backend-enabled currency.', style: Theme.of(context).textTheme.bodySmall),
-      ]),
-    );
-  }
-
-  Widget _section(BuildContext context, {required String title, required String subtitle, required Widget child}) => Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(22)), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)), Text(subtitle, style: Theme.of(context).textTheme.bodySmall), const SizedBox(height: 12), child]));
-  Widget _choice(BuildContext context, {required String label, required bool selected, required VoidCallback onTap}) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(16), child: Container(height: 76, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16), border: selected ? Border.all(color: spikeRed, width: 1.5) : null), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, color: selected ? spikeRed : null), const SizedBox(height: 5), Text(label, style: const TextStyle(fontWeight: FontWeight.w700))])));
-  Widget _radioRow(String title, String subtitle, bool selected, VoidCallback onTap) => ListTile(contentPadding: EdgeInsets.zero, onTap: onTap, title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text(subtitle), trailing: Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, color: selected ? spikeRed : null));
-}
+class SettingsScreen extends ConsumerWidget{const SettingsScreen({super.key});@override Widget build(BuildContext context,WidgetRef ref){final s=ref.watch(appSettingsProvider),ctrl=ref.read(appSettingsProvider.notifier),currencies=ref.watch(currenciesProvider),ar=s.language=='ar',dark=Theme.of(context).brightness==Brightness.dark;return Scaffold(body:SafeArea(child:Column(children:[Padding(padding:const EdgeInsets.fromLTRB(17,8,17,4),child:SizedBox(height:46,child:Stack(alignment:Alignment.center,children:[Text(ar?'الإعدادات المتقدمة':'Advanced settings',style:const TextStyle(fontSize:18,fontWeight:FontWeight.w900)),Align(alignment:Alignment.centerRight,child:IconButton(onPressed:()=>context.pop(),icon:const Icon(LucideIcons.arrowRight,size:22)))]))),Expanded(child:ListView(padding:const EdgeInsets.fromLTRB(17,10,17,24),children:[_section(context,LucideIcons.sunMoon,ar?'المظهر':'Appearance',ar?'اختر مظهر التطبيق':'Choose app appearance',Column(children:[_row(context,ar?'الوضع الفاتح':'Light mode',LucideIcons.sun,s.themeMode==ThemeMode.light,()=>ctrl.setTheme(ThemeMode.light)),_row(context,ar?'الوضع الداكن':'Dark mode',LucideIcons.moon,s.themeMode==ThemeMode.dark,()=>ctrl.setTheme(ThemeMode.dark))])),const SizedBox(height:11),_section(context,LucideIcons.languages,ar?'اللغة':'Language',ar?'لغة واجهة التطبيق':'App interface language',Column(children:[_row(context,'العربية',LucideIcons.languages,s.language=='ar',()=>ctrl.setLanguage('ar')),_row(context,'English',LucideIcons.languages,s.language=='en',()=>ctrl.setLanguage('en'))])),const SizedBox(height:11),_section(context,LucideIcons.coins,ar?'العملة':'Currency',ar?'العملات المفعلة من النظام':'Backend-enabled currencies',currencies.when(loading:()=>const Padding(padding:EdgeInsets.all(10),child:SpikeLoading()),error:(e,_)=>SpikeErrorState(message:e.toString(),onRetry:()=>ref.invalidate(currenciesProvider)),data:(items)=>Column(children:[for(final c in items)_row(context,'${c.name} (${c.code})',LucideIcons.banknote,s.currency==c.code,()=>ctrl.setCurrency(c.code))]))),const SizedBox(height:14),Container(padding:const EdgeInsets.all(13),decoration:BoxDecoration(color:dark?spikeDarkPanel:const Color(0xFFF2F2F2),borderRadius:BorderRadius.circular(16)),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[const Icon(LucideIcons.info,size:17,color:spikeMuted),const SizedBox(width:8),Expanded(child:Text(ar?'يتم حفظ اختياراتك على هذا الجهاز. العملة المختارة تُستخدم في الدفع وتبقى مرتبطة بالعملات المفعلة من الخادم.':'Your choices are saved on this device. Checkout uses the selected backend-enabled currency.',style:const TextStyle(fontSize:10,height:1.5,color:spikeMuted))) ]))]))])));}
+Widget _section(BuildContext context,IconData icon,String title,String subtitle,Widget child){final dark=Theme.of(context).brightness==Brightness.dark;return Container(padding:const EdgeInsets.all(15),decoration:BoxDecoration(color:dark?spikeDarkPanel:spikePanel,borderRadius:BorderRadius.circular(22)),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[Row(children:[Container(width:38,height:38,decoration:BoxDecoration(color:Theme.of(context).colorScheme.surface,shape:BoxShape.circle),child:Icon(icon,size:18)),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:const TextStyle(fontSize:15,fontWeight:FontWeight.w900)),Text(subtitle,style:const TextStyle(fontSize:10,color:spikeMuted))]))]),const SizedBox(height:8),child]));}
+Widget _row(BuildContext context,String title,IconData icon,bool selected,VoidCallback onTap)=>ListTile(contentPadding:EdgeInsets.zero,onTap:onTap,leading:Icon(icon,size:19),title:Text(title,style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),trailing:Icon(selected?Icons.radio_button_checked:Icons.radio_button_off,size:20,color:selected?spikeRed:spikeMuted));}
