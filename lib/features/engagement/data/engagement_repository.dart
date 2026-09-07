@@ -1,10 +1,16 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/token_storage.dart';
 
 class EngagementRepository {
-  EngagementRepository(this._api); final ApiClient _api;
-  Future<List<String>> wishlistIds() async {final d=await _api.get('/wishlist',auth:true);return (d['products'] as List? ?? const []).whereType<Map>().map((e)=>'${e['id']??''}').where((e)=>e.isNotEmpty).toList();}
-  Future<void> addWishlist(String productId) async{await _api.post('/wishlist/$productId',auth:true);}
-  Future<void> removeWishlist(String productId) async{await _api.delete('/wishlist/$productId',auth:true);}
+  EngagementRepository(this._api, this._tokens); final ApiClient _api; final TokenStorage _tokens;
+  static const _guestKey = 'spike_guest_wishlist_v1';
+  Future<bool> get _guest async { final token = await _tokens.readToken(); return token == null || token.isEmpty; }
+  Future<Set<String>> _guestIds() async { final p = await SharedPreferences.getInstance(); return (p.getStringList(_guestKey) ?? const <String>[]).toSet(); }
+  Future<void> _saveGuestIds(Set<String> ids) async { final p = await SharedPreferences.getInstance(); await p.setStringList(_guestKey, ids.toList()); }
+  Future<List<String>> wishlistIds() async { if (await _guest) return (await _guestIds()).toList(); final d=await _api.get('/wishlist',auth:true);return (d['products'] as List? ?? const []).whereType<Map>().map((e)=>'${e['id']??''}').where((e)=>e.isNotEmpty).toList();}
+  Future<void> addWishlist(String productId) async { if (await _guest) { final ids = await _guestIds(); ids.add(productId); return _saveGuestIds(ids); } await _api.post('/wishlist/$productId',auth:true); }
+  Future<void> removeWishlist(String productId) async { if (await _guest) { final ids = await _guestIds(); ids.remove(productId); return _saveGuestIds(ids); } await _api.delete('/wishlist/$productId',auth:true); }
 
   Future<Map<String,dynamic>> notifications() => _api.get('/notifications',auth:true);
   Future<void> readNotification(String id) async{await _api.post('/notifications/$id/read',auth:true);}
