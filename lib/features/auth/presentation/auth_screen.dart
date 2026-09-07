@@ -46,6 +46,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       } else {
         await repo.login(email: _email.text, password: _password.text);
       }
+      await ref.read(cartRepositoryProvider).mergeGuestCart();
       ref.invalidate(currentUserProvider);
       if (mounted) context.go('/profile');
     } catch (e) {
