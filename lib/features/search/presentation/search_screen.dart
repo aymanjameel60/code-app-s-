@@ -235,7 +235,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           onAdd: p.purchasable && p.cheapestVariant != null
                               ? () async {
                                   try {
-                                    await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id);
+                                    await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id, product: p);
                                     ref.invalidate(cartCountProvider);
                                     if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
                                   } catch (e) {
