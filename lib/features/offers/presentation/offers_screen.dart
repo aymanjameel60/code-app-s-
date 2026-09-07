@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
@@ -9,12 +10,13 @@ import '../../../widgets/product_card.dart';
 
 class OffersScreen extends ConsumerStatefulWidget {
   const OffersScreen({super.key});
+
   @override
   ConsumerState<OffersScreen> createState() => _OffersScreenState();
 }
 
 class _OffersScreenState extends ConsumerState<OffersScreen> {
-  String sort = 'discount';
+  String sort = 'discount_desc';
   int minDiscount = 0;
   String price = 'all';
   double minRating = 0;
@@ -34,16 +36,25 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
     if (price == '5to25') x = x.where((p) => p.price >= 5 && p.price <= 25).toList();
     if (price == 'over25') x = x.where((p) => p.price > 25).toList();
     if (minRating > 0) x = x.where((p) => p.rating >= minRating).toList();
-    if (sort == 'priceAsc') {
+    if (sort == 'price_asc') {
       x.sort((a, b) => a.price.compareTo(b.price));
-    } else if (sort == 'priceDesc') {
+    } else if (sort == 'price_desc') {
       x.sort((a, b) => b.price.compareTo(a.price));
-    } else if (sort == 'rating') {
+    } else if (sort == 'rating_desc') {
       x.sort((a, b) => b.rating.compareTo(a.rating));
     } else {
       x.sort((a, b) => _discount(b).compareTo(_discount(a)));
     }
     return x;
+  }
+
+  void _reset() {
+    setState(() {
+      sort = 'discount_desc';
+      minDiscount = 0;
+      price = 'all';
+      minRating = 0;
+    });
   }
 
   Future<void> _toggleFavorite(ProductModel p) async {
@@ -59,9 +70,7 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
       }
       ref.invalidate(wishlistIdsProvider);
       ref.invalidate(favoritesProvider);
-      if (mounted) {
-        showSpikeToast(context, active ? 'تمت إزالة المنتج من المفضلة' : 'تمت إضافة المنتج إلى المفضلة');
-      }
+      if (mounted) showSpikeToast(context, active ? 'تمت إزالة المنتج من المفضلة' : 'تمت إضافة المنتج إلى المفضلة');
     } catch (e) {
       if (mounted) showSpikeToast(context, e.toString());
     } finally {
@@ -70,91 +79,83 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
   }
 
   void _filters() {
+    var localSort = sort;
+    var localDiscount = minDiscount;
+    var localPrice = price;
+    var localRating = minRating;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      showDragHandle: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setLocal) => Padding(
-          padding: EdgeInsets.fromLTRB(
-            SpikeSpacing.page,
-            SpikeSpacing.xs,
-            SpikeSpacing.page,
-            MediaQuery.of(ctx).viewInsets.bottom + SpikeSpacing.xl,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text('فلترة وترتيب العروض', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-              const SizedBox(height: SpikeSpacing.md),
-              DropdownButtonFormField<String>(
-                initialValue: sort,
-                decoration: const InputDecoration(labelText: 'الترتيب'),
-                items: const [
-                  DropdownMenuItem(value: 'discount', child: Text('أعلى خصم')),
-                  DropdownMenuItem(value: 'priceAsc', child: Text('السعر الأقل')),
-                  DropdownMenuItem(value: 'priceDesc', child: Text('السعر الأعلى')),
-                  DropdownMenuItem(value: 'rating', child: Text('الأعلى تقييماً')),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setLocal) => SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(18, 22, 18, MediaQuery.viewInsetsOf(sheetContext).bottom + 26),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Row(children: [
+                const Expanded(child: Text('فلترة وترتيب العروض', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
+                TextButton(
+                  onPressed: () => setLocal(() {
+                    localSort = 'discount_desc';
+                    localDiscount = 0;
+                    localPrice = 'all';
+                    localRating = 0;
+                  }),
+                  child: const Text('مسح الكل', style: TextStyle(fontSize: 10, color: spikeRed)),
+                ),
+              ]),
+              const SizedBox(height: 14),
+              _FilterGroup(
+                title: 'الترتيب',
+                children: [
+                  _Chip('أعلى خصم', localSort == 'discount_desc', () => setLocal(() => localSort = 'discount_desc')),
+                  _Chip('الأحدث', localSort == 'newest', () => setLocal(() => localSort = 'newest')),
+                  _Chip('السعر: الأقل أولاً', localSort == 'price_asc', () => setLocal(() => localSort = 'price_asc')),
+                  _Chip('السعر: الأعلى أولاً', localSort == 'price_desc', () => setLocal(() => localSort = 'price_desc')),
+                  _Chip('الأعلى تقييمًا', localSort == 'rating_desc', () => setLocal(() => localSort = 'rating_desc')),
                 ],
-                onChanged: (v) {
-                  if (v != null) setLocal(() => sort = v);
-                },
               ),
-              const SizedBox(height: SpikeSpacing.md),
-              Wrap(
-                spacing: SpikeSpacing.sm,
-                runSpacing: SpikeSpacing.sm,
-                children: [0, 10, 20, 30, 40]
-                    .map((v) => ChoiceChip(
-                          label: Text(v == 0 ? 'كل العروض' : 'خصم $v% فأكثر'),
-                          selected: minDiscount == v,
-                          onSelected: (_) => setLocal(() => minDiscount = v),
-                        ))
-                    .toList(),
+              _FilterGroup(
+                title: 'نسبة الخصم',
+                children: [
+                  for (final v in const [0, 10, 20, 30, 40])
+                    _Chip(v == 0 ? 'كل العروض' : 'خصم $v% فأكثر', localDiscount == v, () => setLocal(() => localDiscount = v)),
+                ],
               ),
-              const SizedBox(height: SpikeSpacing.md),
-              Wrap(
-                spacing: SpikeSpacing.sm,
-                runSpacing: SpikeSpacing.sm,
-                children: <MapEntry<String, String>>[
-                  const MapEntry('all', 'كل الأسعار'),
-                  const MapEntry('under5', 'أقل من 5 دولار'),
-                  const MapEntry('5to25', '5 – 25 دولار'),
-                  const MapEntry('over25', 'أكثر من 25 دولار'),
-                ]
-                    .map((v) => ChoiceChip(
-                          label: Text(v.value),
-                          selected: price == v.key,
-                          onSelected: (_) => setLocal(() => price = v.key),
-                        ))
-                    .toList(),
+              _FilterGroup(
+                title: 'السعر بعد الخصم',
+                children: [
+                  _Chip('كل الأسعار', localPrice == 'all', () => setLocal(() => localPrice = 'all')),
+                  _Chip(r'أقل من $5', localPrice == 'under5', () => setLocal(() => localPrice = 'under5')),
+                  _Chip(r'$5 – $25', localPrice == '5to25', () => setLocal(() => localPrice = '5to25')),
+                  _Chip(r'أكثر من $25', localPrice == 'over25', () => setLocal(() => localPrice = 'over25')),
+                ],
               ),
-              const SizedBox(height: SpikeSpacing.md),
-              Wrap(
-                spacing: SpikeSpacing.sm,
-                runSpacing: SpikeSpacing.sm,
-                children: [0.0, 4.0, 4.5]
-                    .map((v) => ChoiceChip(
-                          label: Text(v == 0 ? 'كل التقييمات' : '$v نجوم فأعلى'),
-                          selected: minRating == v,
-                          onSelected: (_) => setLocal(() => minRating = v),
-                        ))
-                    .toList(),
+              _FilterGroup(
+                title: 'التقييم',
+                children: [
+                  _Chip('كل التقييمات', localRating == 0, () => setLocal(() => localRating = 0)),
+                  _Chip('4 نجوم فأعلى', localRating == 4, () => setLocal(() => localRating = 4)),
+                  _Chip('4.5 نجوم فأعلى', localRating == 4.5, () => setLocal(() => localRating = 4.5)),
+                ],
               ),
-              const SizedBox(height: SpikeSpacing.lg),
+              const SizedBox(height: 5),
               SizedBox(
-                height: 48,
+                height: 39,
                 child: FilledButton(
-                  style: FilledButton.styleFrom(backgroundColor: spikeRed),
+                  style: FilledButton.styleFrom(backgroundColor: spikeRed, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22))),
                   onPressed: () {
-                    setState(() {});
-                    Navigator.pop(ctx);
+                    setState(() {
+                      sort = localSort;
+                      minDiscount = localDiscount;
+                      price = localPrice;
+                      minRating = localRating;
+                    });
+                    Navigator.pop(sheetContext);
                   },
-                  child: const Text('عرض النتائج'),
+                  child: const Text('عرض النتائج', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                 ),
               ),
-            ],
+            ]),
           ),
         ),
       ),
@@ -165,76 +166,139 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(allProductsProvider);
     final favorites = ref.watch(wishlistIdsProvider).valueOrNull ?? <String>{};
+    final dark = Theme.of(context).brightness == Brightness.dark;
 
     return SafeArea(
       child: state.when(
         loading: () => const SpikeLoading(),
-        error: (e, _) => SpikeErrorState(
-          message: e.toString(),
-          onRetry: () => ref.invalidate(allProductsProvider),
-        ),
+        error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(allProductsProvider)),
         data: (all) {
           final list = _apply(all);
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  SpikeSpacing.page,
-                  SpikeSpacing.md,
-                  SpikeSpacing.page,
-                  SpikeSpacing.sm,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('العروض والخصومات', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
-                    TextButton.icon(
-                      onPressed: _filters,
-                      icon: const Icon(Icons.tune, size: 18),
-                      label: const Text('فلترة وترتيب'),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: list.isEmpty
-                    ? const SpikeEmptyState(message: 'لا توجد عروض فعالة حالياً')
-                    : GridView.builder(
-                        padding: SpikeSpacing.pageList,
-                        itemCount: list.length,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: SpikeSpacing.md,
-                          mainAxisSpacing: SpikeSpacing.md,
-                          mainAxisExtent: 246,
+          return Column(children: [
+            SizedBox(
+              height: 60,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 17),
+                child: Stack(alignment: Alignment.center, children: [
+                  const Text('العروض والخصومات', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SizedBox(
+                      width: 50,
+                      height: 40,
+                      child: Material(
+                        color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                        borderRadius: BorderRadius.circular(22),
+                        child: InkWell(
+                          onTap: () => context.canPop() ? context.pop() : context.go('/'),
+                          borderRadius: BorderRadius.circular(22),
+                          child: const Icon(LucideIcons.arrowRight, size: 23),
                         ),
-                        itemBuilder: (context, i) {
-                          final p = list[i];
-                          return SpikeProductCard(
-                            product: p,
-                            isFavorite: favorites.contains(p.id),
-                            onTap: () => context.push('/product/${p.id}'),
-                            onStore: p.storeId == null ? null : () => context.push('/store/${p.storeId}'),
-                            onAdd: p.cheapestVariant == null
-                                ? null
-                                : () async {
-                                    try {
-                                      await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id);
-                                      ref.invalidate(cartCountProvider);
-                                      if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
-                                    } catch (e) {
-                                      if (context.mounted) showSpikeToast(context, e.toString());
-                                    }
-                                  },
-                            onFavorite: _favoriteBusy.contains(p.id) ? null : () => _toggleFavorite(p),
-                          );
-                        },
                       ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _filters,
+                      icon: const Icon(LucideIcons.slidersHorizontal, size: 17),
+                      label: const Text('فلترة وترتيب', style: TextStyle(fontSize: 10)),
+                    ),
+                  ),
+                ]),
               ),
-            ],
-          );
+            ),
+            Expanded(
+              child: list.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 28),
+                        child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(LucideIcons.badgePercent, size: 34),
+                          const SizedBox(height: 10),
+                          const Text('لا توجد عروض فعالة حالياً', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 5),
+                          const Text('سنظهر الخصومات هنا فور إضافتها.', textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: spikeMuted)),
+                          const SizedBox(height: 15),
+                          SizedBox(height: 39, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: () => context.go('/'), child: const Text('تصفح المنتجات'))),
+                        ]),
+                      ),
+                    )
+                  : GridView.builder(
+                      padding: const EdgeInsets.fromLTRB(17, 4, 17, 24),
+                      itemCount: list.length,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 11,
+                        mainAxisSpacing: 11,
+                        mainAxisExtent: 246,
+                      ),
+                      itemBuilder: (context, i) {
+                        final p = list[i];
+                        return SpikeProductCard(
+                          product: p,
+                          isFavorite: favorites.contains(p.id),
+                          onTap: () => context.push('/product/${p.id}'),
+                          onStore: p.storeId == null ? null : () => context.push('/store/${p.storeId}'),
+                          onAdd: p.cheapestVariant == null
+                              ? null
+                              : () async {
+                                  try {
+                                    await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id);
+                                    ref.invalidate(cartCountProvider);
+                                    if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
+                                  } catch (e) {
+                                    if (context.mounted) showSpikeToast(context, e.toString());
+                                  }
+                                },
+                          onFavorite: _favoriteBusy.contains(p.id) ? null : () => _toggleFavorite(p),
+                        );
+                      },
+                    ),
+            ),
+          ]);
         },
       ),
     );
   }
+
+  void _noop() {}
+}
+
+class _FilterGroup extends StatelessWidget {
+  const _FilterGroup({required this.title, required this.children});
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 9),
+          Wrap(spacing: 8, runSpacing: 8, children: children),
+        ]),
+      );
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip(this.label, this.selected, this.onTap);
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(17),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            color: selected ? Theme.of(context).colorScheme.onSurface : (Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel),
+            borderRadius: BorderRadius.circular(17),
+            border: Border.all(color: selected ? Theme.of(context).colorScheme.onSurface : Theme.of(context).dividerColor),
+          ),
+          child: Text(label, style: TextStyle(fontSize: 10, color: selected ? Theme.of(context).colorScheme.surface : null)),
+        ),
+      );
 }
