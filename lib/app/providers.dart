@@ -28,6 +28,7 @@ final allProductsProvider=FutureProvider<List<ProductModel>>((ref)=>ref.watch(ca
 final cartRepositoryProvider=Provider<CartRepository>((ref)=>CartRepository(ref.watch(apiClientProvider)));
 final engagementRepositoryProvider=Provider<EngagementRepository>((ref)=>EngagementRepository(ref.watch(apiClientProvider)));
 final wishlistIdsProvider=FutureProvider<Set<String>>((ref)async=>(await ref.watch(engagementRepositoryProvider).wishlistIds()).toSet());
+final announcementsProvider=FutureProvider<List<Map<String,dynamic>>>((ref)async{try{return await ref.watch(engagementRepositoryProvider).announcements();}catch(_){return const[];}});
 final favoritesProvider=FutureProvider<List<ProductModel>>((ref)async{final ids=await ref.watch(wishlistIdsProvider.future);final products=await ref.watch(allProductsProvider.future);return products.where((p)=>ids.contains(p.id)).toList();});
 final commerceRepositoryProvider=Provider<CommerceRepository>((ref)=>CommerceRepository(ref.watch(apiClientProvider)));
 final citiesProvider=FutureProvider<List<CityModel>>((ref)=>ref.watch(commerceRepositoryProvider).cities());
