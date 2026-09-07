@@ -51,6 +51,7 @@ class _StoreDetailsScreenState extends ConsumerState<StoreDetailsScreen> {
     if (v == null || !p.purchasable) return;
     try {
       await ref.read(cartRepositoryProvider).add(variantId: v.id);
+      ref.invalidate(cartCountProvider);
       if (mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
     } catch (e) {
       if (mounted) showSpikeToast(context, e.toString());
@@ -97,6 +98,7 @@ class _StoreDetailsScreenState extends ConsumerState<StoreDetailsScreen> {
                   ref.invalidate(allProductsProvider);
                   ref.invalidate(storeReviewsProvider(widget.id));
                   ref.invalidate(wishlistIdsProvider);
+                  ref.invalidate(cartCountProvider);
                   await ref.read(allProductsProvider.future);
                 },
                 child: CustomScrollView(slivers: [
