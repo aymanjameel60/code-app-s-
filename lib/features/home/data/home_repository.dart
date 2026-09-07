@@ -54,6 +54,7 @@ class HomeRepository {
     if (value.isEmpty) return null;
     if (value.startsWith('http://') || value.startsWith('https://')) return value;
     if (value.startsWith('/uploads/')) return '${ApiConfig.assetBaseUrl}$value';
+    if (RegExp(r'^(products|collections|categories|banners|stores|receipts|avatars|support|misc)/').hasMatch(value)) return '${ApiConfig.mediaBaseUrl}/$value';
     return value;
   }
 
