@@ -92,7 +92,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     final variant = p.cheapestVariant;
     if (variant == null || !p.purchasable) return;
     try {
-      await ref.read(cartRepositoryProvider).add(variantId: variant.id);
+      await ref.read(cartRepositoryProvider).add(variantId: variant.id, product: p);
       ref.invalidate(cartCountProvider);
       if (mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
     } catch (e) {
