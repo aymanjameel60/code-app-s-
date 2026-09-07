@@ -225,7 +225,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _add(ProductModel p) async {
     if (!p.purchasable || p.cheapestVariant == null) return;
     try {
-      await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id);
+      await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id, product: p);
       ref.invalidate(cartCountProvider);
       if (mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
     } catch (e) {
