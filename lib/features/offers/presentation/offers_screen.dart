@@ -204,10 +204,21 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
                   ),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: _filters,
-                      icon: const Icon(LucideIcons.slidersHorizontal, size: 17),
-                      label: const Text('فلترة وترتيب', style: TextStyle(fontSize: 10)),
+                    child: Material(
+                      color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                      borderRadius: BorderRadius.circular(20),
+                      child: InkWell(
+                        onTap: _filters,
+                        borderRadius: BorderRadius.circular(20),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(LucideIcons.slidersHorizontal, size: 16),
+                            SizedBox(width: 6),
+                            Text('ترتيب حسب', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                          ]),
+                        ),
+                      ),
                     ),
                   ),
                 ]),
