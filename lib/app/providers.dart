@@ -5,6 +5,7 @@ import '../core/storage/token_storage.dart';
 import '../features/auth/data/auth_repository.dart';
 import '../features/cart/data/cart_repository.dart';
 import '../features/catalog/data/catalog_repository.dart';
+import '../features/checkout/data/commerce_repository.dart';
 import '../features/engagement/data/engagement_repository.dart';
 import '../features/home/data/home_repository.dart';
 import '../models/product.dart';
@@ -29,3 +30,12 @@ final allProductsProvider=FutureProvider<List<ProductModel>>((ref)=>ref.watch(ca
 final cartRepositoryProvider=Provider<CartRepository>((ref)=>CartRepository(ref.watch(apiClientProvider)));
 final engagementRepositoryProvider=Provider<EngagementRepository>((ref)=>EngagementRepository(ref.watch(apiClientProvider)));
 final favoritesProvider=FutureProvider<List<ProductModel>>((ref)async{final ids=await ref.watch(engagementRepositoryProvider).wishlistIds();final products=await ref.watch(allProductsProvider.future);final set=ids.toSet();return products.where((p)=>set.contains(p.id)).toList();});
+
+final commerceRepositoryProvider=Provider<CommerceRepository>((ref)=>CommerceRepository(ref.watch(apiClientProvider)));
+final citiesProvider=FutureProvider<List<CityModel>>((ref)=>ref.watch(commerceRepositoryProvider).cities());
+final addressesProvider=FutureProvider<List<AddressModel>>((ref)=>ref.watch(commerceRepositoryProvider).addresses());
+final paymentMethodsProvider=FutureProvider<List<PaymentMethodModel>>((ref)=>ref.watch(commerceRepositoryProvider).paymentMethods());
+final currenciesProvider=FutureProvider<List<CurrencyModel>>((ref)=>ref.watch(commerceRepositoryProvider).currencies());
+final ordersProvider=FutureProvider<List<OrderModel>>((ref)=>ref.watch(commerceRepositoryProvider).orders());
+final orderDetailsProvider=FutureProvider.family<Map<String,dynamic>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderDetails(id));
+final cartBannersProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).cartBanners());
