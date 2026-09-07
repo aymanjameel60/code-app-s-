@@ -7,4 +7,76 @@ import '../../../app/providers.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 
-class CategoriesScreen extends ConsumerWidget{const CategoriesScreen({super.key});@override Widget build(BuildContext context,WidgetRef ref){final state=ref.watch(homeDataProvider),dark=Theme.of(context).brightness==Brightness.dark;final mutedIcon=Theme.of(context).colorScheme.onSurface.withValues(alpha:.24);return Scaffold(body:SafeArea(child:Column(children:[Padding(padding:const EdgeInsets.fromLTRB(SpikeSpacing.page,SpikeSpacing.sm,SpikeSpacing.page,SpikeSpacing.sm),child:SizedBox(height:46,child:Stack(alignment:Alignment.center,children:[const Text('تسوق حسب الفئة',style:TextStyle(fontSize:18,fontWeight:FontWeight.w900)),Align(alignment:Alignment.centerRight,child:IconButton(onPressed:()=>context.pop(),icon:const Icon(LucideIcons.arrowRight,size:22)))]))),Expanded(child:state.when(loading:()=>const SpikeLoading(),error:(e,_)=>SpikeErrorState(onRetry:()=>ref.invalidate(homeDataProvider)),data:(data)=>data.categories.isEmpty?const SpikeEmptyState(message:'لا توجد أقسام منشورة بعد'):RefreshIndicator(onRefresh:()async{ref.invalidate(homeDataProvider);await ref.read(homeDataProvider.future);},child:GridView.builder(padding:SpikeSpacing.pageList,itemCount:data.categories.length,gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:4,crossAxisSpacing:SpikeSpacing.md,mainAxisSpacing:SpikeSpacing.lg,childAspectRatio:.75),itemBuilder:(context,i){final c=data.categories[i];return InkWell(onTap:()=>context.push('/products?category=${Uri.encodeComponent(c.id)}&title=${Uri.encodeComponent(c.name)}'),borderRadius:BorderRadius.circular(SpikeRadius.control),child:Column(children:[Container(width:80,height:80,clipBehavior:Clip.antiAlias,decoration:BoxDecoration(color:dark?spikeDarkPanel:spikePanel,borderRadius:BorderRadius.circular(SpikeRadius.control)),child:c.imageUrl==null?Icon(LucideIcons.image,color:mutedIcon):CachedNetworkImage(imageUrl:c.imageUrl!,fit:BoxFit.cover,errorWidget:(_,__,___)=>Icon(LucideIcons.image,color:mutedIcon))),const SizedBox(height:SpikeSpacing.sm),Text(c.name,maxLines:2,overflow:TextOverflow.ellipsis,textAlign:TextAlign.center,style:const TextStyle(fontSize:12,fontWeight:FontWeight.w600,height:1.2))]));}))))])));}}
+class CategoriesScreen extends ConsumerWidget {
+  const CategoriesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(homeDataProvider);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final mutedIcon = Theme.of(context).colorScheme.onSurface.withValues(alpha: .24);
+    return Scaffold(
+      body: SafeArea(
+        child: Column(children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(17, 8, 17, 0),
+            child: SizedBox(
+              height: 60,
+              child: Row(children: [
+                IconButton(onPressed: () => context.pop(), icon: const Icon(LucideIcons.arrowRight, size: 22)),
+                const Spacer(),
+                const Text('تسوق حسب الفئة', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+                const Spacer(),
+                const SizedBox(width: 48),
+              ]),
+            ),
+          ),
+          Expanded(
+            child: state.when(
+              loading: () => const SpikeLoading(),
+              error: (e, _) => SpikeErrorState(onRetry: () => ref.invalidate(homeDataProvider)),
+              data: (data) => data.categories.isEmpty
+                  ? const SpikeEmptyState(message: 'لا توجد أقسام منشورة بعد')
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        ref.invalidate(homeDataProvider);
+                        await ref.read(homeDataProvider.future);
+                      },
+                      child: GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(17, 5, 17, 24),
+                        itemCount: data.categories.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          crossAxisSpacing: 11,
+                          mainAxisSpacing: 13,
+                          childAspectRatio: .75,
+                        ),
+                        itemBuilder: (context, i) {
+                          final c = data.categories[i];
+                          return InkWell(
+                            onTap: () => context.push('/products?category=${Uri.encodeComponent(c.id)}&title=${Uri.encodeComponent(c.name)}'),
+                            borderRadius: BorderRadius.circular(21),
+                            child: Column(children: [
+                              Container(
+                                width: 81,
+                                height: 81,
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(color: dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(21)),
+                                child: c.imageUrl == null
+                                    ? Icon(LucideIcons.image, color: mutedIcon)
+                                    : CachedNetworkImage(imageUrl: c.imageUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => Icon(LucideIcons.image, color: mutedIcon)),
+                              ),
+                              const SizedBox(height: 7),
+                              Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, height: 1.2)),
+                            ]),
+                          );
+                        },
+                      ),
+                    ),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+}
