@@ -28,7 +28,7 @@ class ProductVariant {
 }
 
 class ProductModel {
-  const ProductModel({required this.id, required this.name, required this.storeName, this.storeId, this.description, this.categoryName, this.returnable = false, this.imageUrl, this.images = const [], required this.rating, required this.reviewCount, required this.variants});
+  const ProductModel({required this.id, required this.name, required this.storeName, this.storeId, this.description, this.categoryName, this.returnable = false, this.imageUrl, this.images = const [], this.createdAt, required this.rating, required this.reviewCount, required this.variants});
   final String id;
   final String name;
   final String storeName;
@@ -38,6 +38,7 @@ class ProductModel {
   final bool returnable;
   final String? imageUrl;
   final List<String> images;
+  final DateTime? createdAt;
   final double rating;
   final int reviewCount;
   final List<ProductVariant> variants;
@@ -65,6 +66,7 @@ class ProductModel {
       returnable: j['returnable'] == true,
       imageUrl: images.isEmpty ? _absoluteImage(j['image_url']) : images.first,
       images: images,
+      createdAt: DateTime.tryParse('${j['created_at'] ?? j['createdAt'] ?? ''}'),
       rating: double.tryParse('${j['review_average'] ?? j['rating'] ?? 0}') ?? 0,
       reviewCount: int.tryParse('${j['review_count'] ?? 0}') ?? 0,
       variants: variants,
