@@ -552,7 +552,7 @@ class _SectionTitle extends StatelessWidget {
           height: 48,
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-            if (showAll) TextButton(onPressed: onShowAll, child: const Text('عرض الكل', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
+            if (showAll) TextButton(style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface), onPressed: onShowAll, child: const Text('عرض الكل', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
           ]),
         ),
       );
