@@ -11,46 +11,20 @@ class AuthScreen extends ConsumerStatefulWidget {
   final String mode;
   @override ConsumerState<AuthScreen> createState() => _AuthScreenState();
 }
-
 class _AuthScreenState extends ConsumerState<AuthScreen> {
-  final _name = TextEditingController();
-  final _email = TextEditingController();
-  final _password = TextEditingController();
-  bool _busy = false;
-  bool get signup => widget.mode == 'signup';
-
-  @override void dispose() { _name.dispose(); _email.dispose(); _password.dispose(); super.dispose(); }
-
-  Future<void> _submit() async {
-    if (_busy) return;
-    if (_email.text.trim().isEmpty || _password.text.isEmpty || (signup && _name.text.trim().isEmpty)) { showSpikeToast(context, 'أكمل الحقول المطلوبة'); return; }
-    if (signup && _password.text.length < 8) { showSpikeToast(context, 'يجب أن لا تقل كلمة المرور عن 8 أحرف'); return; }
-    setState(() => _busy = true);
-    try {
-      final repo = ref.read(authRepositoryProvider);
-      if (signup) { await repo.register(name: _name.text, email: _email.text, password: _password.text); }
-      else { await repo.login(email: _email.text, password: _password.text); }
-      ref.invalidate(currentUserProvider);
-      if (mounted) context.go('/profile');
-    } catch (e) { if (mounted) showSpikeToast(context, e.toString()); }
-    finally { if (mounted) setState(() => _busy = false); }
-  }
-
-  @override Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(backgroundColor: Colors.transparent, title: Text(signup ? 'تسجيل الحساب' : 'تسجيل الدخول'), centerTitle: true),
-    body: ListView(padding: const EdgeInsets.all(17), children: [
-      if (signup) ...[_field(_name, 'ادخل اسمك', LucideIcons.user), const SizedBox(height: 12)],
-      _field(_email, 'البريد الإلكتروني', LucideIcons.mail, keyboard: TextInputType.emailAddress),
-      const SizedBox(height: 12),
-      _field(_password, 'ادخل كلمة السر', Icons.lock_outline, obscure: true),
-      if (signup) const Padding(padding: EdgeInsets.only(top: 7), child: Text('* يجب أن لا تقل كلمة المرور عن 8 أحرف', style: TextStyle(fontSize: 11, color: Colors.black54))),
-      if (!signup) Align(alignment: Alignment.centerRight, child: TextButton(onPressed: () => context.push('/password-reset'), child: const Text('هل نسيت كلمة المرور؟'))),
-      const SizedBox(height: 10),
-      SizedBox(height: 48, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: _busy ? null : _submit, child: _busy ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(signup ? 'تسجيل الحساب' : 'تسجيل الدخول'))),
-      const SizedBox(height: 10),
-      TextButton(onPressed: () => context.go(signup ? '/login' : '/signup'), child: Text(signup ? 'تمتلك حساب؟ قم بتسجيل الدخول من هنا' : 'لا تملك حساباً؟ قم بإنشاء حساب من هنا')),
-    ]),
-  );
-
-  Widget _field(TextEditingController c, String hint, IconData icon, {bool obscure = false, TextInputType? keyboard}) => TextField(controller: c, obscureText: obscure, keyboardType: keyboard, decoration: InputDecoration(hintText: hint, filled: true, fillColor: spikeField, suffixIcon: Icon(icon, size: 20), border: const OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(18)))));
+  final _name=TextEditingController(),_email=TextEditingController(),_password=TextEditingController();
+  bool _busy=false;
+  bool get signup=>widget.mode=='signup';
+  @override void dispose(){_name.dispose();_email.dispose();_password.dispose();super.dispose();}
+  Future<void> _submit() async {if(_busy)return;if(_email.text.trim().isEmpty||_password.text.isEmpty||(signup&&_name.text.trim().isEmpty)){showSpikeToast(context,'أكمل الحقول المطلوبة');return;}if(signup&&_password.text.length<8){showSpikeToast(context,'يجب أن لا تقل كلمة المرور عن 8 أحرف');return;}setState(()=>_busy=true);try{final repo=ref.read(authRepositoryProvider);if(signup){await repo.register(name:_name.text,email:_email.text,password:_password.text);}else{await repo.login(email:_email.text,password:_password.text);}ref.invalidate(currentUserProvider);if(mounted)context.go('/profile');}catch(e){if(mounted)showSpikeToast(context,e.toString());}finally{if(mounted)setState(()=>_busy=false);}}
+  @override Widget build(BuildContext context){final muted=Theme.of(context).colorScheme.onSurface.withValues(alpha:.6);return Scaffold(appBar:AppBar(title:Text(signup?'تسجيل الحساب':'تسجيل الدخول'),centerTitle:true),body:ListView(padding:SpikeSpacing.pageList,children:[
+    if(signup)...[_field(_name,'ادخل اسمك',LucideIcons.user),const SizedBox(height:SpikeSpacing.md)],
+    _field(_email,'البريد الإلكتروني',LucideIcons.mail,keyboard:TextInputType.emailAddress),const SizedBox(height:SpikeSpacing.md),
+    _field(_password,'ادخل كلمة السر',Icons.lock_outline,obscure:true),
+    if(signup)Padding(padding:const EdgeInsets.only(top:SpikeSpacing.sm),child:Text('* يجب أن لا تقل كلمة المرور عن 8 أحرف',style:TextStyle(fontSize:11,color:muted))),
+    if(!signup)Align(alignment:Alignment.centerRight,child:TextButton(onPressed:()=>context.push('/password-reset'),child:const Text('هل نسيت كلمة المرور؟'))),
+    const SizedBox(height:SpikeSpacing.md),SizedBox(height:48,child:FilledButton(style:FilledButton.styleFrom(backgroundColor:spikeRed),onPressed:_busy?null:_submit,child:_busy?const SizedBox.square(dimension:20,child:CircularProgressIndicator(strokeWidth:2,color:Colors.white)):Text(signup?'تسجيل الحساب':'تسجيل الدخول'))),
+    const SizedBox(height:SpikeSpacing.sm),TextButton(onPressed:()=>context.go(signup?'/login':'/signup'),child:Text(signup?'تمتلك حساب؟ قم بتسجيل الدخول من هنا':'لا تملك حساباً؟ قم بإنشاء حساب من هنا')),
+  ]));}
+  Widget _field(TextEditingController c,String hint,IconData icon,{bool obscure=false,TextInputType? keyboard})=>TextField(controller:c,obscureText:obscure,keyboardType:keyboard,decoration:InputDecoration(hintText:hint,suffixIcon:Icon(icon,size:20)));
 }
