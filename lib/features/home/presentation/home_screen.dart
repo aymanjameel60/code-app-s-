@@ -72,6 +72,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _CategoriesGrid(categories: data.categories.take(8).toList(), onTap: (c) => context.push('/products?category=${Uri.encodeComponent(c.id)}&title=${Uri.encodeComponent(c.name)}')),
             _SectionTitle(title: 'مختارة لك', showAll: data.products.isNotEmpty, onShowAll: () => context.push('/products')),
             _productsStrip(products: data.products, emptyMessage: 'لا توجد منتجات منشورة بعد'),
+            if (data.bestSellers.isNotEmpty) ...[
+              const _SectionTitle(title: 'الأكثر مبيعًا', showAll: false),
+              _productsStrip(products: data.bestSellers, emptyMessage: 'لا توجد مبيعات مكتملة بعد'),
+            ],
             if (offers.isNotEmpty) ...[
               _SectionTitle(title: 'العروض والخصومات', showAll: true, onShowAll: () => context.push('/offers')),
               _productsStrip(products: offers, emptyMessage: 'لا توجد عروض حالياً'),
