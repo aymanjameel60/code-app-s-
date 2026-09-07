@@ -20,7 +20,7 @@ class ReturnsRefundsScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.sm, SpikeSpacing.page, 0),
             child: SizedBox(height: 60, child: Stack(alignment: Alignment.center, children: [
               const Text('المرتجعات والاستردادات', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-              Align(alignment: Alignment.centerRight, child: IconButton(onPressed: () => context.pop(), icon: const Icon(LucideIcons.arrowRight, size: 22))),
+              Align(alignment: Alignment.centerRight, child: IconButton(onPressed: () => context.canPop() ? context.pop() : context.go('/profile'), icon: const Icon(LucideIcons.arrowRight, size: 22))),
             ])),
           ),
           Expanded(
