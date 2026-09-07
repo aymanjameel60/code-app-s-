@@ -69,6 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onAddress: () => context.push('/addresses'),
                   onNotifications: () => context.push('/notifications'),
                   onCurrency: _openCurrencySheet,
+                  onMenu: () => Scaffold.of(context).openEndDrawer(),
                 ),
                 if (announcements.isNotEmpty)
                   _AnnouncementCard(
@@ -82,23 +83,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     index: _bannerIndex,
                     onPageChanged: (i) => setState(() => _bannerIndex = i),
                     onTap: _openBanner,
-                  ),
+                  )
+                else
+                  const _BannerPlaceholder(),
+                const SizedBox(height: 32),
                 _SectionTitle(title: 'تسوق حسب الفئة', showAll: data.categories.isNotEmpty, onShowAll: () => context.push('/categories')),
                 _CategoriesGrid(
                   categories: data.categories.take(8).toList(),
                   onTap: (c) => context.push('/products?category=${Uri.encodeComponent(c.id)}&title=${Uri.encodeComponent(c.name)}'),
                 ),
+                const SizedBox(height: 32),
                 _SectionTitle(title: 'مختارة لك', showAll: data.products.isNotEmpty, onShowAll: () => context.push('/products')),
                 _productsStrip(products: data.products, emptyMessage: 'لا توجد منتجات منشورة بعد'),
                 if (data.bestSellers.isNotEmpty) ...[
+                  const SizedBox(height: 32),
                   const _SectionTitle(title: 'الأكثر مبيعًا', showAll: false),
                   _productsStrip(products: data.bestSellers, emptyMessage: 'لا توجد مبيعات مكتملة بعد'),
                 ],
                 if (offers.isNotEmpty) ...[
+                  const SizedBox(height: 32),
                   _SectionTitle(title: 'العروض والخصومات', showAll: true, onShowAll: () => context.push('/offers')),
                   _productsStrip(products: offers, emptyMessage: 'لا توجد عروض حالياً'),
                 ],
                 if (data.collections.isNotEmpty) ...[
+                  const SizedBox(height: 32),
                   const _SectionTitle(title: 'المجموعات', showAll: false),
                   _CollectionsStrip(
                     collections: data.collections,
@@ -116,6 +124,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                   ),
                 ],
+                const SizedBox(height: 32),
                 _SectionTitle(title: 'المتاجر', showAll: data.stores.isNotEmpty, onShowAll: () => context.push('/stores')),
                 _StoresStrip(stores: data.stores, onTap: (s) => context.push('/store/${s.id}')),
                 const SizedBox(height: 24),
@@ -281,6 +290,7 @@ class _Header extends StatelessWidget {
     required this.onAddress,
     required this.onNotifications,
     required this.onCurrency,
+    required this.onMenu,
   });
 
   final String address;
@@ -290,6 +300,7 @@ class _Header extends StatelessWidget {
   final VoidCallback onAddress;
   final VoidCallback onNotifications;
   final VoidCallback onCurrency;
+  final VoidCallback onMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -300,11 +311,7 @@ class _Header extends StatelessWidget {
         SizedBox(
           height: 64,
           child: Row(children: [
-            const SizedBox(
-              width: 53,
-              height: 38,
-              child: Center(child: Text('SPIKE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -.5))),
-            ),
+            IconButton(onPressed: onMenu, icon: const Icon(LucideIcons.menu, size: 24), tooltip: 'القائمة'),
             const SizedBox(width: 8),
             Expanded(
               child: TextButton(
@@ -402,6 +409,20 @@ class _AnnouncementCard extends StatelessWidget {
           IconButton(onPressed: onDismiss, icon: const Icon(LucideIcons.x, size: 17), visualDensity: VisualDensity.compact),
         ]),
       );
+}
+
+class _BannerPlaceholder extends StatelessWidget {
+  const _BannerPlaceholder();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 130,
+    margin: const EdgeInsets.fromLTRB(18, 16, 18, 0),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .06),
+      borderRadius: BorderRadius.circular(23),
+    ),
+  );
 }
 
 class _BannerCarousel extends StatefulWidget {
@@ -551,7 +572,7 @@ class _CategoriesGrid extends StatelessWidget {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
           crossAxisSpacing: 11,
-          mainAxisSpacing: 13,
+          mainAxisSpacing: 16,
           childAspectRatio: .75,
         ),
         itemBuilder: (context, i) {
