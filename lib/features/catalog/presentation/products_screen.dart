@@ -25,24 +25,28 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       context: context,
       showDragHandle: true,
       builder: (sheetContext) => SafeArea(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Padding(padding: EdgeInsets.all(12), child: Text('الترتيب حسب', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
-          for (final option in const [
-            ('relevance', 'الأكثر صلة'),
-            ('price-low', 'السعر: من الأقل للأعلى'),
-            ('price-high', 'السعر: من الأعلى للأقل'),
-            ('rating', 'الأعلى تقييماً'),
-            ('discount', 'الأعلى خصماً'),
-          ])
-            ListTile(
-              title: Text(option.$2),
-              trailing: _sort == option.$1 ? const Icon(Icons.check, color: spikeRed) : null,
-              onTap: () {
-                setState(() => _sort = option.$1);
-                Navigator.pop(sheetContext);
-              },
-            ),
-        ]),
+        child: Padding(
+          padding: SpikeSpacing.sheet,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Padding(padding: EdgeInsets.only(bottom: SpikeSpacing.sm), child: Text('الترتيب حسب', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
+            for (final option in const [
+              ('relevance', 'الأكثر صلة'),
+              ('price-low', 'السعر: من الأقل للأعلى'),
+              ('price-high', 'السعر: من الأعلى للأقل'),
+              ('rating', 'الأعلى تقييماً'),
+              ('discount', 'الأعلى خصماً'),
+            ])
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(option.$2),
+                trailing: _sort == option.$1 ? const Icon(Icons.check, color: spikeRed) : null,
+                onTap: () {
+                  setState(() => _sort = option.$1);
+                  Navigator.pop(sheetContext);
+                },
+              ),
+          ]),
+        ),
       ),
     );
   }
@@ -95,16 +99,16 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
         backgroundColor: Colors.transparent,
         title: Text(widget.title),
         centerTitle: true,
-        actions: [TextButton(onPressed: _showSort, child: const Text('ترتيب حسب'))],
+        actions: [Padding(padding: const EdgeInsetsDirectional.only(end: SpikeSpacing.sm), child: TextButton(onPressed: _showSort, child: const Text('ترتيب حسب')))],
       ),
       body: Column(children: [
         SizedBox(
-          height: 48,
+          height: 50,
           child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: SpikeSpacing.page, vertical: SpikeSpacing.xs),
             scrollDirection: Axis.horizontal,
             itemCount: chips.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 7),
+            separatorBuilder: (_, __) => const SizedBox(width: SpikeSpacing.sm),
             itemBuilder: (context, i) {
               final item = chips[i];
               final active = _category == item;
@@ -118,6 +122,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             },
           ),
         ),
+        const SizedBox(height: SpikeSpacing.xs),
         Expanded(child: state.when(
           loading: () => const SpikeLoading(),
           error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(productsProvider((widget.categoryId, widget.collectionId)))),
@@ -133,9 +138,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             if (_sort == 'discount') list.sort((a, b) => _discount(b).compareTo(_discount(a)));
             if (list.isEmpty) return const SpikeEmptyState(message: 'لا توجد منتجات في هذا القسم حالياً');
             return GridView.builder(
-              padding: const EdgeInsets.all(17),
+              padding: SpikeSpacing.pageList,
               itemCount: list.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 11, mainAxisSpacing: 11, mainAxisExtent: 246),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: SpikeSpacing.md, mainAxisSpacing: SpikeSpacing.md, mainAxisExtent: 246),
               itemBuilder: (context, i) {
                 final p = list[i];
                 return SpikeProductCard(
