@@ -24,7 +24,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (context) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const Padding(padding: EdgeInsets.all(12), child: Text('الترتيب حسب', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
           for (final option in const [
@@ -34,11 +34,13 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             ('rating', 'الأعلى تقييماً'),
             ('discount', 'الأعلى خصماً'),
           ])
-            RadioListTile<String>(
-              value: option.$1,
-              groupValue: _sort,
+            ListTile(
               title: Text(option.$2),
-              onChanged: (value) { if (value != null) setState(() => _sort = value); Navigator.pop(context); },
+              trailing: _sort == option.$1 ? const Icon(Icons.check, color: spikeRed) : null,
+              onTap: () {
+                setState(() => _sort = option.$1);
+                Navigator.pop(sheetContext);
+              },
             ),
         ]),
       ),
@@ -56,8 +58,11 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     final ids = ref.read(wishlistIdsProvider).valueOrNull ?? <String>{};
     final active = ids.contains(p.id);
     try {
-      if (active) await ref.read(engagementRepositoryProvider).removeWishlist(p.id);
-      else await ref.read(engagementRepositoryProvider).addWishlist(p.id);
+      if (active) {
+        await ref.read(engagementRepositoryProvider).removeWishlist(p.id);
+      } else {
+        await ref.read(engagementRepositoryProvider).addWishlist(p.id);
+      }
       ref.invalidate(wishlistIdsProvider);
       ref.invalidate(favoritesProvider);
       if (mounted) showSpikeToast(context, active ? 'تمت إزالة المنتج من المفضلة' : 'تمت إضافة المنتج إلى المفضلة');
