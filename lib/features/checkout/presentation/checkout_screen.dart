@@ -11,6 +11,7 @@ import '../data/commerce_repository.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
+
   @override
   ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
 }
@@ -24,7 +25,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   PaymentMethodModel? payment;
   CurrencyModel? currency;
   DeliveryQuote? quote;
-  bool loading = true, busy = false;
+  bool loading = true;
+  bool busy = false;
 
   @override
   void initState() {
@@ -35,24 +37,28 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Future<void> _load() async {
     setState(() => loading = true);
     try {
-      final cr = ref.read(commerceRepositoryProvider);
+      final commerce = ref.read(commerceRepositoryProvider);
       final preferred = ref.read(appSettingsProvider).currency;
-      final r = await Future.wait([
+      final result = await Future.wait([
         ref.read(cartRepositoryProvider).load(),
-        cr.addresses(),
-        cr.paymentMethods(),
-        cr.currencies(),
+        commerce.addresses(),
+        commerce.paymentMethods(),
+        commerce.currencies(),
       ]);
-      cart = r[0] as CartSnapshot;
-      addresses = r[1] as List<AddressModel>;
-      methods = r[2] as List<PaymentMethodModel>;
-      currencies = r[3] as List<CurrencyModel>;
+      cart = result[0] as CartSnapshot;
+      addresses = result[1] as List<AddressModel>;
+      methods = result[2] as List<PaymentMethodModel>;
+      currencies = result[3] as List<CurrencyModel>;
       address = addresses.where((a) => a.isActive).cast<AddressModel?>().firstOrNull ?? (addresses.isNotEmpty ? addresses.first : null);
       payment = methods.isNotEmpty ? methods.first : null;
-      currency = currencies.where((c) => c.code == preferred).cast<CurrencyModel?>().firstOrNull ?? currencies.where((c) => c.code == (cart?.currencyCode ?? 'USD')).cast<CurrencyModel?>().firstOrNull ?? (currencies.isNotEmpty ? currencies.first : null);
-      if (currency != null) cart = await ref.read(cartRepositoryProvider).updateMeta(currencyCode: currency!.code);
+      currency = currencies.where((c) => c.code == preferred).cast<CurrencyModel?>().firstOrNull ??
+          currencies.where((c) => c.code == (cart?.currencyCode ?? 'USD')).cast<CurrencyModel?>().firstOrNull ??
+          (currencies.isNotEmpty ? currencies.first : null);
+      if (currency != null) {
+        cart = await ref.read(cartRepositoryProvider).updateMeta(currencyCode: currency!.code);
+      }
       if (address != null && cart!.items.isNotEmpty) {
-        quote = await cr.quote(addressId: address!.id, variantIds: cart!.items.map((e) => e.variantId).toList());
+        quote = await commerce.quote(addressId: address!.id, variantIds: cart!.items.map((e) => e.variantId).toList());
       }
     } catch (e) {
       if (mounted) showSpikeToast(context, e.toString());
@@ -65,20 +71,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     await context.push('/addresses');
     final list = await ref.read(commerceRepositoryProvider).addresses();
     final selected = list.where((a) => a.isActive).cast<AddressModel?>().firstOrNull;
-    if (selected != null) {
-      setState(() => address = selected);
-      quote = await ref.read(commerceRepositoryProvider).quote(addressId: selected.id, variantIds: cart!.items.map((e) => e.variantId).toList());
-      if (mounted) setState(() {});
-    }
-  }
-
-  Future<void> _currency(String? v) async {
-    if (v == null) return;
-    final x = currencies.where((c) => c.code == v).firstOrNull;
-    if (x == null) return;
-    setState(() => currency = x);
-    await ref.read(appSettingsProvider.notifier).setCurrency(x.code);
-    cart = await ref.read(cartRepositoryProvider).updateMeta(currencyCode: x.code);
+    if (selected == null) return;
+    setState(() => address = selected);
+    quote = await ref.read(commerceRepositoryProvider).quote(addressId: selected.id, variantIds: cart!.items.map((e) => e.variantId).toList());
     if (mounted) setState(() {});
   }
 
@@ -86,7 +81,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (busy || cart == null || address == null || payment == null || currency == null) return;
     setState(() => busy = true);
     try {
-      final order = await ref.read(commerceRepositoryProvider).createOrder(cart: cart!, addressId: address!.id, paymentMethod: payment!.method, currencyCode: currency!.code);
+      final order = await ref.read(commerceRepositoryProvider).createOrder(
+            cart: cart!,
+            addressId: address!.id,
+            paymentMethod: payment!.method,
+            currencyCode: currency!.code,
+          );
       ref.invalidate(cartCountProvider);
       ref.invalidate(ordersProvider);
       if (mounted) {
@@ -106,110 +106,208 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (cart == null) return Scaffold(body: SpikeErrorState(onRetry: _load));
 
     if (cart!.items.isEmpty) {
-      final onSurface = Theme.of(context).colorScheme.onSurface;
-      final surface = Theme.of(context).colorScheme.surface;
-      return Scaffold(body: SafeArea(child: Column(children: [
-        const Padding(padding: EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.sm, SpikeSpacing.page, SpikeSpacing.xs), child: _CheckoutHead()),
-        const Expanded(child: SpikeEmptyState(message: 'السلة فارغة، أضف منتجات قبل إتمام الطلب')),
-        Padding(
-          padding: const EdgeInsets.all(SpikeSpacing.page),
-          child: SizedBox(width: double.infinity, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: onSurface, foregroundColor: surface), onPressed: () => context.go('/'), child: const Text('العودة للتسوق'))),
+      return Scaffold(
+        body: SafeArea(
+          child: Column(children: [
+            const _CheckoutHead(title: 'تأكيد الطلب والدفع'),
+            const Expanded(child: SpikeEmptyState(message: 'السلة فارغة، أضف منتجات قبل إتمام الطلب')),
+            Padding(
+              padding: const EdgeInsets.all(17),
+              child: SizedBox(width: double.infinity, height: 43, child: FilledButton(onPressed: () => context.go('/'), child: const Text('العودة للتسوق'))),
+            ),
+          ]),
         ),
-      ])));
+      );
     }
 
-    final panel = Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel;
-    final ready = address != null && payment != null && currency != null && !busy;
-    final onSurface = Theme.of(context).colorScheme.onSurface;
-
-    return Scaffold(body: SafeArea(child: Column(children: [
-      const Padding(padding: EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.sm, SpikeSpacing.page, SpikeSpacing.xs), child: _CheckoutHead()),
-      Expanded(child: ListView(padding: SpikeSpacing.pageList, children: [
-        _step(context, panel, LucideIcons.mapPin, 'عنوان التوصيل', InkWell(
-          onTap: _chooseAddress,
-          child: Row(children: [
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(address?.label ?? 'اختر عنوان التوصيل', style: const TextStyle(fontWeight: FontWeight.w900)),
-              const SizedBox(height: SpikeSpacing.xs),
-              Text(address?.addressLine ?? 'مطلوب لحساب تكلفة التوصيل', style: const TextStyle(fontSize: 10, color: spikeMuted)),
-            ])),
-            const Icon(LucideIcons.chevronLeft, size: 18),
-          ]),
-        )),
-        const SizedBox(height: SpikeSpacing.md),
-        _step(context, panel, LucideIcons.walletCards, 'طريقة الدفع', Column(children: [
-          for (final m in methods) RadioListTile<String>(
-            dense: true,
-            title: Text(m.label, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: m.instructions.isEmpty ? null : Text(m.instructions, style: const TextStyle(fontSize: 10)),
-            value: m.method,
-            groupValue: payment?.method,
-            onChanged: (_) => setState(() => payment = m),
-          ),
-        ])),
-        const SizedBox(height: SpikeSpacing.md),
-        _step(context, panel, LucideIcons.coins, 'العملة', DropdownButtonFormField<String>(
-          initialValue: currency?.code,
-          items: currencies.map((c) => DropdownMenuItem(value: c.code, child: Text('${c.name} (${c.code})'))).toList(),
-          onChanged: _currency,
-        )),
-        const SizedBox(height: SpikeSpacing.md),
-        Container(
-          padding: const EdgeInsets.all(SpikeSpacing.lg),
-          decoration: BoxDecoration(color: panel, borderRadius: BorderRadius.circular(SpikeRadius.card)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            const Text('ملخص الطلب', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
-            const SizedBox(height: SpikeSpacing.md),
-            _line('المنتجات', '${cart!.subtotal.toStringAsFixed(2)} ${cart!.currencyCode}'),
-            if (cart!.saving > 0) _line('التوفير', '- ${cart!.saving.toStringAsFixed(2)} ${cart!.currencyCode}', red: true),
-            _line('التوصيل', quote == null ? 'يُحسب بعد اختيار العنوان' : '${quote!.shippingYerOld.toStringAsFixed(2)} YER_OLD'),
-            const Divider(height: SpikeSpacing.xl),
-            const Text('الإجمالي النهائي وسعر الصرف يتم اعتمادهما من الخادم عند إنشاء الطلب.', style: TextStyle(fontSize: 9, height: 1.5, color: spikeMuted)),
-          ]),
-        ),
-      ])),
-      Container(
-        padding: const EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.sm, SpikeSpacing.page, SpikeSpacing.md),
-        decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, border: Border(top: BorderSide(color: onSurface.withValues(alpha: .08)))),
-        child: SafeArea(top: false, child: SizedBox(width: double.infinity, child: FilledButton(
-          style: FilledButton.styleFrom(backgroundColor: spikeRed),
-          onPressed: ready ? _submit : null,
-          child: busy ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('تأكيد وإنشاء الطلب', style: TextStyle(fontWeight: FontWeight.w900)),
-        ))),
-      ),
-    ])));
-  }
-
-  Widget _step(BuildContext context, Color panel, IconData icon, String title, Widget child) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: SpikeSpacing.card,
-      decoration: BoxDecoration(color: panel, borderRadius: BorderRadius.circular(SpikeRadius.card)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [
-          Container(width: 36, height: 36, decoration: BoxDecoration(color: dark ? Colors.white : Colors.black, shape: BoxShape.circle), child: Icon(icon, size: 17, color: dark ? Colors.black : Colors.white)),
-          const SizedBox(width: SpikeSpacing.sm),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+    final panel = dark ? spikeDarkPanel : spikePanel;
+    final card = dark ? const Color(0xFF1D1D1D) : Colors.white;
+    final ready = address != null && payment != null && currency != null && !busy;
+    final delivery = quote?.shippingYerOld ?? 0;
+    final grand = cart!.subtotal + delivery;
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(children: [
+          const _CheckoutHead(title: 'تأكيد الطلب والدفع'),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(17, 4, 17, 24),
+              children: [
+                InkWell(
+                  onTap: _chooseAddress,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    height: 58,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(color: card, border: Border.all(color: Theme.of(context).dividerColor), borderRadius: BorderRadius.circular(16)),
+                    child: Row(children: [
+                      const Icon(LucideIcons.mapPin, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          address == null ? 'اختر عنوان التوصيل' : '${address!.label} - ${address!.cityName}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      const Text('تغيير', style: TextStyle(fontSize: 12, decoration: TextDecoration.underline)),
+                    ]),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(color: panel, borderRadius: BorderRadius.circular(22)),
+                  child: Row(children: [
+                    const Icon(LucideIcons.truck, size: 18),
+                    const SizedBox(width: 9),
+                    const Expanded(child: Text('مكتب التوصيل محدد لكل منتج من التاجر', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600))),
+                    if (quote != null) Text('${delivery.round()} ر.ي قديم', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+                  ]),
+                ),
+                const SizedBox(height: 14),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 5),
+                  child: Text('طريقة الدفع', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                ),
+                const SizedBox(height: 9),
+                Wrap(
+                  spacing: 9,
+                  runSpacing: 9,
+                  children: [
+                    for (final method in methods)
+                      InkWell(
+                        onTap: () => setState(() => payment = method),
+                        borderRadius: BorderRadius.circular(17),
+                        child: Container(
+                          constraints: const BoxConstraints(minHeight: 48),
+                          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: card,
+                            borderRadius: BorderRadius.circular(17),
+                            border: Border.all(color: payment?.method == method.method ? Theme.of(context).colorScheme.onSurface : Theme.of(context).dividerColor),
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(payment?.method == method.method ? Icons.radio_button_checked : Icons.radio_button_off, size: 18),
+                            const SizedBox(width: 7),
+                            Text(method.label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                          ]),
+                        ),
+                      ),
+                  ],
+                ),
+                if (payment != null && payment!.instructions.trim().isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(color: card, borderRadius: BorderRadius.circular(18), border: Border.all(color: Theme.of(context).dividerColor)),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Text('بيانات التحويل', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      Text(payment!.instructions, style: const TextStyle(fontSize: 10, height: 1.55)),
+                      const SizedBox(height: 10),
+                      const Text('بعد تأكيد الطلب سترفع سند الحوالة من قسم طلباتي.', style: TextStyle(fontSize: 9, color: spikeMuted, height: 1.5)),
+                    ]),
+                  ),
+                ],
+                const SizedBox(height: 13),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: panel, borderRadius: BorderRadius.circular(22)),
+                  child: Column(children: [
+                    _InvoiceLine(label: 'المنتجات بعد الخصومات', value: _money(cart!.subtotal, cart!.currencyCode)),
+                    _InvoiceLine(label: 'رسوم مكتب التوصيل', value: quote == null ? 'تحسب عند التأكيد' : '${delivery.round()} ر.ي قديم'),
+                    Container(
+                      constraints: const BoxConstraints(minHeight: 48),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(border: Border(top: BorderSide(color: Theme.of(context).dividerColor))),
+                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        const Text('الإجمالي مع التوصيل', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                        Text(_money(grand, cart!.currencyCode), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                      ]),
+                    ),
+                  ]),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  height: 43,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: spikeRed, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22))),
+                    onPressed: ready ? _submit : null,
+                    child: busy
+                        ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('تأكيد الطلب', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ]),
-        const SizedBox(height: SpikeSpacing.sm),
-        child,
-      ]),
+      ),
     );
   }
 
-  Widget _line(String a, String b, {bool red = false}) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: SpikeSpacing.xs),
-    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(a), Text(b, style: TextStyle(fontWeight: FontWeight.w800, color: red ? spikeRed : null))]),
-  );
+  String _money(double amount, String code) {
+    final c = code.toUpperCase();
+    if (c == 'USD') return '\$${amount.toStringAsFixed(2)}';
+    if (c == 'SAR') return '${amount.toStringAsFixed(2)} ر.س';
+    if (c.startsWith('YER')) return '${amount.round()} ر.ي';
+    if (c == 'TRY') return '${amount.toStringAsFixed(2)} ₺';
+    return '${amount.toStringAsFixed(2)} $c';
+  }
 }
 
 class _CheckoutHead extends StatelessWidget {
-  const _CheckoutHead();
+  const _CheckoutHead({required this.title});
+  final String title;
+
   @override
-  Widget build(BuildContext context) => SizedBox(height: 46, child: Stack(alignment: Alignment.center, children: [
-    const Text('تأكيد الطلب', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-    Align(alignment: Alignment.centerRight, child: IconButton(onPressed: () => context.pop(), icon: const Icon(LucideIcons.arrowRight, size: 22))),
-  ]));
+  Widget build(BuildContext context) => SizedBox(
+        height: 60,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 17),
+          child: Stack(alignment: Alignment.center, children: [
+            Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+            Align(
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                width: 50,
+                height: 40,
+                child: Material(
+                  color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                  borderRadius: BorderRadius.circular(22),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(22),
+                    onTap: () => context.canPop() ? context.pop() : context.go('/cart'),
+                    child: const Icon(LucideIcons.arrowRight, size: 23),
+                  ),
+                ),
+              ),
+            ),
+          ]),
+        ),
+      );
+}
+
+class _InvoiceLine extends StatelessWidget {
+  const _InvoiceLine({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        constraints: const BoxConstraints(minHeight: 36),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor))),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text(label, style: const TextStyle(fontSize: 11)),
+          Text(value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+        ]),
+      );
 }
 
 extension _FirstOrNull<T> on Iterable<T> {
