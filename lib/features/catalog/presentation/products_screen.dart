@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
@@ -9,10 +10,13 @@ import '../../../widgets/product_card.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({super.key, this.categoryId, this.collectionId, this.title = 'المنتجات'});
+
   final String? categoryId;
   final String? collectionId;
   final String title;
-  @override ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
+
+  @override
+  ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
 }
 
 class _ProductsScreenState extends ConsumerState<ProductsScreen> {
@@ -20,15 +24,23 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   String _category = 'الكل';
   final Set<String> _favoriteBusy = {};
 
+  double _discount(ProductModel p) {
+    final original = p.originalPrice ?? 0;
+    return original > p.price && original > 0 ? (original - p.price) / original : 0;
+  }
+
   void _showSort() {
     showModalBottomSheet<void>(
       context: context,
-      showDragHandle: true,
       builder: (sheetContext) => SafeArea(
         child: Padding(
-          padding: SpikeSpacing.sheet,
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Padding(padding: EdgeInsets.only(bottom: SpikeSpacing.sm), child: Text('الترتيب حسب', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
+          padding: const EdgeInsets.fromLTRB(17, 20, 17, 25),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Row(children: [
+              const Expanded(child: Text('الترتيب حسب', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700))),
+              IconButton(onPressed: () => Navigator.pop(sheetContext), icon: const Icon(LucideIcons.x, size: 20)),
+            ]),
+            const SizedBox(height: 10),
             for (final option in const [
               ('relevance', 'الأكثر صلة'),
               ('price-low', 'السعر: من الأقل للأعلى'),
@@ -36,24 +48,23 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               ('rating', 'الأعلى تقييماً'),
               ('discount', 'الأعلى خصماً'),
             ])
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(option.$2),
-                trailing: _sort == option.$1 ? const Icon(Icons.check, color: spikeRed) : null,
+              InkWell(
                 onTap: () {
                   setState(() => _sort = option.$1);
                   Navigator.pop(sheetContext);
                 },
+                child: SizedBox(
+                  height: 48,
+                  child: Row(children: [
+                    Expanded(child: Text(option.$2, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
+                    Icon(_sort == option.$1 ? Icons.radio_button_checked : Icons.radio_button_off, size: 19),
+                  ]),
+                ),
               ),
           ]),
         ),
       ),
     );
-  }
-
-  double _discount(ProductModel p) {
-    final original = p.originalPrice ?? 0;
-    return original > p.price && original > 0 ? (original - p.price) / original : 0;
   }
 
   Future<void> _toggleFavorite(ProductModel p) async {
@@ -89,73 +100,118 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     }
   }
 
-  @override Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(productsProvider((widget.categoryId, widget.collectionId)));
     final categories = ref.watch(categoriesProvider).valueOrNull ?? const [];
     final favorites = ref.watch(wishlistIdsProvider).valueOrNull ?? <String>{};
     final chips = <String>['الكل', ...categories.map((e) => e.name), 'عروض'];
+    final dark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(widget.title),
-        centerTitle: true,
-        actions: [Padding(padding: const EdgeInsetsDirectional.only(end: SpikeSpacing.sm), child: TextButton(onPressed: _showSort, child: const Text('ترتيب حسب')))],
-      ),
-      body: Column(children: [
-        SizedBox(
-          height: 50,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: SpikeSpacing.page, vertical: SpikeSpacing.xs),
-            scrollDirection: Axis.horizontal,
-            itemCount: chips.length,
-            separatorBuilder: (_, __) => const SizedBox(width: SpikeSpacing.sm),
-            itemBuilder: (context, i) {
-              final item = chips[i];
-              final active = _category == item;
-              return ChoiceChip(
-                label: Text(item),
-                selected: active,
-                onSelected: (_) => setState(() => _category = item),
-                selectedColor: spikeRed,
-                labelStyle: TextStyle(color: active ? Colors.white : null, fontWeight: FontWeight.w700),
-              );
-            },
+      body: SafeArea(
+        child: Column(children: [
+          SizedBox(
+            height: 60,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 17),
+              child: Stack(alignment: Alignment.center, children: [
+                Text(widget.title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: 50,
+                    height: 40,
+                    child: Material(
+                      color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                      borderRadius: BorderRadius.circular(22),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(22),
+                        onTap: () => context.canPop() ? context.pop() : context.go('/'),
+                        child: const Icon(LucideIcons.arrowRight, size: 23),
+                      ),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(onPressed: _showSort, child: const Text('ترتيب حسب', style: TextStyle(fontSize: 12))),
+                ),
+              ]),
+            ),
           ),
-        ),
-        const SizedBox(height: SpikeSpacing.xs),
-        Expanded(child: state.when(
-          loading: () => const SpikeLoading(),
-          error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(productsProvider((widget.categoryId, widget.collectionId)))),
-          data: (products) {
-            final list = products.where((p) {
-              if (_category == 'الكل') return true;
-              if (_category == 'عروض') return _discount(p) > 0;
-              return p.categoryName == _category;
-            }).toList();
-            if (_sort == 'price-low') list.sort((a, b) => a.price.compareTo(b.price));
-            if (_sort == 'price-high') list.sort((a, b) => b.price.compareTo(a.price));
-            if (_sort == 'rating') list.sort((a, b) => b.rating.compareTo(a.rating));
-            if (_sort == 'discount') list.sort((a, b) => _discount(b).compareTo(_discount(a)));
-            if (list.isEmpty) return const SpikeEmptyState(message: 'لا توجد منتجات في هذا القسم حالياً');
-            return GridView.builder(
-              padding: SpikeSpacing.pageList,
-              itemCount: list.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: SpikeSpacing.md, mainAxisSpacing: SpikeSpacing.md, mainAxisExtent: 246),
-              itemBuilder: (context, i) {
-                final p = list[i];
-                return SpikeProductCard(
-                  product: p,
-                  isFavorite: favorites.contains(p.id),
-                  onTap: () => context.push('/product/${p.id}'),
-                  onStore: p.storeId == null ? null : () => context.push('/store/${p.storeId}'),
-                  onAdd: p.purchasable && p.cheapestVariant != null ? () => _add(p) : null,
-                  onFavorite: _favoriteBusy.contains(p.id) ? null : () => _toggleFavorite(p),
+          Container(
+            padding: const EdgeInsets.fromLTRB(17, 8, 17, 14),
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: SizedBox(
+              height: 36,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                reverse: true,
+                itemCount: chips.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, i) {
+                  final item = chips[i];
+                  final active = _category == item;
+                  return InkWell(
+                    onTap: () => setState(() => _category = item),
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: active ? Theme.of(context).colorScheme.onSurface : (dark ? const Color(0xFF24252A) : const Color(0xFFE8E8E8)),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Text(item, style: TextStyle(fontSize: 12, color: active ? Theme.of(context).colorScheme.surface : null)),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            child: state.when(
+              loading: () => const SpikeLoading(),
+              error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(productsProvider((widget.categoryId, widget.collectionId)))),
+              data: (products) {
+                final list = products.where((p) {
+                  if (_category == 'الكل') return true;
+                  if (_category == 'عروض') return _discount(p) > 0;
+                  return p.categoryName == _category;
+                }).toList();
+                if (_sort == 'price-low') list.sort((a, b) => a.price.compareTo(b.price));
+                if (_sort == 'price-high') list.sort((a, b) => b.price.compareTo(a.price));
+                if (_sort == 'rating') list.sort((a, b) => b.rating.compareTo(a.rating));
+                if (_sort == 'discount') list.sort((a, b) => _discount(b).compareTo(_discount(a)));
+                if (list.isEmpty) return const SpikeEmptyState(message: 'لا توجد منتجات في هذا القسم حالياً');
+
+                return GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(17, 4, 17, 24),
+                  itemCount: list.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 11,
+                    mainAxisSpacing: 11,
+                    mainAxisExtent: 246,
+                  ),
+                  itemBuilder: (context, i) {
+                    final p = list[i];
+                    return SpikeProductCard(
+                      product: p,
+                      isFavorite: favorites.contains(p.id),
+                      onTap: () => context.push('/product/${p.id}'),
+                      onStore: p.storeId == null ? null : () => context.push('/store/${p.storeId}'),
+                      onAdd: p.purchasable && p.cheapestVariant != null ? () => _add(p) : null,
+                      onFavorite: _favoriteBusy.contains(p.id) ? null : () => _toggleFavorite(p),
+                    );
+                  },
                 );
               },
-            );
-          },
-        )),
-      ]),
+            ),
+          ),
+        ]),
+      ),
     );
   }
 }
