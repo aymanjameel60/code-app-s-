@@ -94,7 +94,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ),
           )),
           Positioned(top: 10, right: 14, child: _round(LucideIcons.arrowRight, () => context.canPop() ? context.pop() : context.go('/'))),
-          Positioned(top: 10, left: 14, child: _round(_favorite ? LucideIcons.heart : LucideIcons.heart, _toggleFavorite, active: _favorite, busy: _favoriteBusy)),
+          Positioned(top: 10, left: 14, child: _round(LucideIcons.heart, _toggleFavorite, active: _favorite, busy: _favoriteBusy)),
           if (discount > 0) Positioned(bottom: 14, right: 17, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: spikeRed, borderRadius: BorderRadius.circular(13)), child: Text('-$discount%', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)))),
         ]),
         if (images.length > 1) Padding(padding: const EdgeInsets.only(top: 8), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(images.length, (i) => AnimatedContainer(duration: const Duration(milliseconds: 180), width: i == _galleryIndex ? 17 : 7, height: 7, margin: const EdgeInsets.symmetric(horizontal: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: i == _galleryIndex ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withValues(alpha: .12))))),
@@ -109,7 +109,23 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           const SizedBox(height: 9),
           Row(children: [Icon(selected.stock > 0 ? LucideIcons.checkCircle2 : LucideIcons.xCircle, size: 16, color: selected.stock > 0 ? Colors.green : spikeRed), const SizedBox(width: 6), Expanded(child: Text(selected.stock > 0 ? (selected.stock <= 5 ? 'متوفر — تبقى ${selected.stock} فقط' : 'متوفر في المخزون') : 'غير متوفر حالياً', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)))]),
         ]),
-        if (variants.length > 1) _block(children: [const Text('اختر الخيار', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)), const SizedBox(height: 10), Wrap(spacing: 8, runSpacing: 8, children: variants.map((v) => ChoiceChip(label: Text(v.title.isEmpty ? _money(v.price, v.currency) : v.title), selected: v.id == selected.id, onSelected: (_) => setState(() { _variantId = v.id; _deliveryQuote = null; _quotedVariantId = null; })).toList())]),
+        if (variants.length > 1) _block(children: [
+          const Text('اختر الخيار', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: variants.map((v) => ChoiceChip(
+              label: Text(v.title.isEmpty ? _money(v.price, v.currency) : v.title),
+              selected: v.id == selected.id,
+              onSelected: (_) => setState(() {
+                _variantId = v.id;
+                _deliveryQuote = null;
+                _quotedVariantId = null;
+              }),
+            )).toList(),
+          ),
+        ]),
         _deliveryBlock(context, addresses, selected),
         _block(children: [const Text('تفاصيل المنتج', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)), const SizedBox(height: 9), Text((product.description ?? '').trim().isEmpty ? 'لا توجد تفاصيل إضافية لهذا المنتج حالياً.' : product.description!, style: const TextStyle(fontSize: 12, height: 1.7)), if (product.returnable) const Padding(padding: EdgeInsets.only(top: 10), child: Row(children: [Icon(LucideIcons.rotateCcw, size: 16), SizedBox(width: 7), Expanded(child: Text('هذا المنتج قابل للإرجاع حسب سياسة المتجر.', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)))]))]),
       ]),
