@@ -83,7 +83,7 @@ class _SpikeDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider).valueOrNull;
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final name = user == null ? 'مرحباً بك في Spike' : '\${user['name'] ?? 'حسابي'}';
+    final name = user == null ? 'مرحباً بك في Spike' : (user['name'] ?? 'حسابي').toString();
     return Drawer(backgroundColor: dark ? spikeDarkPanel : Colors.white, child: SafeArea(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Padding(padding: const EdgeInsets.fromLTRB(20, 14, 14, 20), child: Row(children: [IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(LucideIcons.x, size: 22)), const Spacer(), const Text('SPIKE', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -.5))])),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
