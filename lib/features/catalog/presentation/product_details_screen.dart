@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -65,9 +66,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     }
   }
 
-  Future<void> _copyProduct(ProductModel product, ProductVariant selected) async {
-    await Clipboard.setData(ClipboardData(text: '${product.name}\n${_money(selected.price, selected.currency)}'));
-    if (mounted) showSpikeToast(context, 'تم نسخ بيانات المنتج للمشاركة');
+  Future<void> _shareProduct(ProductModel product, ProductVariant selected) async {
+    final text = '${product.name}\n${_money(selected.price, selected.currency)}';
+    try {
+      await Share.share(text, subject: product.name);
+    } catch (_) {
+      await Clipboard.setData(ClipboardData(text: text));
+      if (mounted) showSpikeToast(context, 'تم نسخ بيانات المنتج للمشاركة');
+    }
   }
 
   @override
@@ -127,7 +133,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 ),
               ),
               Positioned(top: 16, right: 18, child: _CircleAction(icon: LucideIcons.heart, active: _favorite, busy: _favoriteBusy, onTap: _toggleFavorite)),
-              Positioned(top: 16, left: 18, child: _CircleAction(icon: LucideIcons.share2, onTap: () => _copyProduct(product, selected))),
+              Positioned(top: 16, left: 18, child: _CircleAction(icon: LucideIcons.share2, onTap: () => _shareProduct(product, selected))),
               if (images.length > 1)
                 Positioned(
                   left: 0,
