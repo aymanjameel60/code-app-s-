@@ -82,6 +82,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     final old = selected.originalPrice;
     final discount = old != null && old > selected.price && selected.price > 0 ? ((old - selected.price) / old * 100).round() : 0;
     final addresses = ref.watch(addressesProvider);
+    final mutedIcon = Theme.of(context).colorScheme.onSurface.withValues(alpha: .24);
 
     return Stack(children: [
       ListView(padding: const EdgeInsets.only(bottom: 96), children: [
@@ -93,17 +94,17 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               color: Theme.of(context).colorScheme.surface,
               alignment: Alignment.center,
               child: images.isEmpty
-                  ? const Icon(LucideIcons.image, size: 60, color: Colors.black26)
-                  : CachedNetworkImage(imageUrl: images[i], fit: BoxFit.contain, width: double.infinity, errorWidget: (_, __, ___) => const Icon(LucideIcons.image, size: 60, color: Colors.black26)),
+                  ? Icon(LucideIcons.image, size: 60, color: mutedIcon)
+                  : CachedNetworkImage(imageUrl: images[i], fit: BoxFit.contain, width: double.infinity, errorWidget: (_, __, ___) => Icon(LucideIcons.image, size: 60, color: mutedIcon)),
             ),
           )),
-          Positioned(top: 10, right: 14, child: _round(LucideIcons.arrowRight, () => context.canPop() ? context.pop() : context.go('/'))),
-          Positioned(top: 10, left: 14, child: _round(LucideIcons.heart, _toggleFavorite, active: _favorite, busy: _favoriteBusy)),
-          if (discount > 0) Positioned(bottom: 14, right: 17, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: spikeRed, borderRadius: BorderRadius.circular(13)), child: Text('-$discount%', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)))),
+          Positioned(top: SpikeSpacing.md, right: SpikeSpacing.page, child: _round(LucideIcons.arrowRight, () => context.canPop() ? context.pop() : context.go('/'))),
+          Positioned(top: SpikeSpacing.md, left: SpikeSpacing.page, child: _round(LucideIcons.heart, _toggleFavorite, active: _favorite, busy: _favoriteBusy)),
+          if (discount > 0) Positioned(bottom: SpikeSpacing.lg, right: SpikeSpacing.page, child: Container(padding: const EdgeInsets.symmetric(horizontal: SpikeSpacing.md, vertical: SpikeSpacing.sm), decoration: BoxDecoration(color: spikeRed, borderRadius: BorderRadius.circular(13)), child: Text('-$discount%', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)))),
         ]),
         if (images.length > 1)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: SpikeSpacing.sm),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -112,7 +113,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   duration: const Duration(milliseconds: 180),
                   width: i == _galleryIndex ? 17 : 7,
                   height: 7,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  margin: const EdgeInsets.symmetric(horizontal: SpikeSpacing.xs / 2),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5),
                     color: i == _galleryIndex ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withValues(alpha: .12),
@@ -122,22 +123,22 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ),
           ),
         _block(children: [
-          if (product.storeId != null) InkWell(onTap: () => context.push('/store/${product.storeId}'), child: Row(children: [const Icon(LucideIcons.store, size: 16), const SizedBox(width: 6), Expanded(child: Text(product.storeName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))), const Icon(LucideIcons.chevronLeft, size: 16)])),
-          if (product.storeId != null) const SizedBox(height: 10),
+          if (product.storeId != null) InkWell(onTap: () => context.push('/store/${product.storeId}'), child: Row(children: [const Icon(LucideIcons.store, size: 16), const SizedBox(width: SpikeSpacing.sm), Expanded(child: Text(product.storeName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))), const Icon(LucideIcons.chevronLeft, size: 16)])),
+          if (product.storeId != null) const SizedBox(height: SpikeSpacing.md),
           Text(product.name, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, height: 1.45)),
-          const SizedBox(height: 8),
-          Row(children: [const Icon(Icons.star_rounded, size: 18, color: Color(0xFFF5B400)), const SizedBox(width: 4), Text(product.reviewCount > 0 && product.rating > 0 ? product.rating.toStringAsFixed(1) : '—', style: const TextStyle(fontWeight: FontWeight.w800)), if (product.reviewCount > 0) Text('  (${product.reviewCount} تقييم)', style: const TextStyle(fontSize: 11, color: spikeMuted))]),
-          const SizedBox(height: 12),
-          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)), if (old != null && old > selected.price) ...[const SizedBox(width: 9), Text(_money(old, selected.currency), style: const TextStyle(fontSize: 11, color: spikeRed, decoration: TextDecoration.lineThrough))]]),
-          const SizedBox(height: 9),
-          Row(children: [Icon(selected.stock > 0 ? LucideIcons.checkCircle2 : LucideIcons.xCircle, size: 16, color: selected.stock > 0 ? Colors.green : spikeRed), const SizedBox(width: 6), Expanded(child: Text(selected.stock > 0 ? (selected.stock <= 5 ? 'متوفر — تبقى ${selected.stock} فقط' : 'متوفر في المخزون') : 'غير متوفر حالياً', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)))]),
+          const SizedBox(height: SpikeSpacing.sm),
+          Row(children: [const Icon(Icons.star_rounded, size: 18, color: Color(0xFFF5B400)), const SizedBox(width: SpikeSpacing.xs), Text(product.reviewCount > 0 && product.rating > 0 ? product.rating.toStringAsFixed(1) : '—', style: const TextStyle(fontWeight: FontWeight.w800)), if (product.reviewCount > 0) Text('  (${product.reviewCount} تقييم)', style: const TextStyle(fontSize: 11, color: spikeMuted))]),
+          const SizedBox(height: SpikeSpacing.md),
+          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)), if (old != null && old > selected.price) ...[const SizedBox(width: SpikeSpacing.sm), Text(_money(old, selected.currency), style: const TextStyle(fontSize: 11, color: spikeRed, decoration: TextDecoration.lineThrough))]]),
+          const SizedBox(height: SpikeSpacing.sm),
+          Row(children: [Icon(selected.stock > 0 ? LucideIcons.checkCircle2 : LucideIcons.xCircle, size: 16, color: selected.stock > 0 ? Colors.green : spikeRed), const SizedBox(width: SpikeSpacing.sm), Expanded(child: Text(selected.stock > 0 ? (selected.stock <= 5 ? 'متوفر — تبقى ${selected.stock} فقط' : 'متوفر في المخزون') : 'غير متوفر حالياً', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)))]),
         ]),
         if (variants.length > 1) _block(children: [
           const Text('اختر الخيار', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 10),
+          const SizedBox(height: SpikeSpacing.md),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: SpikeSpacing.sm,
+            runSpacing: SpikeSpacing.sm,
             children: variants.map((v) => ChoiceChip(
               label: Text(v.title.isEmpty ? _money(v.price, v.currency) : v.title),
               selected: v.id == selected.id,
@@ -150,10 +151,10 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           ),
         ]),
         _deliveryBlock(context, addresses, selected),
-        _block(children: [const Text('تفاصيل المنتج', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)), const SizedBox(height: 9), Text((product.description ?? '').trim().isEmpty ? 'لا توجد تفاصيل إضافية لهذا المنتج حالياً.' : product.description!, style: const TextStyle(fontSize: 12, height: 1.7)), if (product.returnable) const Padding(padding: EdgeInsets.only(top: 10), child: Row(children: [Icon(LucideIcons.rotateCcw, size: 16), SizedBox(width: 7), Expanded(child: Text('هذا المنتج قابل للإرجاع حسب سياسة المتجر.', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)))]))]),
+        _block(children: [const Text('تفاصيل المنتج', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)), const SizedBox(height: SpikeSpacing.sm), Text((product.description ?? '').trim().isEmpty ? 'لا توجد تفاصيل إضافية لهذا المنتج حالياً.' : product.description!, style: const TextStyle(fontSize: 12, height: 1.7)), if (product.returnable) const Padding(padding: EdgeInsets.only(top: SpikeSpacing.md), child: Row(children: [Icon(LucideIcons.rotateCcw, size: 16), SizedBox(width: SpikeSpacing.sm), Expanded(child: Text('هذا المنتج قابل للإرجاع حسب سياسة المتجر.', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)))]))]),
         _reviewsBlock(product),
       ]),
-      Positioned(left: 0, right: 0, bottom: 0, child: SafeArea(top: false, child: Container(padding: const EdgeInsets.fromLTRB(17, 9, 17, 10), decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, border: const Border(top: BorderSide(color: Color(0x11000000)))), child: Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [const Text('السعر', style: TextStyle(fontSize: 9, color: spikeMuted)), Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900))])), SizedBox(height: 48, child: FilledButton.icon(style: FilledButton.styleFrom(backgroundColor: spikeRed, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))), onPressed: selected.id.isEmpty || selected.stock <= 0 ? null : () async { try { await ref.read(cartRepositoryProvider).add(variantId: selected.id); ref.invalidate(cartCountProvider); if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة'); } catch (e) { if (context.mounted) showSpikeToast(context, e.toString()); } }, icon: const Icon(LucideIcons.shoppingBag, size: 18), label: Text(selected.stock <= 0 ? 'غير متوفر' : 'إضافة إلى السلة', style: const TextStyle(fontWeight: FontWeight.w800))))])))),
+      Positioned(left: 0, right: 0, bottom: 0, child: SafeArea(top: false, child: Container(padding: const EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.sm, SpikeSpacing.page, SpikeSpacing.md), decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, border: Border(top: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .08)))), child: Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [const Text('السعر', style: TextStyle(fontSize: 9, color: spikeMuted)), Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900))])), SizedBox(height: 48, child: FilledButton.icon(style: FilledButton.styleFrom(backgroundColor: spikeRed, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(SpikeRadius.control))), onPressed: selected.id.isEmpty || selected.stock <= 0 ? null : () async { try { await ref.read(cartRepositoryProvider).add(variantId: selected.id); ref.invalidate(cartCountProvider); if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة'); } catch (e) { if (context.mounted) showSpikeToast(context, e.toString()); } }, icon: const Icon(LucideIcons.shoppingBag, size: 18), label: Text(selected.stock <= 0 ? 'غير متوفر' : 'إضافة إلى السلة', style: const TextStyle(fontWeight: FontWeight.w800))))])))),
     ]);
   }
 
@@ -162,11 +163,11 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       const Expanded(child: Text('تقييمات العملاء', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800))),
       if (product.reviewCount > 0) Text('${product.rating.toStringAsFixed(1)} / 5', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
     ]),
-    const SizedBox(height: 10),
+    const SizedBox(height: SpikeSpacing.md),
     FutureBuilder<List<Map<String, dynamic>>>(
       future: _reviewsFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: LinearProgressIndicator(minHeight: 2));
+        if (snapshot.connectionState == ConnectionState.waiting) return const Padding(padding: EdgeInsets.symmetric(vertical: SpikeSpacing.md), child: LinearProgressIndicator(minHeight: 2));
         if (snapshot.hasError) return const Text('تعذر تحميل التقييمات حالياً.', style: TextStyle(fontSize: 11, color: spikeMuted));
         final reviews = snapshot.data ?? const [];
         if (reviews.isEmpty) return const Text('لا توجد تقييمات لهذا المنتج بعد.', style: TextStyle(fontSize: 11, color: spikeMuted));
@@ -174,20 +175,20 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           for (final review in reviews.take(5)) ...[
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16)),
+              padding: const EdgeInsets.all(SpikeSpacing.md),
+              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(SpikeRadius.control)),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
                   Expanded(child: Text('${review['name'] ?? 'عميل'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800))),
-                  Row(children: [const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF5B400)), const SizedBox(width: 3), Text('${review['rating'] ?? '—'}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800))]),
+                  Row(children: [const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF5B400)), const SizedBox(width: SpikeSpacing.xs), Text('${review['rating'] ?? '—'}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800))]),
                 ]),
                 if ('${review['comment'] ?? ''}'.trim().isNotEmpty) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: SpikeSpacing.sm),
                   Text('${review['comment']}', style: const TextStyle(fontSize: 11, height: 1.6)),
                 ],
               ]),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: SpikeSpacing.sm),
           ],
         ]);
       },
@@ -195,14 +196,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   ]);
 
   Widget _round(IconData icon, VoidCallback onTap, {bool active = false, bool busy = false}) => Material(
-    color: Theme.of(context).colorScheme.surface,
+    color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : Colors.white,
     shape: const CircleBorder(),
     elevation: 1,
-    child: InkWell(onTap: busy ? null : onTap, customBorder: const CircleBorder(), child: SizedBox(width: 39, height: 39, child: busy ? const Padding(padding: EdgeInsets.all(11), child: CircularProgressIndicator(strokeWidth: 2)) : Icon(icon, size: 20, color: active ? spikeRed : Theme.of(context).colorScheme.onSurface))),
+    child: InkWell(onTap: busy ? null : onTap, customBorder: const CircleBorder(), child: SizedBox(width: 40, height: 40, child: busy ? const Padding(padding: EdgeInsets.all(11), child: CircularProgressIndicator(strokeWidth: 2)) : Icon(icon, size: 20, color: active ? spikeRed : Theme.of(context).colorScheme.onSurface))),
   );
 
   Widget _deliveryBlock(BuildContext context, AsyncValue<List<AddressModel>> addresses, ProductVariant selected) => _block(children: [
-    const Text('التوصيل', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)), const SizedBox(height: 6),
+    const Text('التوصيل', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)), const SizedBox(height: SpikeSpacing.sm),
     addresses.when(
       loading: () => const LinearProgressIndicator(minHeight: 2),
       error: (_, __) => Row(children: [const Expanded(child: Text('أضف عنواناً لمعرفة تكلفة التوصيل.')), TextButton(onPressed: () => context.push('/addresses'), child: const Text('العناوين'))]),
@@ -214,7 +215,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(LucideIcons.mapPin, size: 20), title: Text(active.label.isEmpty ? active.cityName : active.label, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text('${active.cityName} • ${active.addressLine}', maxLines: 1, overflow: TextOverflow.ellipsis), trailing: TextButton(onPressed: () => context.push('/addresses'), child: const Text('تغيير'))),
           if (_quoting) const LinearProgressIndicator(minHeight: 2),
-          if (!_quoting && _deliveryQuote != null) Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16)), child: Row(children: [const Icon(LucideIcons.truck, size: 18), const SizedBox(width: 8), const Expanded(child: Text('تكلفة التوصيل التقديرية')), Text('${_deliveryQuote!.shippingYerOld.round()} ر.ي قديم', style: const TextStyle(fontWeight: FontWeight.w800))])),
+          if (!_quoting && _deliveryQuote != null) Container(padding: const EdgeInsets.all(SpikeSpacing.md), decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(SpikeRadius.control)), child: Row(children: [const Icon(LucideIcons.truck, size: 18), const SizedBox(width: SpikeSpacing.sm), const Expanded(child: Text('تكلفة التوصيل التقديرية')), Text('${_deliveryQuote!.shippingYerOld.round()} ر.ي قديم', style: const TextStyle(fontWeight: FontWeight.w800))])),
         ]);
       },
     ),
@@ -235,7 +236,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     }
   }
 
-  Widget _block({required List<Widget> children}) => Container(margin: const EdgeInsets.fromLTRB(17, 10, 17, 0), padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(22)), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children));
+  Widget _block({required List<Widget> children}) => Container(margin: const EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.md, SpikeSpacing.page, 0), padding: const EdgeInsets.all(SpikeSpacing.lg), decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(SpikeRadius.card)), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children));
 
   String _money(double amount, String currency) {
     final c = currency.toUpperCase();
