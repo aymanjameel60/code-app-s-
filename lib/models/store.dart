@@ -1,21 +1,32 @@
 import '../core/api_config.dart';
 
 class StoreModel {
-  const StoreModel({required this.id, required this.name, this.logoUrl, this.rating = 0, this.reviewCount = 0});
+  const StoreModel({required this.id, required this.name, this.logoUrl, this.bannerUrl, this.categoryName, this.rating = 0, this.reviewCount = 0});
   final String id;
   final String name;
   final String? logoUrl;
+  final String? bannerUrl;
+  final String? categoryName;
   final double rating;
   final int reviewCount;
 
+  static String? _asset(dynamic value) {
+    final raw = '${value ?? ''}'.trim();
+    if (raw.isEmpty) return null;
+    if (raw.startsWith('http')) return raw;
+    if (raw.startsWith('/uploads/')) return '${ApiConfig.assetBaseUrl}$raw';
+    return raw;
+  }
+
   factory StoreModel.fromJson(Map<String, dynamic> j) {
-    final raw = '${j['logo_url'] ?? ''}'.trim();
     return StoreModel(
       id: '${j['id'] ?? ''}',
       name: '${j['name'] ?? ''}',
-      logoUrl: raw.isEmpty ? null : (raw.startsWith('http') ? raw : raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw),
-      rating: double.tryParse('${j['review_average'] ?? 0}') ?? 0,
-      reviewCount: int.tryParse('${j['review_count'] ?? 0}') ?? 0,
+      logoUrl: _asset(j['logo_url'] ?? j['logo']),
+      bannerUrl: _asset(j['banner_url'] ?? j['banner'] ?? j['cover_url']),
+      categoryName: '${j['category_name'] ?? j['category'] ?? ''}'.trim().isEmpty ? null : '${j['category_name'] ?? j['category']}',
+      rating: double.tryParse('${j['review_average'] ?? j['rating'] ?? 0}') ?? 0,
+      reviewCount: int.tryParse('${j['review_count'] ?? j['reviews'] ?? 0}') ?? 0,
     );
   }
 }
