@@ -8,7 +8,133 @@ import '../../../core/api_config.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 
-class ProfileScreen extends ConsumerWidget{const ProfileScreen({super.key});
-@override Widget build(BuildContext context,WidgetRef ref){final user=ref.watch(currentUserProvider),dark=Theme.of(context).brightness==Brightness.dark,panel=dark?spikeDarkPanel:spikePanel;return SafeArea(child:user.when(loading:()=>const SpikeLoading(),error:(e,_)=>SpikeErrorState(message:e.toString(),onRetry:()=>ref.invalidate(currentUserProvider)),data:(u){if(u==null)return Padding(padding:const EdgeInsets.all(SpikeSpacing.page),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[const Icon(LucideIcons.userRound,size:52),const SizedBox(height:SpikeSpacing.lg),const Text('سجّل الدخول للوصول إلى حسابك',style:TextStyle(fontSize:18,fontWeight:FontWeight.w800)),const SizedBox(height:SpikeSpacing.xl),SizedBox(width:double.infinity,height:48,child:FilledButton(style:FilledButton.styleFrom(backgroundColor:spikeRed),onPressed:()=>context.push('/login'),child:const Text('تسجيل الدخول'))),const SizedBox(height:SpikeSpacing.sm),TextButton(onPressed:()=>context.push('/signup'),child:const Text('إنشاء حساب جديد'))]));final avatar='${u['avatar_url']??u['avatarUrl']??''}';final avatarUrl=avatar.startsWith('/uploads/')?'${ApiConfig.assetBaseUrl}$avatar':avatar;return ListView(padding:SpikeSpacing.pageList,children:[const Center(child:Text('حسابي',style:TextStyle(fontSize:20,fontWeight:FontWeight.w800))),const SizedBox(height:SpikeSpacing.lg),InkWell(borderRadius:BorderRadius.circular(SpikeRadius.sheet),onTap:()=>context.push('/personal-data'),child:Container(padding:const EdgeInsets.all(SpikeSpacing.lg),decoration:BoxDecoration(color:panel,borderRadius:BorderRadius.circular(SpikeRadius.sheet)),child:Row(children:[CircleAvatar(radius:29,backgroundColor:Theme.of(context).colorScheme.surface,backgroundImage:avatarUrl.isEmpty?null:CachedNetworkImageProvider(avatarUrl),child:avatarUrl.isEmpty?const Icon(LucideIcons.userRound):null),const SizedBox(width:SpikeSpacing.md),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('${u['name']??''}',maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:17,fontWeight:FontWeight.w800)),const SizedBox(height:SpikeSpacing.xs),Text('${u['phone']??u['email']??''}',maxLines:1,overflow:TextOverflow.ellipsis,style:TextStyle(fontSize:11,color:Theme.of(context).colorScheme.onSurface.withValues(alpha:.58)))])),Container(width:36,height:36,alignment:Alignment.center,decoration:BoxDecoration(color:Theme.of(context).colorScheme.surface,borderRadius:BorderRadius.circular(SpikeSpacing.md)),child:const Icon(LucideIcons.pencil,size:16))]))),const SizedBox(height:SpikeSpacing.md),_group(context,[ _Entry(LucideIcons.shoppingBag,'طلباتي','متابعة الطلبات وحالتها',()=>context.push('/orders')),_Entry(LucideIcons.heart,'المفضلة','المنتجات المحفوظة',()=>context.push('/favorites')),_Entry(LucideIcons.mapPin,'عناويني','إدارة عناوين التوصيل',()=>context.push('/addresses'))]),const SizedBox(height:SpikeSpacing.md),_group(context,[_Entry(LucideIcons.rotateCcw,'المرتجعات والاستردادات',null,()=>context.push('/returns-refunds')),_Entry(LucideIcons.star,'التقييمات',null,()=>context.push('/reviews')),_Entry(LucideIcons.bell,'الإشعارات',null,()=>context.push('/notifications')),_Entry(LucideIcons.messageCircle,'خدمة العملاء',null,()=>context.push('/support')),_Entry(LucideIcons.settings,'الإعدادات',null,()=>context.push('/settings'))]),const SizedBox(height:SpikeSpacing.lg),SizedBox(height:46,child:OutlinedButton.icon(style:OutlinedButton.styleFrom(foregroundColor:spikeRed,side:BorderSide(color:spikeRed.withValues(alpha:.16)),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(SpikeRadius.control))),onPressed:()async{await ref.read(authRepositoryProvider).logout();ref.invalidate(currentUserProvider);if(context.mounted)context.go('/profile');},icon:const Icon(LucideIcons.logOut,size:18),label:const Text('تسجيل الخروج',style:TextStyle(fontWeight:FontWeight.w800))))]);}));}
-Widget _group(BuildContext context,List<_Entry>items){final dark=Theme.of(context).brightness==Brightness.dark;return Container(decoration:BoxDecoration(color:dark?spikeDarkPanel:spikePanel,borderRadius:BorderRadius.circular(SpikeRadius.card)),clipBehavior:Clip.antiAlias,child:Column(children:[for(int i=0;i<items.length;i++)...[ListTile(contentPadding:const EdgeInsets.symmetric(horizontal:SpikeSpacing.lg,vertical:SpikeSpacing.xs),onTap:items[i].tap,leading:Icon(items[i].icon,size:20),title:Text(items[i].title,style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),subtitle:items[i].subtitle==null?null:Text(items[i].subtitle!,style:const TextStyle(fontSize:10,color:spikeMuted)),trailing:const Icon(LucideIcons.chevronLeft,size:17)),if(i<items.length-1)Divider(height:1,indent:56,endIndent:SpikeSpacing.lg,color:Theme.of(context).colorScheme.onSurface.withValues(alpha:.08))] ]));}}
-class _Entry{const _Entry(this.icon,this.title,this.subtitle,this.tap);final IconData icon;final String title;final String?subtitle;final VoidCallback tap;}
+class ProfileScreen extends ConsumerWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    return SafeArea(
+      child: user.when(
+        loading: () => const SpikeLoading(),
+        error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(currentUserProvider)),
+        data: (u) {
+          if (u == null) {
+            return Padding(
+              padding: const EdgeInsets.all(17),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(LucideIcons.userRound, size: 52),
+                  const SizedBox(height: 16),
+                  const Text('سجّل الدخول للوصول إلى حسابك', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 24),
+                  SizedBox(width: double.infinity, height: 38, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: () => context.push('/login'), child: const Text('تسجيل الدخول'))),
+                  const SizedBox(height: 8),
+                  TextButton(onPressed: () => context.push('/signup'), child: const Text('إنشاء حساب جديد')),
+                ],
+              ),
+            );
+          }
+
+          final raw = '${u['avatar_url'] ?? u['avatarUrl'] ?? ''}';
+          final avatar = raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw;
+          final name = '${u['name'] ?? ''}';
+          final phone = '${u['phone'] ?? ''}';
+          final email = '${u['email'] ?? ''}';
+
+          return ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              const _SimpleTitle('الملف الشخصي'),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 35,
+                      backgroundColor: spikeRed,
+                      backgroundImage: avatar.isEmpty ? null : CachedNetworkImageProvider(avatar),
+                      child: avatar.isEmpty ? const Icon(LucideIcons.userRound, size: 28, color: Colors.white) : null,
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        'مرحباً $name${phone.isNotEmpty ? '\n$phone' : ''}${email.isNotEmpty ? '\n$email' : ''}',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, height: 1.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 17),
+                child: Column(
+                  children: [
+                    _row(context, LucideIcons.userRound, 'البيانات الشخصية', () => context.push('/personal-data')),
+                    const SizedBox(height: 16),
+                    _row(context, LucideIcons.heart, 'المفضلة', () => context.push('/favorites')),
+                    const SizedBox(height: 16),
+                    _row(context, LucideIcons.packageCheck, 'طلباتي', () => context.push('/orders')),
+                    const SizedBox(height: 16),
+                    _row(context, LucideIcons.messagesSquare, 'خدمة العملاء', () => context.push('/support')),
+                    const SizedBox(height: 16),
+                    _row(context, LucideIcons.shieldCheck, 'سياسة الخصوصية', () => context.push('/privacy')),
+                    const SizedBox(height: 16),
+                    _row(context, LucideIcons.settings2, 'الإعدادات المتقدمة', () => context.push('/settings')),
+                    const SizedBox(height: 16),
+                    _row(
+                      context,
+                      LucideIcons.logOut,
+                      'تسجيل الخروج',
+                      () async {
+                        await ref.read(authRepositoryProvider).logout();
+                        ref.invalidate(currentUserProvider);
+                        if (context.mounted) context.go('/profile');
+                      },
+                      danger: true,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _row(BuildContext context, IconData icon, String label, VoidCallback onTap, {bool danger = false}) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Material(
+      color: dark ? spikeDarkPanel : spikePanel,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: SizedBox(
+          height: 39,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22),
+            child: Row(
+              children: [
+                Icon(icon, size: 21, color: danger ? spikeRed : Theme.of(context).colorScheme.onSurface),
+                const SizedBox(width: 12),
+                Expanded(child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: danger ? spikeRed : null))),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SimpleTitle extends StatelessWidget {
+  const _SimpleTitle(this.title);
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => const SizedBox(height: 60, child: Center(child: Text('الملف الشخصي', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700))));
+}
