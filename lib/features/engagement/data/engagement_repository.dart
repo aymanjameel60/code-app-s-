@@ -10,6 +10,7 @@ class EngagementRepository {
   Future<void> readNotification(String id) async{await _api.post('/notifications/$id/read',auth:true);}
   Future<void> readAllNotifications() async{await _api.post('/notifications/read-all',auth:true);}
 
+  Future<List<Map<String,dynamic>>> productReviews(String productId) async{final d=await _api.get('/products/$productId/reviews');return (d['reviews'] as List? ?? const []).whereType<Map>().map((e)=>Map<String,dynamic>.from(e)).toList();}
   Future<List<Map<String,dynamic>>> reviewable() async{final d=await _api.get('/reviews/reviewable',auth:true);return (d['items'] as List? ?? const []).whereType<Map>().map((e)=>Map<String,dynamic>.from(e)).toList();}
   Future<void> reviewProduct({required String orderItemId,required int rating,String? comment}) async{await _api.post('/reviews/product',auth:true,data:{'order_item_id':orderItemId,'rating':rating,'comment':comment});}
   Future<void> reviewStore({required String suborderId,required int rating,String? comment}) async{await _api.post('/reviews/store',auth:true,data:{'suborder_id':suborderId,'rating':rating,'comment':comment});}
