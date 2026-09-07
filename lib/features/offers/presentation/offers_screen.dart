@@ -91,8 +91,11 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(18, 22, 18, MediaQuery.viewInsetsOf(sheetContext).bottom + 26),
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Center(child: Container(width: 42, height: 4, decoration: BoxDecoration(color: Theme.of(sheetContext).dividerColor, borderRadius: BorderRadius.circular(5)))),
+              const SizedBox(height: 16),
               Row(children: [
                 const Expanded(child: Text('فلترة وترتيب العروض', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
+                IconButton(onPressed: () => Navigator.pop(sheetContext), icon: const Icon(LucideIcons.x, size: 20)),
                 TextButton(
                   onPressed: () => setLocal(() {
                     localSort = 'discount_desc';
@@ -272,12 +275,15 @@ class _FilterGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Container(
+          padding: const EdgeInsets.all(13),
+          decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(16)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
           const SizedBox(height: 9),
           Wrap(spacing: 8, runSpacing: 8, children: children),
-        ]),
+        ])),
       );
 }
 
@@ -294,9 +300,9 @@ class _Chip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
           decoration: BoxDecoration(
-            color: selected ? Theme.of(context).colorScheme.onSurface : (Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel),
+            color: selected ? spikeRed : (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF24252A) : const Color(0xFFF1F1F1)),
             borderRadius: BorderRadius.circular(17),
-            border: Border.all(color: selected ? Theme.of(context).colorScheme.onSurface : Theme.of(context).dividerColor),
+            border: Border.all(color: selected ? spikeRed : Theme.of(context).dividerColor),
           ),
           child: Text(label, style: TextStyle(fontSize: 10, color: selected ? Theme.of(context).colorScheme.surface : null)),
         ),
