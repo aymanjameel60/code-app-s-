@@ -11,9 +11,9 @@ class MainShell extends ConsumerWidget {
   final String location;
 
   int get _index {
-    if (location.startsWith('/profile')) return 0;
     if (location.startsWith('/offers')) return 1;
-    if (location.startsWith('/cart')) return 3;
+    if (location.startsWith('/cart') || location.startsWith('/checkout')) return 3;
+    if (const ['/profile', '/personal-data', '/privacy', '/settings', '/favorites', '/orders', '/order/', '/returns-refunds', '/support', '/login', '/signup'].any(location.startsWith)) return 0;
     return 2;
   }
 
@@ -45,7 +45,7 @@ class MainShell extends ConsumerWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Expanded(
       child: InkWell(
-        onTap: () { if (index == 0) { Scaffold.of(context).openEndDrawer(); } else { context.go(route); } },
+        onTap: () { if (!selected) context.go(route); },
         child: Center(
           child: SizedBox(
             width: 48,
