@@ -124,6 +124,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
   bool receiptBusy = false;
   String? returnBusyId;
   String? reviewBusyId;
+  String? storeReviewBusyId;
 
   String _asset(String raw) => raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw;
 
@@ -179,6 +180,36 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
     } finally {
       comment.dispose();
       if (mounted) setState(() => reviewBusyId = null);
+    }
+  }
+
+  Future<void> _reviewStore(Map<String, dynamic> store) async {
+    final comment = TextEditingController();
+    int rating = 5;
+    final submit = await showModalBottomSheet<bool>(context: context, isScrollControlled: true, builder: (sheetContext) => StatefulBuilder(builder: (_, setSheetState) => Padding(
+      padding: EdgeInsets.fromLTRB(17, 18, 17, MediaQuery.viewInsetsOf(sheetContext).bottom + 20),
+      child: SafeArea(top: false, child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text('تقييم متجر ${store['store_name'] ?? ''}', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<int>(value: rating, items: [5, 4, 3, 2, 1].map((v) => DropdownMenuItem(value: v, child: Text('${'★' * v}${'☆' * (5 - v)}'))).toList(), onChanged: (v) => setSheetState(() => rating = v ?? 5)),
+        const SizedBox(height: 10),
+        TextField(controller: comment, maxLines: 3, decoration: const InputDecoration(hintText: 'تعليقك - اختياري')),
+        const SizedBox(height: 12),
+        FilledButton(onPressed: () => Navigator.pop(sheetContext, true), style: FilledButton.styleFrom(backgroundColor: spikeRed), child: const Text('إرسال تقييم المتجر')),
+      ])),
+    )));
+    if (submit != true) { comment.dispose(); return; }
+    final id = '${store['suborder_id'] ?? store['id'] ?? ''}';
+    setState(() => storeReviewBusyId = id);
+    try {
+      await ref.read(engagementRepositoryProvider).reviewStore(suborderId: id, rating: rating, comment: comment.text.trim().isEmpty ? null : comment.text.trim());
+      ref.invalidate(orderDetailsProvider(widget.id));
+      if (mounted) showSpikeToast(context, 'تم إرسال تقييم المتجر');
+    } catch (e) {
+      if (mounted) showSpikeToast(context, e.toString());
+    } finally {
+      comment.dispose();
+      if (mounted) setState(() => storeReviewBusyId = null);
     }
   }
 
@@ -315,6 +346,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                     Row(children: [Expanded(child: Text('${s['store_name'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.w900))), _pill(_status('${s['status'] ?? ''}'), _statusColor('${s['status'] ?? ''}'))]),
                     if (s['delivery_office_name'] != null) Padding(padding: const EdgeInsets.only(top: SpikeSpacing.sm), child: _info(LucideIcons.truck, 'مكتب التوصيل', '${s['delivery_office_name']}')),
                     if (s['shipping_total'] != null) _info(LucideIcons.banknote, 'تكلفة التوصيل', '${s['shipping_total']} ${s['currency_code'] ?? ''}'),
+                    if (s['can_review_store'] == true) Padding(padding: const EdgeInsets.only(top: SpikeSpacing.md), child: OutlinedButton.icon(onPressed: storeReviewBusyId == '${s['suborder_id'] ?? s['id'] ?? ''}' ? null : () => _reviewStore(s), icon: const Icon(LucideIcons.star, size: 16), label: Text(storeReviewBusyId == '${s['suborder_id'] ?? s['id'] ?? ''}' ? 'جاري الإرسال...' : 'إرسال تقييم المتجر'))),
                   ])),
               ],
               const SizedBox(height: SpikeSpacing.sm),
