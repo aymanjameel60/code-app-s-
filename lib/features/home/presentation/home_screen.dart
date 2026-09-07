@@ -96,7 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
             _SectionTitle(title: 'المتاجر', showAll: data.stores.isNotEmpty, onShowAll: () => context.push('/stores')),
             _StoresStrip(stores: data.stores, onTap: (s) => context.push('/store/${s.id}')),
-            const SizedBox(height: 18),
+            const SizedBox(height: SpikeSpacing.xl),
           ]),
         );
       },
@@ -149,17 +149,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final current = ref.read(appSettingsProvider).currency;
     await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (sheetContext) => SafeArea(child: Padding(
-        padding: const EdgeInsets.fromLTRB(17, 10, 17, 22),
+        padding: SpikeSpacing.sheet,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Container(width: 44, height: 4, decoration: BoxDecoration(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .12), borderRadius: BorderRadius.circular(3))),
-          const SizedBox(height: 14),
+          const SizedBox(height: SpikeSpacing.lg),
           Row(children: [const Expanded(child: Text('اختر العملة', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700))), IconButton(onPressed: () => Navigator.pop(sheetContext), icon: const Icon(LucideIcons.x))]),
-          if (currencies.isEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 18), child: Text('لا توجد عملات متاحة حالياً', style: TextStyle(color: spikeMuted))),
+          if (currencies.isEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: SpikeSpacing.lg), child: Text('لا توجد عملات متاحة حالياً', style: TextStyle(color: spikeMuted))),
           for (final c in currencies) ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
             title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.w700)),
             subtitle: Text(c.code),
             trailing: Icon(current == c.code ? Icons.radio_button_checked : Icons.radio_button_off, color: current == c.code ? spikeRed : null),
@@ -214,9 +211,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           : ListView.separated(
               reverse: true,
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 17),
+              padding: SpikeSpacing.pageHorizontal,
               itemCount: products.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              separatorBuilder: (_, __) => const SizedBox(width: SpikeSpacing.md),
               itemBuilder: (context, i) {
                 final p = products[i];
                 return SpikeProductCard(
@@ -241,16 +238,16 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(17, 8, 17, 0),
+    padding: const EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.sm, SpikeSpacing.page, 0),
     child: Column(children: [
       SizedBox(height: 64, child: Row(children: [
         const SizedBox(width: 58, height: 38, child: Center(child: Text('SPIKE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -.5)))),
-        Expanded(child: TextButton(onPressed: onAddress, style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface, padding: const EdgeInsets.symmetric(horizontal: 4)), child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [const Icon(LucideIcons.chevronDown, size: 17), const SizedBox(width: 3), Flexible(child: Text(address, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)))]))),
-        SizedBox(width:48,height:48,child:Stack(clipBehavior:Clip.none,alignment:Alignment.center,children:[IconButton(onPressed:onNotifications,icon:const Icon(LucideIcons.bell,size:22)),if(unread>0)Positioned(left:3,top:3,child:Container(constraints:const BoxConstraints(minWidth:17,minHeight:17),padding:const EdgeInsets.symmetric(horizontal:4),alignment:Alignment.center,decoration:const BoxDecoration(color:spikeRed,shape:BoxShape.circle),child:Text(unread>99?'99+':'$unread',style:const TextStyle(color:Colors.white,fontSize:8,fontWeight:FontWeight.w900))))])),
+        Expanded(child: TextButton(onPressed: onAddress, style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface, padding: const EdgeInsets.symmetric(horizontal: SpikeSpacing.xs)), child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [const Icon(LucideIcons.chevronDown, size: 17), const SizedBox(width: SpikeSpacing.xs), Flexible(child: Text(address, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)))]))),
+        SizedBox(width:48,height:48,child:Stack(clipBehavior:Clip.none,alignment:Alignment.center,children:[IconButton(onPressed:onNotifications,icon:const Icon(LucideIcons.bell,size:22)),if(unread>0)Positioned(left:3,top:3,child:Container(constraints:const BoxConstraints(minWidth:17,minHeight:17),padding:const EdgeInsets.symmetric(horizontal:SpikeSpacing.xs),alignment:Alignment.center,decoration:const BoxDecoration(color:spikeRed,shape:BoxShape.circle),child:Text(unread>99?'99+':'$unread',style:const TextStyle(color:Colors.white,fontSize:8,fontWeight:FontWeight.w900))))])),
       ])),
       Row(children: [
-        Expanded(child: InkWell(onTap: onSearch, borderRadius: BorderRadius.circular(22), child: Container(height: 39, padding: const EdgeInsets.symmetric(horizontal: 14), decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikeField, borderRadius: BorderRadius.circular(22)), child: const Row(children: [Icon(LucideIcons.search, size: 20), SizedBox(width: 10), Expanded(child: Text('ابحث عن المنتجات ...', style: TextStyle(fontSize: 12, color: spikeMuted)))])))),
-        const SizedBox(width: 9),
+        Expanded(child: InkWell(onTap: onSearch, borderRadius: BorderRadius.circular(22), child: Container(height: 39, padding: const EdgeInsets.symmetric(horizontal: SpikeSpacing.md), decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikeField, borderRadius: BorderRadius.circular(22)), child: const Row(children: [Icon(LucideIcons.search, size: 20), SizedBox(width: SpikeSpacing.sm), Expanded(child: Text('ابحث عن المنتجات ...', style: TextStyle(fontSize: 12, color: spikeMuted)))])))),
+        const SizedBox(width: SpikeSpacing.sm),
         InkWell(onTap: onCurrency, borderRadius: BorderRadius.circular(22), child: Container(width: 53, height: 39, alignment: Alignment.center, decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikeField, borderRadius: BorderRadius.circular(22)), child: Text(currency, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)))),
       ]),
     ]),
@@ -263,15 +260,15 @@ class _AnnouncementCard extends StatelessWidget {
   final VoidCallback onDismiss;
   @override
   Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.fromLTRB(17, 14, 17, 0),
-    padding: const EdgeInsets.fromLTRB(13, 10, 8, 10),
-    decoration: BoxDecoration(color: spikeRed.withValues(alpha: .08), borderRadius: BorderRadius.circular(18), border: Border.all(color: spikeRed.withValues(alpha: .15))),
+    margin: const EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.lg, SpikeSpacing.page, 0),
+    padding: const EdgeInsets.fromLTRB(SpikeSpacing.md, SpikeSpacing.sm, SpikeSpacing.sm, SpikeSpacing.sm),
+    decoration: BoxDecoration(color: spikeRed.withValues(alpha: Theme.of(context).brightness == Brightness.dark ? .14 : .08), borderRadius: BorderRadius.circular(18), border: Border.all(color: spikeRed.withValues(alpha: Theme.of(context).brightness == Brightness.dark ? .28 : .15))),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Padding(padding: EdgeInsets.only(top: 2), child: Icon(LucideIcons.megaphone, size: 18, color: spikeRed)),
-      const SizedBox(width: 9),
+      const SizedBox(width: SpikeSpacing.sm),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('${item['title'] ?? ''}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
-        if ('${item['body'] ?? ''}'.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 3), child: Text('${item['body']}', style: const TextStyle(fontSize: 10, height: 1.5))),
+        if ('${item['body'] ?? ''}'.isNotEmpty) Padding(padding: const EdgeInsets.only(top: SpikeSpacing.xs), child: Text('${item['body']}', style: const TextStyle(fontSize: 10, height: 1.5))),
       ])),
       IconButton(onPressed: onDismiss, icon: const Icon(LucideIcons.x, size: 17), visualDensity: VisualDensity.compact),
     ]),
@@ -303,7 +300,7 @@ class _BannerCarouselState extends State<_BannerCarousel> {
     return '$h:$m:$s';
   }
   @override Widget build(BuildContext context)=>Padding(
-    padding:const EdgeInsets.fromLTRB(18,16,18,0),
+    padding:const EdgeInsets.fromLTRB(SpikeSpacing.page,SpikeSpacing.lg,SpikeSpacing.page,0),
     child:Column(children:[
       SizedBox(height:130,child:PageView.builder(controller:widget.controller,itemCount:widget.items.length,onPageChanged:widget.onPageChanged,itemBuilder:(context,i){
         final item=widget.items[i],remaining=_remaining(item);
@@ -312,7 +309,7 @@ class _BannerCarouselState extends State<_BannerCarousel> {
           if(remaining.isNotEmpty)Positioned(left:10,bottom:10,child:Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:6),decoration:BoxDecoration(color:Colors.black.withValues(alpha:.72),borderRadius:BorderRadius.circular(14)),child:Row(mainAxisSize:MainAxisSize.min,children:[const Icon(LucideIcons.clock3,size:14,color:Colors.white),const SizedBox(width:5),Text(remaining,style:const TextStyle(color:Colors.white,fontWeight:FontWeight.w900,fontSize:12,fontFeatures:[FontFeature.tabularFigures()]))]))),
         ])));
       })),
-      SizedBox(height:22,child:Row(mainAxisAlignment:MainAxisAlignment.center,children:List.generate(widget.items.length,(i)=>AnimatedContainer(duration:const Duration(milliseconds:180),width:i==widget.index?17:7,height:7,margin:const EdgeInsets.symmetric(horizontal:2),decoration:BoxDecoration(borderRadius:BorderRadius.circular(5),color:i==widget.index?Theme.of(context).colorScheme.onSurface.withValues(alpha:.4):Theme.of(context).colorScheme.onSurface.withValues(alpha:.12))))))
+      SizedBox(height:SpikeSpacing.xl,child:Row(mainAxisAlignment:MainAxisAlignment.center,children:List.generate(widget.items.length,(i)=>AnimatedContainer(duration:const Duration(milliseconds:180),width:i==widget.index?17:7,height:7,margin:const EdgeInsets.symmetric(horizontal:2),decoration:BoxDecoration(borderRadius:BorderRadius.circular(5),color:i==widget.index?Theme.of(context).colorScheme.onSurface.withValues(alpha:.4):Theme.of(context).colorScheme.onSurface.withValues(alpha:.12))))))
     ])
   );
 }
@@ -323,7 +320,7 @@ class _SectionTitle extends StatelessWidget {
   final bool showAll;
   final VoidCallback? onShowAll;
   @override
-  Widget build(BuildContext context) => Padding(padding: const EdgeInsets.symmetric(horizontal: 17), child: SizedBox(height: 48, child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)), if (showAll) TextButton(onPressed: onShowAll, child: const Text('عرض الكل', style: TextStyle(fontSize: 12)))])));
+  Widget build(BuildContext context) => Padding(padding: SpikeSpacing.pageHorizontal, child: SizedBox(height: 52, child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)), if (showAll) TextButton(onPressed: onShowAll, child: const Text('عرض الكل', style: TextStyle(fontSize: 12)))])));
 }
 
 class _CategoriesGrid extends StatelessWidget {
@@ -333,9 +330,10 @@ class _CategoriesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (categories.isEmpty) return const SpikeEmptyState(message: 'لا توجد أقسام منشورة بعد');
-    return Padding(padding: const EdgeInsets.symmetric(horizontal: 17), child: GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: categories.length, gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, crossAxisSpacing: 11, mainAxisSpacing: 13, childAspectRatio: .78), itemBuilder: (context, i) {
+    final placeholderColor = Theme.of(context).colorScheme.onSurface.withValues(alpha: .22);
+    return Padding(padding: SpikeSpacing.pageHorizontal, child: GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: categories.length, gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, crossAxisSpacing: SpikeSpacing.md, mainAxisSpacing: SpikeSpacing.md, childAspectRatio: .78), itemBuilder: (context, i) {
       final c = categories[i];
-      return InkWell(onTap: () => onTap(c), borderRadius: BorderRadius.circular(21), child: Column(children: [Container(width: 81, height: 81, clipBehavior: Clip.antiAlias, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(21)), child: c.imageUrl == null ? const Icon(LucideIcons.image, color: Colors.black26) : CachedNetworkImage(imageUrl: c.imageUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => const Icon(LucideIcons.image, color: Colors.black26))), const SizedBox(height: 7), Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, height: 1.2))]));
+      return InkWell(onTap: () => onTap(c), borderRadius: BorderRadius.circular(21), child: Column(children: [Container(width: 81, height: 81, clipBehavior: Clip.antiAlias, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(21)), child: c.imageUrl == null ? Icon(LucideIcons.image, color: placeholderColor) : CachedNetworkImage(imageUrl: c.imageUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => Icon(LucideIcons.image, color: placeholderColor))), const SizedBox(height: SpikeSpacing.sm), Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, height: 1.2))]));
     }));
   }
 }
@@ -345,7 +343,7 @@ class _CollectionsStrip extends StatelessWidget {
   final List<CollectionModel> collections;
   final ValueChanged<CollectionModel> onTap;
   @override
-  Widget build(BuildContext context) => SizedBox(height: 111, child: ListView.separated(reverse: true, scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 2), itemCount: collections.length, separatorBuilder: (_, __) => const SizedBox(width: 12), itemBuilder: (context, i) {
+  Widget build(BuildContext context) => SizedBox(height: 111, child: ListView.separated(reverse: true, scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: SpikeSpacing.page, vertical: SpikeSpacing.xs), itemCount: collections.length, separatorBuilder: (_, __) => const SizedBox(width: SpikeSpacing.md), itemBuilder: (context, i) {
     final c = collections[i];
     return GestureDetector(onTap: () => onTap(c), child: ClipRRect(borderRadius: BorderRadius.circular(12), child: SizedBox(width: 153, height: 101, child: c.imageUrl == null ? Container(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .08)) : CachedNetworkImage(imageUrl: c.imageUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => Container(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .08))))));
   }));
@@ -363,9 +361,9 @@ class _StoresStrip extends StatelessWidget {
       child: ListView.separated(
         reverse: true,
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 17),
+        padding: SpikeSpacing.pageHorizontal,
         itemCount: stores.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 11),
+        separatorBuilder: (_, __) => const SizedBox(width: SpikeSpacing.md),
         itemBuilder: (context, i) {
           final store = stores[i];
           return InkWell(
@@ -374,7 +372,7 @@ class _StoresStrip extends StatelessWidget {
             child: Container(
               width: 164,
               height: 76,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: SpikeSpacing.md),
               decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(22)),
               child: Row(children: [
                 Container(
@@ -386,7 +384,7 @@ class _StoresStrip extends StatelessWidget {
                       ? const Icon(LucideIcons.store, size: 20, color: spikeMuted)
                       : CachedNetworkImage(imageUrl: store.logoUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => const Icon(LucideIcons.store, size: 20, color: spikeMuted)),
                 ),
-                const SizedBox(width: 9),
+                const SizedBox(width: SpikeSpacing.sm),
                 Expanded(child: Text(store.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800))),
               ]),
             ),
