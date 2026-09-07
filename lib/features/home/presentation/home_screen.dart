@@ -37,6 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final home = ref.watch(homeDataProvider);
     final activeAddress = ref.watch(activeAddressProvider).valueOrNull;
+    final brandingLogo = ref.watch(brandingLogoProvider).valueOrNull;
     final settings = ref.watch(appSettingsProvider);
     ref.watch(currenciesProvider);
     final announcements = ref.watch(announcementsProvider).valueOrNull ?? const <Map<String, dynamic>>[];
@@ -63,6 +64,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               padding: EdgeInsets.zero,
               children: [
                 _Header(
+                  logoUrl: brandingLogo,
                   address: activeAddress == null ? 'اختر عنوان التوصيل' : '${activeAddress.cityName} - ${activeAddress.label}',
                   currency: _currencySymbol(settings.currency),
                   unread: unreadNotifications,
@@ -284,6 +286,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
 class _Header extends StatelessWidget {
   const _Header({
+    this.logoUrl,
     required this.address,
     required this.currency,
     required this.unread,
@@ -294,6 +297,7 @@ class _Header extends StatelessWidget {
     required this.onMenu,
   });
 
+  final String? logoUrl;
   final String address;
   final String currency;
   final int unread;
@@ -312,7 +316,7 @@ class _Header extends StatelessWidget {
         SizedBox(
           height: 64,
           child: Row(children: [
-            const SizedBox(width: 53, height: 38, child: Center(child: Text('SPIKE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -.5))),),
+            SizedBox(width: 53, height: 38, child: Center(child: logoUrl == null ? const Text('SPIKE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -.5)) : CachedNetworkImage(imageUrl: logoUrl!, fit: BoxFit.contain, errorWidget: (_, __, ___) => const Text('SPIKE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -.5))))),
             const SizedBox(width: 8),
             Expanded(
               child: TextButton(
