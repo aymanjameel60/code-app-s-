@@ -168,7 +168,7 @@ class SpikeProductCard extends StatelessWidget {
                           const Icon(Icons.star_rounded, size: 15, color: Color(0xFFF5B400)),
                           const SizedBox(width: 3),
                           Text(
-                            product.reviewCount > 0 ? product.rating.toStringAsFixed(1) : '4.5',
+                            product.reviewCount > 0 ? product.rating.toStringAsFixed(1) : '—',
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                           ),
                           if (product.reviewCount > 0)
