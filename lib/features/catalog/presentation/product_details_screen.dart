@@ -97,7 +97,26 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           Positioned(top: 10, left: 14, child: _round(LucideIcons.heart, _toggleFavorite, active: _favorite, busy: _favoriteBusy)),
           if (discount > 0) Positioned(bottom: 14, right: 17, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: spikeRed, borderRadius: BorderRadius.circular(13)), child: Text('-$discount%', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)))),
         ]),
-        if (images.length > 1) Padding(padding: const EdgeInsets.only(top: 8), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(images.length, (i) => AnimatedContainer(duration: const Duration(milliseconds: 180), width: i == _galleryIndex ? 17 : 7, height: 7, margin: const EdgeInsets.symmetric(horizontal: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: i == _galleryIndex ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withValues(alpha: .12))))),
+        if (images.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                images.length,
+                (i) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: i == _galleryIndex ? 17 : 7,
+                  height: 7,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: i == _galleryIndex ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withValues(alpha: .12),
+                  ),
+                ),
+              ),
+            ),
+          ),
         _block(children: [
           if (product.storeId != null) InkWell(onTap: () => context.push('/store/${product.storeId}'), child: Row(children: [const Icon(LucideIcons.store, size: 16), const SizedBox(width: 6), Expanded(child: Text(product.storeName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))), const Icon(LucideIcons.chevronLeft, size: 16)])),
           if (product.storeId != null) const SizedBox(height: 10),
