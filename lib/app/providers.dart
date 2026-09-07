@@ -27,7 +27,7 @@ final storesProvider=FutureProvider<List<StoreModel>>((ref)=>ref.watch(catalogRe
 final allProductsProvider=FutureProvider<List<ProductModel>>((ref)=>ref.watch(catalogRepositoryProvider).products());
 final cartRepositoryProvider=Provider<CartRepository>((ref)=>CartRepository(ref.watch(apiClientProvider),ref.watch(tokenStorageProvider)));
 final cartCountProvider=FutureProvider.autoDispose<int>((ref)async{try{final cart=await ref.watch(cartRepositoryProvider).load();return cart.items.fold<int>(0,(sum,item)=>sum+item.quantity);}catch(_){return 0;}});
-final engagementRepositoryProvider=Provider<EngagementRepository>((ref)=>EngagementRepository(ref.watch(apiClientProvider)));
+final engagementRepositoryProvider=Provider<EngagementRepository>((ref)=>EngagementRepository(ref.watch(apiClientProvider), ref.watch(tokenStorageProvider)));
 final notificationsDataProvider=FutureProvider.autoDispose<Map<String,dynamic>>((ref)async{try{return await ref.watch(engagementRepositoryProvider).notifications();}catch(_){return const{'notifications':<dynamic>[]};}});
 final unreadNotificationsProvider=Provider<int>((ref){final data=ref.watch(notificationsDataProvider).valueOrNull;final raw=data?['notifications'];final items=(raw is List?raw:const<dynamic>[]).whereType<Map>();return items.where((n)=>n['read_at']==null).length;});
 final wishlistIdsProvider=FutureProvider.autoDispose<Set<String>>((ref)async=>(await ref.watch(engagementRepositoryProvider).wishlistIds()).toSet());
