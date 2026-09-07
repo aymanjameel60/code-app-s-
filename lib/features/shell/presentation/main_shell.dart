@@ -29,12 +29,12 @@ class MainShell extends ConsumerWidget {
         child: Container(
           height: 76,
           color: dark ? spikeDarkPanel : Colors.white,
-          child: Row(children: [
-            _item(context, 0, LucideIcons.userRound, '/profile'),
-            _item(context, 1, LucideIcons.badgePercent, '/offers'),
-            _item(context, 2, LucideIcons.home, '/'),
-            _item(context, 3, LucideIcons.shoppingBag, '/cart', badge: cartCount),
-          ]),
+          child: Builder(builder: (shellContext) => Row(children: [
+            _item(shellContext, 0, LucideIcons.userRound, '/profile'),
+            _item(shellContext, 1, LucideIcons.badgePercent, '/offers'),
+            _item(shellContext, 2, LucideIcons.home, '/'),
+            _item(shellContext, 3, LucideIcons.shoppingBag, '/cart', badge: cartCount),
+          ])),
         ),
       ),
     );
@@ -45,7 +45,7 @@ class MainShell extends ConsumerWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Expanded(
       child: InkWell(
-        onTap: () => context.go(route),
+        onTap: () { if (index == 0) { Scaffold.of(context).openEndDrawer(); } else { context.go(route); } },
         child: Center(
           child: SizedBox(
             width: 48,
