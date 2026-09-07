@@ -13,7 +13,7 @@ class MainShell extends StatelessWidget {
       selectedIndex: _index,
       onDestinationSelected: (index) { const routes = ['/profile', '/offers', '/', '/cart']; context.go(routes[index]); },
       destinations: const [
-        NavigationDestination(icon: Icon(LucideIcons.userRound, size: 23), selectedIcon: Icon(LucideIcons.userRound, size: 23, color: Colors.black), label: 'حسابي'),
+        NavigationDestination(icon: Icon(Icons.person_outline, size: 23), selectedIcon: Icon(Icons.person, size: 23, color: Colors.black), label: 'حسابي'),
         NavigationDestination(icon: Icon(LucideIcons.badgePercent, size: 23), selectedIcon: Icon(LucideIcons.badgePercent, size: 23, color: Colors.black), label: 'العروض'),
         NavigationDestination(icon: Icon(LucideIcons.home, size: 23), selectedIcon: Icon(LucideIcons.home, size: 23, color: Colors.black), label: 'الرئيسية'),
         NavigationDestination(icon: Icon(LucideIcons.shoppingBag, size: 23), selectedIcon: Icon(LucideIcons.shoppingBag, size: 23, color: Colors.black), label: 'السلة'),
