@@ -60,19 +60,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _SectionTitle(title: 'تسوق حسب الفئة', showAll: data.categories.isNotEmpty, onShowAll: () => context.push('/categories')),
             _CategoriesGrid(categories: data.categories.take(8).toList(), onTap: (c) => context.push('/products?category=${Uri.encodeComponent(c.id)}&title=${Uri.encodeComponent(c.name)}')),
             _SectionTitle(title: 'مختارة لك', showAll: data.products.isNotEmpty, onShowAll: () => context.push('/products')),
-            _ProductsStrip(products: data.products, emptyMessage: 'لا توجد منتجات منشورة بعد'),
+            _productsStrip(products: data.products, emptyMessage: 'لا توجد منتجات منشورة بعد'),
             if (offers.isNotEmpty) ...[
               _SectionTitle(title: 'العروض والخصومات', showAll: true, onShowAll: () => context.push('/offers')),
-              _ProductsStrip(products: offers, emptyMessage: 'لا توجد عروض حالياً'),
+              _productsStrip(products: offers, emptyMessage: 'لا توجد عروض حالياً'),
             ],
             if (data.collections.isNotEmpty) ...[
               const _SectionTitle(title: 'المجموعات', showAll: false),
               _CollectionsStrip(collections: data.collections, onTap: (c) {
                 final type = (c.destinationType ?? '').toLowerCase(), id = c.destinationId ?? '';
                 if (id.isEmpty) return;
-                if (type == 'product') context.push('/product/$id');
-                else if (type == 'category') context.push('/products?category=${Uri.encodeComponent(id)}&title=${Uri.encodeComponent(c.name)}');
-                else if (type == 'collection') context.push('/products?collection=${Uri.encodeComponent(id)}&title=${Uri.encodeComponent(c.name)}');
+                if (type == 'product') {
+                  context.push('/product/$id');
+                } else if (type == 'category') {
+                  context.push('/products?category=${Uri.encodeComponent(id)}&title=${Uri.encodeComponent(c.name)}');
+                } else if (type == 'collection') {
+                  context.push('/products?collection=${Uri.encodeComponent(id)}&title=${Uri.encodeComponent(c.name)}');
+                }
               }),
             ],
             _SectionTitle(title: 'المتاجر', showAll: data.stores.isNotEmpty, onShowAll: () => context.push('/stores')),
@@ -103,10 +107,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _openBanner(BannerItem item) {
     if (item.actionType == 'none' || item.target.isEmpty) return;
     final t = item.actionType.toLowerCase();
-    if (t == 'product') context.push('/product/${item.target}');
-    else if (t == 'category') context.push('/products?category=${Uri.encodeComponent(item.target)}');
-    else if (t == 'collection') context.push('/products?collection=${Uri.encodeComponent(item.target)}');
-    else if (t == 'store') context.push('/store/${item.target}');
+    if (t == 'product') {
+      context.push('/product/${item.target}');
+    } else if (t == 'category') {
+      context.push('/products?category=${Uri.encodeComponent(item.target)}');
+    } else if (t == 'collection') {
+      context.push('/products?collection=${Uri.encodeComponent(item.target)}');
+    } else if (t == 'store') {
+      context.push('/store/${item.target}');
+    }
   }
 
   Future<void> _openCurrencySheet() async {
@@ -157,7 +166,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Widget _ProductsStrip({required List<ProductModel> products, required String emptyMessage}) => SizedBox(
+  Widget _productsStrip({required List<ProductModel> products, required String emptyMessage}) => SizedBox(
     height: 246,
     child: products.isEmpty
         ? SpikeEmptyState(message: emptyMessage)
@@ -217,7 +226,25 @@ class _BannerCarousel extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(18, 16, 18, 0),
     child: Column(children: [
       SizedBox(height: 130, child: PageView.builder(controller: controller, itemCount: items.length, onPageChanged: onPageChanged, itemBuilder: (context, i) => GestureDetector(onTap: () => onTap(items[i]), child: ClipRRect(borderRadius: BorderRadius.circular(23), child: CachedNetworkImage(imageUrl: items[i].imageUrl, width: double.infinity, height: 130, fit: BoxFit.cover, errorWidget: (_, __, ___) => Container(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .08))))))),
-      SizedBox(height: 22, child: Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(items.length, (i) => AnimatedContainer(duration: const Duration(milliseconds: 180), width: i == index ? 17 : 7, height: 7, margin: const EdgeInsets.symmetric(horizontal: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: i == index ? Theme.of(context).colorScheme.onSurface.withValues(alpha: .4) : Theme.of(context).colorScheme.onSurface.withValues(alpha: .12))))),
+      SizedBox(
+        height: 22,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            items.length,
+            (i) => AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: i == index ? 17 : 7,
+              height: 7,
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                color: i == index ? Theme.of(context).colorScheme.onSurface.withValues(alpha: .4) : Theme.of(context).colorScheme.onSurface.withValues(alpha: .12),
+              ),
+            ),
+          ),
+        ),
+      ),
     ]),
   );
 }
