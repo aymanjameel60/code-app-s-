@@ -36,7 +36,9 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
     if (price == '5to25') x = x.where((p) => p.price >= 5 && p.price <= 25).toList();
     if (price == 'over25') x = x.where((p) => p.price > 25).toList();
     if (minRating > 0) x = x.where((p) => p.rating >= minRating).toList();
-    if (sort == 'price_asc') {
+    if (sort == 'newest') {
+      x.sort((a, b) => (b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0)).compareTo(a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0)));
+    } else if (sort == 'price_asc') {
       x.sort((a, b) => a.price.compareTo(b.price));
     } else if (sort == 'price_desc') {
       x.sort((a, b) => b.price.compareTo(a.price));
