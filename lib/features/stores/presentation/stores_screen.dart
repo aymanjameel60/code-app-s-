@@ -69,10 +69,10 @@ class _StoresScreenState extends ConsumerState<StoresScreen> {
             final q = _query.toLowerCase();
             final list = stores.where((s) {
               final matchesQuery = q.isEmpty || s.name.toLowerCase().contains(q) || allProducts.any((p) => p.storeId == s.id && (p.categoryName ?? '').toLowerCase().contains(q));
-              return matchesQuery && s.reviewAverage >= _minRating;
+              return matchesQuery && s.rating >= _minRating;
             }).toList();
             if (_sort == 'name') list.sort((a, b) => a.name.compareTo(b.name));
-            if (_sort == 'rating') list.sort((a, b) => b.reviewAverage.compareTo(a.reviewAverage));
+            if (_sort == 'rating') list.sort((a, b) => b.rating.compareTo(a.rating));
             if (_sort == 'reviews') list.sort((a, b) => b.reviewCount.compareTo(a.reviewCount));
             if (list.isEmpty) return const SpikeEmptyState(message: 'لا توجد متاجر مطابقة للفلتر');
 
@@ -104,7 +104,7 @@ class _StoresScreenState extends ConsumerState<StoresScreen> {
                           Row(children: [
                             const Icon(Icons.star, size: 15, color: Colors.amber),
                             const SizedBox(width: 3),
-                            Text(store.reviewCount > 0 ? store.reviewAverage.toStringAsFixed(1) : '—', style: const TextStyle(fontWeight: FontWeight.w700)),
+                            Text(store.reviewCount > 0 ? store.rating.toStringAsFixed(1) : '—', style: const TextStyle(fontWeight: FontWeight.w700)),
                             Text(store.reviewCount > 0 ? ' (${store.reviewCount} تقييم)' : ' لا توجد تقييمات بعد', style: Theme.of(context).textTheme.bodySmall),
                           ]),
                         ])),
