@@ -101,7 +101,7 @@ class _SpikeDrawer extends ConsumerWidget {
     ])));
   }
   void _go(BuildContext context, String route) { Navigator.pop(context); context.go(route); }
-  void _protectedGo(BuildContext context, Map<String, dynamic>? user, String route) { Navigator.pop(context); if (user == null) { showSpikeToast(context, 'سجّل الدخول أولاً للمتابعة'); context.push('/login'); } else { context.go(route); } }
+  void _protectedGo(BuildContext context, Map<String, dynamic>? user, String route) { Navigator.pop(context); if (user == null) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('سجّل الدخول أولاً للمتابعة'))); context.push('/login'); } else { context.go(route); } }
 }
 class _DrawerItem extends StatelessWidget {
   const _DrawerItem({required this.icon, required this.label, required this.onTap});
