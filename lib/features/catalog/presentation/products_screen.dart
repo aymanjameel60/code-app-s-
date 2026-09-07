@@ -18,6 +18,7 @@ class ProductsScreen extends ConsumerStatefulWidget {
 class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   String _sort = 'relevance';
   String _category = 'الكل';
+  final Set<String> _favoriteBusy = {};
 
   void _showSort() {
     showModalBottomSheet<void>(
@@ -49,9 +50,39 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     return original > p.price && original > 0 ? (original - p.price) / original : 0;
   }
 
+  Future<void> _toggleFavorite(ProductModel p) async {
+    if (_favoriteBusy.contains(p.id)) return;
+    setState(() => _favoriteBusy.add(p.id));
+    final ids = ref.read(wishlistIdsProvider).valueOrNull ?? <String>{};
+    final active = ids.contains(p.id);
+    try {
+      if (active) await ref.read(engagementRepositoryProvider).removeWishlist(p.id);
+      else await ref.read(engagementRepositoryProvider).addWishlist(p.id);
+      ref.invalidate(wishlistIdsProvider);
+      ref.invalidate(favoritesProvider);
+      if (mounted) showSpikeToast(context, active ? 'تمت إزالة المنتج من المفضلة' : 'تمت إضافة المنتج إلى المفضلة');
+    } catch (e) {
+      if (mounted) showSpikeToast(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _favoriteBusy.remove(p.id));
+    }
+  }
+
+  Future<void> _add(ProductModel p) async {
+    final variant = p.cheapestVariant;
+    if (variant == null || !p.purchasable) return;
+    try {
+      await ref.read(cartRepositoryProvider).add(variantId: variant.id);
+      if (mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
+    } catch (e) {
+      if (mounted) showSpikeToast(context, e.toString());
+    }
+  }
+
   @override Widget build(BuildContext context) {
     final state = ref.watch(productsProvider((widget.categoryId, widget.collectionId)));
     final categories = ref.watch(categoriesProvider).valueOrNull ?? const [];
+    final favorites = ref.watch(wishlistIdsProvider).valueOrNull ?? <String>{};
     final chips = <String>['الكل', ...categories.map((e) => e.name), 'عروض'];
     return Scaffold(
       appBar: AppBar(
@@ -99,7 +130,17 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               padding: const EdgeInsets.all(17),
               itemCount: list.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 11, mainAxisSpacing: 11, mainAxisExtent: 246),
-              itemBuilder: (context, i) => SpikeProductCard(product: list[i], onTap: () => context.push('/product/${list[i].id}'), onStore: list[i].storeId == null ? null : () => context.push('/store/${list[i].storeId}')),
+              itemBuilder: (context, i) {
+                final p = list[i];
+                return SpikeProductCard(
+                  product: p,
+                  isFavorite: favorites.contains(p.id),
+                  onTap: () => context.push('/product/${p.id}'),
+                  onStore: p.storeId == null ? null : () => context.push('/store/${p.storeId}'),
+                  onAdd: p.purchasable && p.cheapestVariant != null ? () => _add(p) : null,
+                  onFavorite: _favoriteBusy.contains(p.id) ? null : () => _toggleFavorite(p),
+                );
+              },
             );
           },
         )),
