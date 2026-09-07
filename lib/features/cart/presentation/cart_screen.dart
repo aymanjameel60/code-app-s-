@@ -36,8 +36,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; _guest = false; });
     try {
-      final user = await ref.read(currentUserProvider.future);
-      if (user == null) { if (mounted) setState(() => _guest = true); return; }
       final c = await ref.read(cartRepositoryProvider).load();
       ref.invalidate(cartCountProvider);
       if (mounted) {
@@ -117,7 +115,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const SafeArea(child: SpikeLoading());
-    if (_guest) return SafeArea(child: _GuestCart(onLogin: () => context.push('/login')));
     final cart = _cart;
     if (cart == null) return SafeArea(child: SpikeErrorState(message: _error ?? 'تعذر تحميل بيانات السلة', onRetry: _load));
 
