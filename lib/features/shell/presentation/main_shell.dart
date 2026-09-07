@@ -22,6 +22,7 @@ class MainShell extends ConsumerWidget {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final cartCount = ref.watch(cartCountProvider).valueOrNull ?? 0;
     return Scaffold(
+      endDrawer: const _SpikeDrawer(),
       body: child,
       bottomNavigationBar: SafeArea(
         top: false,
@@ -73,4 +74,37 @@ class MainShell extends ConsumerWidget {
       ),
     );
   }
+}
+
+
+class _SpikeDrawer extends ConsumerWidget {
+  const _SpikeDrawer();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider).valueOrNull;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final name = user == null ? 'مرحباً بك في Spike' : '\${user['name'] ?? 'حسابي'}';
+    return Drawer(backgroundColor: dark ? spikeDarkPanel : Colors.white, child: SafeArea(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Padding(padding: const EdgeInsets.fromLTRB(20, 14, 14, 20), child: Row(children: [IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(LucideIcons.x, size: 22)), const Spacer(), const Text('SPIKE', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -.5))])),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
+      if (user == null) Padding(padding: const EdgeInsets.fromLTRB(20, 12, 20, 16), child: SizedBox(height: 38, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: () { Navigator.pop(context); context.push('/login'); }, child: const Text('تسجيل الدخول')))) else const SizedBox(height: 16),
+      Divider(color: Theme.of(context).dividerColor, height: 1), const SizedBox(height: 8),
+      _DrawerItem(icon: LucideIcons.home, label: 'الرئيسية', onTap: () => _go(context, '/')),
+      _DrawerItem(icon: LucideIcons.store, label: 'المتاجر', onTap: () => _go(context, '/stores')),
+      _DrawerItem(icon: LucideIcons.badgePercent, label: 'العروض والخصومات', onTap: () => _go(context, '/offers')),
+      _DrawerItem(icon: LucideIcons.heart, label: 'المفضلة', onTap: () => _go(context, '/favorites')),
+      _DrawerItem(icon: LucideIcons.mapPin, label: 'عناويني', onTap: () => _go(context, '/addresses')),
+      _DrawerItem(icon: LucideIcons.messageCircle, label: 'خدمة العملاء', onTap: () => _go(context, '/support')),
+      const Spacer(),
+      _DrawerItem(icon: LucideIcons.settings2, label: 'الإعدادات', onTap: () => _go(context, '/settings')),
+      const SizedBox(height: 16),
+    ])));
+  }
+  void _go(BuildContext context, String route) { Navigator.pop(context); context.go(route); }
+}
+class _DrawerItem extends StatelessWidget {
+  const _DrawerItem({required this.icon, required this.label, required this.onTap});
+  final IconData icon; final String label; final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => ListTile(leading: Icon(icon, size: 21), title: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)), onTap: onTap, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.symmetric(horizontal: 22));
 }
