@@ -107,7 +107,7 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
                           isFavorite: favorites.contains(p.id),
                           onTap: () => context.push('/product/${p.id}'),
                           onStore: p.storeId == null ? null : () => context.push('/store/${p.storeId}'),
-                          onAdd: p.cheapestVariant == null ? null : () async { try { await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id); if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة'); } catch (e) { if (context.mounted) showSpikeToast(context, e.toString()); } },
+                          onAdd: p.cheapestVariant == null ? null : () async { try { await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id); ref.invalidate(cartCountProvider); if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة'); } catch (e) { if (context.mounted) showSpikeToast(context, e.toString()); } },
                           onFavorite: _favoriteBusy.contains(p.id) ? null : () => _toggleFavorite(p),
                         );
                       },
