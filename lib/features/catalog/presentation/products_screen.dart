@@ -135,7 +135,18 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: TextButton(onPressed: _showSort, child: const Text('ترتيب حسب', style: TextStyle(fontSize: 12))),
+                  child: Material(
+                    color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                    borderRadius: BorderRadius.circular(20),
+                    child: InkWell(
+                      onTap: _showSort,
+                      borderRadius: BorderRadius.circular(20),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.slidersHorizontal, size: 16), SizedBox(width: 6), Text('ترتيب حسب', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700))]),
+                      ),
+                    ),
+                  ),
                 ),
               ]),
             ),
@@ -144,7 +155,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             padding: const EdgeInsets.fromLTRB(17, 8, 17, 14),
             color: Theme.of(context).scaffoldBackgroundColor,
             child: SizedBox(
-              height: 36,
+              height: 40,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 reverse: true,
@@ -155,13 +166,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   final active = _category == item;
                   return InkWell(
                     onTap: () => setState(() => _category = item),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: active ? Theme.of(context).colorScheme.onSurface : (dark ? const Color(0xFF24252A) : const Color(0xFFE8E8E8)),
-                        borderRadius: BorderRadius.circular(18),
+                        color: active ? spikeRed : (dark ? const Color(0xFF24252A) : const Color(0xFFE8E8E8)),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: active ? spikeRed : Theme.of(context).dividerColor),
                       ),
                       child: Text(item, style: TextStyle(fontSize: 12, color: active ? Theme.of(context).colorScheme.surface : null)),
                     ),
