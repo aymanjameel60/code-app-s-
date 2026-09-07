@@ -25,7 +25,7 @@ final productsProvider=FutureProvider.family<List<ProductModel>,(String?,String?
 final productProvider=FutureProvider.family<ProductModel?,String>((ref,id)=>ref.watch(catalogRepositoryProvider).product(id));
 final storesProvider=FutureProvider<List<StoreModel>>((ref)=>ref.watch(catalogRepositoryProvider).stores());
 final allProductsProvider=FutureProvider<List<ProductModel>>((ref)=>ref.watch(catalogRepositoryProvider).products());
-final cartRepositoryProvider=Provider<CartRepository>((ref)=>CartRepository(ref.watch(apiClientProvider)));
+final cartRepositoryProvider=Provider<CartRepository>((ref)=>CartRepository(ref.watch(apiClientProvider),ref.watch(tokenStorageProvider)));
 final cartCountProvider=FutureProvider.autoDispose<int>((ref)async{try{final cart=await ref.watch(cartRepositoryProvider).load();return cart.items.fold<int>(0,(sum,item)=>sum+item.quantity);}catch(_){return 0;}});
 final engagementRepositoryProvider=Provider<EngagementRepository>((ref)=>EngagementRepository(ref.watch(apiClientProvider)));
 final notificationsDataProvider=FutureProvider.autoDispose<Map<String,dynamic>>((ref)async{try{return await ref.watch(engagementRepositoryProvider).notifications();}catch(_){return const{'notifications':<dynamic>[]};}});
