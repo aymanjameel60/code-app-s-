@@ -19,29 +19,13 @@ class ProfileScreen extends ConsumerWidget {
         loading: () => const SpikeLoading(),
         error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(currentUserProvider)),
         data: (u) {
-          if (u == null) {
-            return Padding(
-              padding: const EdgeInsets.all(17),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(LucideIcons.userRound, size: 52),
-                  const SizedBox(height: 16),
-                  const Text('سجّل الدخول للوصول إلى حسابك', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 24),
-                  SizedBox(width: double.infinity, height: 38, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: () => context.push('/login'), child: const Text('تسجيل الدخول'))),
-                  const SizedBox(height: 8),
-                  TextButton(onPressed: () => context.push('/signup'), child: const Text('إنشاء حساب جديد')),
-                ],
-              ),
-            );
-          }
+          final current = u ?? <String, dynamic>{};
 
-          final raw = '${u['avatar_url'] ?? u['avatarUrl'] ?? ''}';
+          final raw = '${current['avatar_url'] ?? current['avatarUrl'] ?? ''}';
           final avatar = raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw;
-          final name = '${u['name'] ?? ''}';
-          final phone = '${u['phone'] ?? ''}';
-          final email = '${u['email'] ?? ''}';
+          final name = '${current['name'] ?? ''}';
+          final phone = '${current['phone'] ?? ''}';
+          final email = '${current['email'] ?? ''}';
 
           return ListView(
             padding: EdgeInsets.zero,
@@ -60,7 +44,7 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        'مرحباً $name${phone.isNotEmpty ? '\n$phone' : ''}${email.isNotEmpty ? '\n$email' : ''}',
+                        name.isEmpty ? 'مرحباً بك في Spike\nسجّل الدخول لمتابعة طلباتك وبياناتك' : 'مرحباً $name${phone.isNotEmpty ? '\n$phone' : ''}${email.isNotEmpty ? '\n$email' : ''}',
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, height: 1.7),
                       ),
                     ),
@@ -85,14 +69,15 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     _row(
                       context,
-                      LucideIcons.logOut,
-                      'تسجيل الخروج',
+                      u == null ? LucideIcons.logIn : LucideIcons.logOut,
+                      u == null ? 'تسجيل الدخول' : 'تسجيل الخروج',
                       () async {
+                        if (u == null) { context.push('/login'); return; }
                         await ref.read(authRepositoryProvider).logout();
                         ref.invalidate(currentUserProvider);
                         if (context.mounted) context.go('/profile');
                       },
-                      danger: true,
+                      danger: u != null,
                     ),
                     const SizedBox(height: 24),
                   ],
