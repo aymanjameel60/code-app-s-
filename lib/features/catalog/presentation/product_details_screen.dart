@@ -7,6 +7,7 @@ import '../../../app/providers.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 import '../../../models/product.dart';
+import '../../checkout/data/commerce_repository.dart';
 
 class ProductDetailsScreen extends ConsumerStatefulWidget {
   const ProductDetailsScreen({super.key, required this.id});
@@ -17,49 +18,222 @@ class ProductDetailsScreen extends ConsumerStatefulWidget {
 class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   int _galleryIndex = 0;
   String? _variantId;
+  DeliveryQuote? _deliveryQuote;
+  bool _quoting = false;
+  String? _quotedAddressId;
+  String? _quotedVariantId;
 
   @override Widget build(BuildContext context) {
     final state = ref.watch(productProvider(widget.id));
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent, title: const Text('تفاصيل المنتج'), centerTitle: true),
-      body: state.when(loading: () => const SpikeLoading(), error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(productProvider(widget.id))), data: (product) => product == null ? const SpikeEmptyState(message: 'المنتج غير متاح حالياً') : _body(context, product)),
+      body: state.when(
+        loading: () => const SpikeLoading(),
+        error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(productProvider(widget.id))),
+        data: (product) => product == null ? const SpikeEmptyState(message: 'المنتج غير متاح حالياً') : _body(context, product),
+      ),
     );
   }
 
   Widget _body(BuildContext context, ProductModel product) {
     final variants = product.variants;
-    final selected = variants.firstWhere((v) => v.id == _variantId, orElse: () => product.cheapestVariant ?? (variants.isNotEmpty ? variants.first : const ProductVariant(id: '', title: '', price: 0, stock: 0)));
+    final selected = variants.firstWhere(
+      (v) => v.id == _variantId,
+      orElse: () => product.cheapestVariant ?? (variants.isNotEmpty ? variants.first : const ProductVariant(id: '', title: '', price: 0, stock: 0)),
+    );
     _variantId ??= selected.id.isEmpty ? null : selected.id;
     final images = product.images.isNotEmpty ? product.images : [if (product.imageUrl != null) product.imageUrl!];
     final old = selected.originalPrice;
     final discount = old != null && old > selected.price && selected.price > 0 ? ((old - selected.price) / old * 100).round() : 0;
+    final addresses = ref.watch(addressesProvider);
 
     return Stack(children: [
       ListView(padding: const EdgeInsets.only(bottom: 92), children: [
-        SizedBox(height: 330, child: PageView.builder(itemCount: images.isEmpty ? 1 : images.length, onPageChanged: (i) => setState(() => _galleryIndex = i), itemBuilder: (_, i) => Container(color: Colors.white, alignment: Alignment.center, child: images.isEmpty ? const Icon(Icons.image_outlined, size: 60, color: Colors.black26) : CachedNetworkImage(imageUrl: images[i], fit: BoxFit.contain, width: double.infinity)))),
-        if (images.length > 1) Padding(padding: const EdgeInsets.only(top: 8), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(images.length, (i) => Container(width: 7, height: 7, margin: const EdgeInsets.symmetric(horizontal: 2), decoration: BoxDecoration(shape: BoxShape.circle, color: i == _galleryIndex ? Colors.black45 : Colors.black12))))),
+        SizedBox(
+          height: 330,
+          child: PageView.builder(
+            itemCount: images.isEmpty ? 1 : images.length,
+            onPageChanged: (i) => setState(() => _galleryIndex = i),
+            itemBuilder: (_, i) => Container(
+              color: Colors.white,
+              alignment: Alignment.center,
+              child: images.isEmpty
+                  ? const Icon(Icons.image_outlined, size: 60, color: Colors.black26)
+                  : CachedNetworkImage(imageUrl: images[i], fit: BoxFit.contain, width: double.infinity),
+            ),
+          ),
+        ),
+        if (images.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(images.length, (i) => Container(width: 7, height: 7, margin: const EdgeInsets.symmetric(horizontal: 2), decoration: BoxDecoration(shape: BoxShape.circle, color: i == _galleryIndex ? Colors.black45 : Colors.black12))),
+            ),
+          ),
         _block(children: [
-          if (product.storeId != null) TextButton.icon(onPressed: () => context.push('/store/${product.storeId}'), icon: const Icon(LucideIcons.store, size: 17, color: Colors.black), label: Text(product.storeName, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w700))),
+          if (product.storeId != null)
+            TextButton.icon(
+              onPressed: () => context.push('/store/${product.storeId}'),
+              icon: const Icon(LucideIcons.store, size: 17),
+              label: Text(product.storeName, style: const TextStyle(fontWeight: FontWeight.w700)),
+            ),
           Text(product.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
-          Row(children: [const Icon(Icons.star_rounded, size: 18, color: Color(0xFFF5B400)), const SizedBox(width: 4), Text((product.reviewCount > 0 && product.rating > 0 ? product.rating : 4.5).toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.w700)), if (product.reviewCount > 0) Text(' (${product.reviewCount} تقييم)', style: const TextStyle(color: Colors.black54))]),
+          Row(children: [
+            const Icon(Icons.star_rounded, size: 18, color: Color(0xFFF5B400)),
+            const SizedBox(width: 4),
+            Text(product.reviewCount > 0 && product.rating > 0 ? product.rating.toStringAsFixed(1) : '—', style: const TextStyle(fontWeight: FontWeight.w700)),
+            if (product.reviewCount > 0) Text(' (${product.reviewCount} تقييم)', style: const TextStyle(color: Colors.black54)),
+          ]),
           const SizedBox(height: 10),
-          Row(children: [Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)), if (old != null && old > selected.price) ...[const SizedBox(width: 8), Text(_money(old, selected.currency), style: const TextStyle(fontSize: 11, color: Colors.red, decoration: TextDecoration.lineThrough)), const SizedBox(width: 8), Text('خصم $discount%', style: const TextStyle(color: spikeRed, fontWeight: FontWeight.w700))]]),
+          Row(children: [
+            Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+            if (old != null && old > selected.price) ...[
+              const SizedBox(width: 8),
+              Text(_money(old, selected.currency), style: const TextStyle(fontSize: 11, color: Colors.red, decoration: TextDecoration.lineThrough)),
+              const SizedBox(width: 8),
+              Text('خصم $discount%', style: const TextStyle(color: spikeRed, fontWeight: FontWeight.w700)),
+            ],
+          ]),
           const SizedBox(height: 8),
-          Row(children: [Icon(selected.stock > 0 ? LucideIcons.checkCircle2 : LucideIcons.xCircle, size: 16), const SizedBox(width: 6), Text(selected.stock > 0 ? 'متوفر — ${selected.stock} قطعة' : 'غير متوفر حالياً')]),
+          Row(children: [
+            Icon(selected.stock > 0 ? LucideIcons.checkCircle2 : LucideIcons.xCircle, size: 16),
+            const SizedBox(width: 6),
+            Text(selected.stock > 0 ? 'متوفر — ${selected.stock} قطعة' : 'غير متوفر حالياً'),
+          ]),
         ]),
-        if (variants.length > 1) _block(children: [const Text('اختر الخيار', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)), const SizedBox(height: 10), Wrap(spacing: 8, runSpacing: 8, children: variants.map((variant) => ChoiceChip(label: Text('${variant.title}  ${_money(variant.price, variant.currency)}'), selected: variant.id == selected.id, onSelected: (_) => setState(() => _variantId = variant.id))).toList())]),
-        _block(children: [const Text('التوصيل', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)), ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(LucideIcons.mapPin, size: 20), title: const Text('اختر عنوان التوصيل'), trailing: const Text('اختيار', style: TextStyle(decoration: TextDecoration.underline)))]),
-        _block(children: [const Text('تفاصيل المنتج', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)), const SizedBox(height: 8), Text((product.description ?? '').trim().isEmpty ? 'لا توجد تفاصيل إضافية لهذا المنتج حالياً.' : product.description!), if (product.returnable) const Padding(padding: EdgeInsets.only(top: 8), child: Text('هذا المنتج قابل للإرجاع حسب سياسة المتجر.', style: TextStyle(fontWeight: FontWeight.w600)))]),
+        if (variants.length > 1)
+          _block(children: [
+            const Text('اختر الخيار', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: variants.map((variant) => ChoiceChip(
+                label: Text('${variant.title}  ${_money(variant.price, variant.currency)}'),
+                selected: variant.id == selected.id,
+                onSelected: (_) => setState(() {
+                  _variantId = variant.id;
+                  _deliveryQuote = null;
+                  _quotedVariantId = null;
+                }),
+              )).toList(),
+            ),
+          ]),
+        _deliveryBlock(context, addresses, selected),
+        _block(children: [
+          const Text('تفاصيل المنتج', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          Text((product.description ?? '').trim().isEmpty ? 'لا توجد تفاصيل إضافية لهذا المنتج حالياً.' : product.description!),
+          if (product.returnable) const Padding(padding: EdgeInsets.only(top: 8), child: Text('هذا المنتج قابل للإرجاع حسب سياسة المتجر.', style: TextStyle(fontWeight: FontWeight.w600))),
+        ]),
       ]),
-      Positioned(left: 0, right: 0, bottom: 0, child: SafeArea(top: false, child: Container(padding: const EdgeInsets.fromLTRB(17, 10, 17, 10), color: Colors.white, child: Row(children: [
-        Expanded(child: Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
-        FilledButton.icon(style: FilledButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white), onPressed: selected.id.isEmpty || selected.stock <= 0 ? null : () async { try { await ref.read(cartRepositoryProvider).add(variantId: selected.id); if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة'); } catch (e) { if (context.mounted) showSpikeToast(context, e.toString()); } }, icon: const Icon(LucideIcons.shoppingBag, size: 18), label: Text(selected.stock <= 0 ? 'غير متوفر' : 'إضافة إلى السلة')),
-      ])))),
+      Positioned(
+        left: 0,
+        right: 0,
+        bottom: 0,
+        child: SafeArea(
+          top: false,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(17, 10, 17, 10),
+            color: Theme.of(context).colorScheme.surface,
+            child: Row(children: [
+              Expanded(child: Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
+              FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white),
+                onPressed: selected.id.isEmpty || selected.stock <= 0 ? null : () async {
+                  try {
+                    await ref.read(cartRepositoryProvider).add(variantId: selected.id);
+                    if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
+                  } catch (e) {
+                    if (context.mounted) showSpikeToast(context, e.toString());
+                  }
+                },
+                icon: const Icon(LucideIcons.shoppingBag, size: 18),
+                label: Text(selected.stock <= 0 ? 'غير متوفر' : 'إضافة إلى السلة'),
+              ),
+            ]),
+          ),
+        ),
+      ),
     ]);
   }
 
-  Widget _block({required List<Widget> children}) => Container(margin: const EdgeInsets.fromLTRB(17, 10, 17, 0), padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: spikePanel, borderRadius: BorderRadius.circular(24)), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children));
+  Widget _deliveryBlock(BuildContext context, AsyncValue<List<AddressModel>> addresses, ProductVariant selected) {
+    return _block(children: [
+      const Text('التوصيل', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+      const SizedBox(height: 6),
+      addresses.when(
+        loading: () => const LinearProgressIndicator(minHeight: 2),
+        error: (_, __) => Row(children: [
+          const Expanded(child: Text('سجّل الدخول أو أضف عنواناً لمعرفة تكلفة التوصيل.')),
+          TextButton(onPressed: () => context.push('/addresses'), child: const Text('العناوين')),
+        ]),
+        data: (list) {
+          if (list.isEmpty) {
+            return ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(LucideIcons.mapPin, size: 20), title: const Text('لا يوجد عنوان محفوظ'), trailing: TextButton(onPressed: () => context.push('/address-form'), child: const Text('إضافة')));
+          }
+          final active = list.firstWhere((a) => a.isActive, orElse: () => list.first);
+          final stale = _quotedAddressId != active.id || _quotedVariantId != selected.id;
+          if (stale && !_quoting && selected.id.isNotEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) => _loadQuote(active.id, selected.id));
+          }
+          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(LucideIcons.mapPin, size: 20),
+              title: Text(active.label.isEmpty ? active.cityName : active.label, style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text('${active.cityName} • ${active.addressLine}'),
+              trailing: TextButton(onPressed: () => context.push('/addresses'), child: const Text('تغيير')),
+            ),
+            if (_quoting) const LinearProgressIndicator(minHeight: 2),
+            if (!_quoting && _deliveryQuote != null)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16)),
+                child: Row(children: [
+                  const Icon(LucideIcons.truck, size: 18),
+                  const SizedBox(width: 8),
+                  const Expanded(child: Text('تكلفة التوصيل التقديرية')),
+                  Text('${_deliveryQuote!.shippingYerOld.round()} ر.ي قديم', style: const TextStyle(fontWeight: FontWeight.w800)),
+                ]),
+              ),
+          ]);
+        },
+      ),
+    ]);
+  }
+
+  Future<void> _loadQuote(String addressId, String variantId) async {
+    if (_quoting) return;
+    setState(() => _quoting = true);
+    try {
+      final quote = await ref.read(commerceRepositoryProvider).quote(addressId: addressId, variantIds: [variantId]);
+      if (!mounted) return;
+      setState(() {
+        _deliveryQuote = quote;
+        _quotedAddressId = addressId;
+        _quotedVariantId = variantId;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _deliveryQuote = null;
+        _quotedAddressId = addressId;
+        _quotedVariantId = variantId;
+      });
+    } finally {
+      if (mounted) setState(() => _quoting = false);
+    }
+  }
+
+  Widget _block({required List<Widget> children}) => Container(
+    margin: const EdgeInsets.fromLTRB(17, 10, 17, 0),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(24)),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+  );
 
   String _money(double amount, String currency) {
     final code = currency.toUpperCase();
