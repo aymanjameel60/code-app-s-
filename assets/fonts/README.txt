@@ -1,0 +1,1 @@
+ضع ملفات Graphik Arabic المرخّصة هنا ثم أضف تعريفاتها إلى pubspec.yaml قبل إصدار Production. لا تُرفع ملفات الخط من بيئة ChatGPT للمستخدم.
