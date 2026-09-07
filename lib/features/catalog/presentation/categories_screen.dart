@@ -2,38 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
+import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 
-class CategoriesScreen extends ConsumerWidget {
-  const CategoriesScreen({super.key});
-  @override Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(homeDataProvider);
-    return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.transparent, title: const Text('الفئات'), centerTitle: true),
-      body: state.when(
-        loading: () => const SpikeLoading(),
-        error: (e, _) => SpikeErrorState(onRetry: () => ref.invalidate(homeDataProvider)),
-        data: (data) => data.categories.isEmpty
-            ? const SpikeEmptyState(message: 'لا توجد أقسام منشورة بعد')
-            : GridView.builder(
-                padding: const EdgeInsets.all(17),
-                itemCount: data.categories.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, crossAxisSpacing: 11, mainAxisSpacing: 13, childAspectRatio: .78),
-                itemBuilder: (context, i) {
-                  final category = data.categories[i];
-                  return InkWell(
-                    onTap: () => context.push('/products?category=${Uri.encodeComponent(category.id)}&title=${Uri.encodeComponent(category.name)}'),
-                    borderRadius: BorderRadius.circular(21),
-                    child: Column(children: [
-                      Container(width: 81, height: 81, clipBehavior: Clip.antiAlias, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(21)), child: category.imageUrl == null ? const Icon(Icons.image_outlined, color: Colors.black26) : CachedNetworkImage(imageUrl: category.imageUrl!, fit: BoxFit.cover)),
-                      const SizedBox(height: 7),
-                      Text(category.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, height: 1.2)),
-                    ]),
-                  );
-                },
-              ),
-      ),
-    );
-  }
-}
+class CategoriesScreen extends ConsumerWidget{const CategoriesScreen({super.key});@override Widget build(BuildContext context,WidgetRef ref){final state=ref.watch(homeDataProvider),dark=Theme.of(context).brightness==Brightness.dark;return Scaffold(body:SafeArea(child:Column(children:[Padding(padding:const EdgeInsets.fromLTRB(17,8,17,6),child:SizedBox(height:46,child:Stack(alignment:Alignment.center,children:[const Text('تسوق حسب الفئة',style:TextStyle(fontSize:18,fontWeight:FontWeight.w900)),Align(alignment:Alignment.centerRight,child:IconButton(onPressed:()=>context.pop(),icon:const Icon(LucideIcons.arrowRight,size:22)))]))),Expanded(child:state.when(loading:()=>const SpikeLoading(),error:(e,_)=>SpikeErrorState(onRetry:()=>ref.invalidate(homeDataProvider)),data:(data)=>data.categories.isEmpty?const SpikeEmptyState(message:'لا توجد أقسام منشورة بعد'):RefreshIndicator(onRefresh:()async{ref.invalidate(homeDataProvider);await ref.read(homeDataProvider.future);},child:GridView.builder(padding:const EdgeInsets.fromLTRB(17,10,17,24),itemCount:data.categories.length,gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:4,crossAxisSpacing:11,mainAxisSpacing:16,childAspectRatio:.75),itemBuilder:(context,i){final c=data.categories[i];return InkWell(onTap:()=>context.push('/products?category=${Uri.encodeComponent(c.id)}&title=${Uri.encodeComponent(c.name)}'),borderRadius:BorderRadius.circular(20),child:Column(children:[Container(width:80,height:80,clipBehavior:Clip.antiAlias,decoration:BoxDecoration(color:dark?spikeDarkPanel:Colors.white,borderRadius:BorderRadius.circular(20)),child:c.imageUrl==null?const Icon(LucideIcons.image,color:Colors.black26):CachedNetworkImage(imageUrl:c.imageUrl!,fit:BoxFit.cover,errorWidget:(_,__,___)=>const Icon(LucideIcons.image,color:Colors.black26))),const SizedBox(height:7),Text(c.name,maxLines:2,overflow:TextOverflow.ellipsis,textAlign:TextAlign.center,style:const TextStyle(fontSize:12,fontWeight:FontWeight.w600,height:1.2))]));}))))])));}}
