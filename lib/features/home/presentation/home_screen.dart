@@ -38,6 +38,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final home = ref.watch(homeDataProvider);
     final activeAddress = ref.watch(activeAddressProvider).valueOrNull;
     final settings = ref.watch(appSettingsProvider);
+    ref.watch(currenciesProvider);
     final announcements = ref.watch(announcementsProvider).valueOrNull ?? const <Map<String, dynamic>>[];
     final unreadNotifications = ref.watch(unreadNotificationsProvider);
     ref.watch(wishlistIdsProvider);
