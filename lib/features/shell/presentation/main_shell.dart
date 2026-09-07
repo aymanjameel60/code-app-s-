@@ -45,7 +45,7 @@ class MainShell extends ConsumerWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Expanded(
       child: InkWell(
-        onTap: () { if (!selected) context.go(route); },
+        onTap: () { if (!selected) context.push(route); },
         child: Center(
           child: SizedBox(
             width: 48,
