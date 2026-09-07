@@ -10,7 +10,7 @@ on:
 jobs:
   analyze-and-build-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -31,12 +31,19 @@ jobs:
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: Build debug APK
         run: flutter build apk --debug
-      - name: Upload debug APK
+      - name: Build release APK
+        run: flutter build apk --release
+      - name: Build release AAB
+        run: flutter build appbundle --release
+      - name: Upload Android builds
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: spike-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: spike-android-builds
+          path: |
+            build/app/outputs/flutter-apk/app-debug.apk
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 14
 
