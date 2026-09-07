@@ -1,0 +1,31 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  analyze-and-build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Flutter version
+        run: flutter --version
+      - name: Ensure native platform scaffolding
+        run: |
+          flutter create . --platforms=android,ios --org com.spike --project-name spike_flutter_app
+          grep -RIl 'com.spike.spike_flutter_app' android ios | xargs -r sed -i 's/com\.spike\.spike_flutter_app/com.spike.customer/g'
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Build debug APK
+        run: flutter build apk --debug
