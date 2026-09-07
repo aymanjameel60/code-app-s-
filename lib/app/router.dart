@@ -16,6 +16,7 @@ import '../features/favorites/presentation/favorites_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/offers/presentation/offers_screen.dart';
 import '../features/orders/presentation/orders_screen.dart';
+import '../features/orders/presentation/returns_refunds_screen.dart';
 import '../features/profile/presentation/personal_data_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/search/presentation/search_screen.dart';
@@ -40,6 +41,7 @@ final appRouter=GoRouter(routes:[
   GoRoute(path:'/checkout',builder:(_,__)=>const CheckoutScreen()),
   GoRoute(path:'/orders',builder:(_,__)=>const OrdersScreen()),
   GoRoute(path:'/order/:id',builder:(_,state)=>OrderDetailsScreen(id:state.pathParameters['id']!)),
+  GoRoute(path:'/returns-refunds',builder:(_,__)=>const ReturnsRefundsScreen()),
   GoRoute(path:'/notifications',builder:(_,__)=>const NotificationsScreen()),
   GoRoute(path:'/reviews',builder:(_,__)=>const ReviewsScreen()),
   GoRoute(path:'/support',builder:(_,__)=>const SupportChatScreen()),
