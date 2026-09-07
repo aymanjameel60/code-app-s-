@@ -19,7 +19,7 @@ class AddressesScreen extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: Column(children: [
-          _AddressHead(title: 'اختيار العنوان', onBack: () => context.pop()),
+          _AddressHead(title: 'اختيار العنوان', onBack: () => context.canPop() ? context.pop() : context.go('/')),
           Expanded(
             child: state.when(
               loading: () => const SpikeLoading(),
@@ -207,7 +207,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
     return Scaffold(
       body: SafeArea(
         child: Column(children: [
-          _AddressHead(title: widget.address == null ? 'إضافة عنوان جديد' : 'تعديل العنوان', onBack: () => context.pop()),
+          _AddressHead(title: widget.address == null ? 'إضافة عنوان جديد' : 'تعديل العنوان', onBack: () => context.canPop() ? context.pop() : context.go('/')),
           Expanded(
             child: cities.when(
               loading: () => const SpikeLoading(),
