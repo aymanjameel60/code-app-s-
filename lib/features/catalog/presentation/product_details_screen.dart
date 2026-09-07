@@ -327,7 +327,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                       ? null
                       : () async {
                           try {
-                            await ref.read(cartRepositoryProvider).add(variantId: selected.id, product: p);
+                            await ref.read(cartRepositoryProvider).add(variantId: selected.id, product: product);
                             ref.invalidate(cartCountProvider);
                             if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
                           } catch (e) {
