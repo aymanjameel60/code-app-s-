@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../app/providers.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
@@ -18,6 +19,7 @@ class _SupportChatScreenState extends ConsumerState<SupportChatScreen> {
   String? threadId;
   List<Map<String, dynamic>> messages = [];
   bool loading = true, sending = false;
+  Map<String, dynamic> service = const {};
 
   @override
   void initState() {
@@ -44,6 +46,7 @@ class _SupportChatScreenState extends ConsumerState<SupportChatScreen> {
     if (mounted) setState(() => loading = true);
     try {
       final repo = ref.read(engagementRepositoryProvider);
+      service = await repo.publicSettings();
       threadId = await repo.ensureSupportThread();
       messages = await repo.supportMessages(threadId!);
       _bottom();
@@ -51,6 +54,14 @@ class _SupportChatScreenState extends ConsumerState<SupportChatScreen> {
       if (mounted) showSpikeToast(context, e.toString());
     } finally {
       if (mounted) setState(() => loading = false);
+    }
+  }
+
+  Future<void> _openService(String scheme, String value) async {
+    final cleaned = scheme == 'tel' ? value.replaceAll(RegExp(r'\\s+'), '') : value.replaceAll(RegExp(r'[^0-9]'), '');
+    final uri = Uri.parse(scheme == 'tel' ? 'tel:$cleaned' : 'https://wa.me/$cleaned');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication) && mounted) {
+      showSpikeToast(context, 'تعذر فتح وسيلة التواصل');
     }
   }
 
@@ -99,6 +110,14 @@ class _SupportChatScreenState extends ConsumerState<SupportChatScreen> {
                 Container(width: 7, height: 7, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
               ]),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(17, 0, 17, 10),
+            child: Row(children: [
+              Expanded(child: _ServiceButton(icon: LucideIcons.phone, label: 'اتصال', value: '${service['customer_service_phone'] ?? ''}', onTap: () => _openService('tel', '${service['customer_service_phone'] ?? ''}'))),
+              const SizedBox(width: 8),
+              Expanded(child: _ServiceButton(icon: LucideIcons.messageCircle, label: 'واتساب', value: '${service['customer_service_whatsapp'] ?? ''}', onTap: () => _openService('wa', '${service['customer_service_whatsapp'] ?? ''}'))),
+            ]),
           ),
           Expanded(
             child: loading
@@ -154,5 +173,15 @@ class _SupportChatScreenState extends ConsumerState<SupportChatScreen> {
         ]),
       ),
     );
+  }
+}
+
+class _ServiceButton extends StatelessWidget {
+  const _ServiceButton({required this.icon, required this.label, required this.value, required this.onTap});
+  final IconData icon; final String label; final String value; final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final enabled = value.trim().isNotEmpty;
+    return OutlinedButton.icon(onPressed: enabled ? onTap : null, icon: Icon(icon, size: 17), label: Text(enabled ? label : '$label غير متاح', style: const TextStyle(fontSize: 10)), style: OutlinedButton.styleFrom(minimumSize: const Size(0, 39)));
   }
 }
