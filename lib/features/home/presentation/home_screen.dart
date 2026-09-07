@@ -311,7 +311,7 @@ class _Header extends StatelessWidget {
         SizedBox(
           height: 64,
           child: Row(children: [
-            IconButton(onPressed: onMenu, icon: const Icon(LucideIcons.menu, size: 24), tooltip: 'القائمة'),
+            const SizedBox(width: 53, height: 38, child: Center(child: Text('SPIKE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -.5))),),
             const SizedBox(width: 8),
             Expanded(
               child: TextButton(
@@ -320,7 +320,7 @@ class _Header extends StatelessWidget {
                 child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
                   const Icon(LucideIcons.chevronDown, size: 18),
                   const SizedBox(width: 5),
-                  Flexible(child: Text(address, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500))),
+                  Flexible(child: Text(address, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
                 ]),
               ),
             ),
@@ -547,7 +547,7 @@ class _SectionTitle extends StatelessWidget {
           height: 48,
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-            if (showAll) TextButton(onPressed: onShowAll, child: const Text('عرض الكل', style: TextStyle(fontSize: 12))),
+            if (showAll) TextButton(onPressed: onShowAll, child: const Text('عرض الكل', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
           ]),
         ),
       );
