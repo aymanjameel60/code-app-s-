@@ -19,7 +19,8 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.3.2
   intl: ^0.20.2
-  lucide_icons: ^0.257.0
+  lucide_icons:
+    path: packages/lucide_icons_compat
   image_picker: ^1.1.2
 
 dev_dependencies:
