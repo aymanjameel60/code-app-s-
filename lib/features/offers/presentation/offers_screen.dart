@@ -247,7 +247,7 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
                               ? null
                               : () async {
                                   try {
-                                    await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id);
+                                    await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id, product: p);
                                     ref.invalidate(cartCountProvider);
                                     if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
                                   } catch (e) {
