@@ -38,6 +38,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final activeAddress = ref.watch(activeAddressProvider).valueOrNull;
     final settings = ref.watch(appSettingsProvider);
     final announcements = ref.watch(announcementsProvider).valueOrNull ?? const <Map<String,dynamic>>[];
+    final unreadNotifications = ref.watch(unreadNotificationsProvider);
     ref.watch(wishlistIdsProvider);
 
     return SafeArea(child: home.when(
@@ -51,12 +52,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ref.invalidate(addressesProvider);
             ref.invalidate(wishlistIdsProvider);
             ref.invalidate(announcementsProvider);
+            ref.invalidate(notificationsDataProvider);
+            ref.invalidate(cartCountProvider);
             await ref.read(homeDataProvider.future);
           },
           child: ListView(padding: EdgeInsets.zero, children: [
             _Header(
               address: activeAddress == null ? 'اختر عنوان التوصيل' : '${activeAddress.cityName} - ${activeAddress.label}',
               currency: _currencySymbol(settings.currency),
+              unread: unreadNotifications,
               onSearch: () => context.push('/search'),
               onAddress: () => context.push('/addresses'),
               onNotifications: () => context.push('/notifications'),
@@ -169,6 +173,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!p.purchasable || p.cheapestVariant == null) return;
     try {
       await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id);
+      ref.invalidate(cartCountProvider);
       if (mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة');
     } catch (e) {
       if (mounted) showSpikeToast(context, e.toString());
@@ -225,8 +230,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.address, required this.currency, required this.onSearch, required this.onAddress, required this.onNotifications, required this.onCurrency});
+  const _Header({required this.address, required this.currency, required this.unread, required this.onSearch, required this.onAddress, required this.onNotifications, required this.onCurrency});
   final String address, currency;
+  final int unread;
   final VoidCallback onSearch, onAddress, onNotifications, onCurrency;
 
   @override
@@ -236,7 +242,7 @@ class _Header extends StatelessWidget {
       SizedBox(height: 64, child: Row(children: [
         const SizedBox(width: 58, height: 38, child: Center(child: Text('SPIKE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -.5)))),
         Expanded(child: TextButton(onPressed: onAddress, style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface, padding: const EdgeInsets.symmetric(horizontal: 4)), child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [const Icon(LucideIcons.chevronDown, size: 17), const SizedBox(width: 3), Flexible(child: Text(address, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)))]))),
-        IconButton(onPressed: onNotifications, icon: const Icon(LucideIcons.bell, size: 22)),
+        SizedBox(width:48,height:48,child:Stack(clipBehavior:Clip.none,alignment:Alignment.center,children:[IconButton(onPressed:onNotifications,icon:const Icon(LucideIcons.bell,size:22)),if(unread>0)Positioned(left:3,top:3,child:Container(constraints:const BoxConstraints(minWidth:17,minHeight:17),padding:const EdgeInsets.symmetric(horizontal:4),alignment:Alignment.center,decoration:const BoxDecoration(color:spikeRed,shape:BoxShape.circle),child:Text(unread>99?'99+':'$unread',style:const TextStyle(color:Colors.white,fontSize:8,fontWeight:FontWeight.w900))))])),
       ])),
       Row(children: [
         Expanded(child: InkWell(onTap: onSearch, borderRadius: BorderRadius.circular(22), child: Container(height: 39, padding: const EdgeInsets.symmetric(horizontal: 14), decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikeField, borderRadius: BorderRadius.circular(22)), child: const Row(children: [Icon(LucideIcons.search, size: 20), SizedBox(width: 10), Expanded(child: Text('ابحث عن المنتجات ...', style: TextStyle(fontSize: 12, color: spikeMuted)))])))),
