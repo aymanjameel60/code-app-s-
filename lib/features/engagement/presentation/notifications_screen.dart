@@ -25,6 +25,22 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
   }
 
+  Future<void> _open(Map<String, dynamic> notification) async {
+    final id = '${notification['id'] ?? ''}';
+    if (notification['read_at'] == null && id.isNotEmpty) await _readOne(id);
+    if (!mounted) return;
+    final data = notification['data'];
+    final payload = data is Map ? Map<String, dynamic>.from(data) : const <String, dynamic>{};
+    final orderId = '${payload['order_id'] ?? notification['entity_id'] ?? ''}';
+    final type = '${notification['entity_type'] ?? ''}';
+    if (orderId.isNotEmpty && (payload['order_id'] != null || type == 'order')) {
+      context.push('/order/$orderId');
+      return;
+    }
+    final route = '${payload['route'] ?? notification['route'] ?? ''}';
+    if (route.startsWith('/')) context.push(route);
+  }
+
   Future<void> _readAll() async {
     try {
       await ref.read(engagementRepositoryProvider).readAllNotifications();
@@ -105,7 +121,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             final n = items[i];
                             final isUnread = n['read_at'] == null;
                             return InkWell(
-                              onTap: isUnread ? () => _readOne('${n['id']}') : null,
+                              onTap: () => _open(n),
                               borderRadius: BorderRadius.circular(22),
                               child: Container(
                                 padding: const EdgeInsets.all(13),
@@ -122,7 +138,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                       color: isUnread ? const Color(0xFFF7E8E9) : (dark ? const Color(0xFF282828) : const Color(0xFFEFEFEF)),
                                       borderRadius: BorderRadius.circular(18),
                                     ),
-                                    child: Icon(isUnread ? LucideIcons.bellRing : LucideIcons.bell, size: 25, color: isUnread ? spikeRed : null),
+                                    child: Icon((n['data'] is Map && (n['data'] as Map)['order_id'] != null) ? LucideIcons.package : (isUnread ? LucideIcons.bellRing : LucideIcons.bell), size: 25, color: isUnread ? spikeRed : null),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
