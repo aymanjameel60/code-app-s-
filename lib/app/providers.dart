@@ -38,4 +38,6 @@ final paymentMethodsProvider=FutureProvider<List<PaymentMethodModel>>((ref)=>ref
 final currenciesProvider=FutureProvider<List<CurrencyModel>>((ref)=>ref.watch(commerceRepositoryProvider).currencies());
 final ordersProvider=FutureProvider<List<OrderModel>>((ref)=>ref.watch(commerceRepositoryProvider).orders());
 final orderDetailsProvider=FutureProvider.family<Map<String,dynamic>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderDetails(id));
+final returnsHistoryProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).returnsHistory());
+final refundsHistoryProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).refundsHistory());
 final cartBannersProvider=FutureProvider<List<Map<String,dynamic>>>((ref)=>ref.watch(commerceRepositoryProvider).cartBanners());
