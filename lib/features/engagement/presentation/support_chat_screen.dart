@@ -1,86 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
-
-class SupportChatScreen extends ConsumerStatefulWidget {
-  const SupportChatScreen({super.key});
-  @override ConsumerState<SupportChatScreen> createState() => _SupportChatScreenState();
-}
-
-class _SupportChatScreenState extends ConsumerState<SupportChatScreen> {
-  final text = TextEditingController();
-  String? threadId;
-  List<Map<String, dynamic>> messages = [];
-  bool loading = true;
-  bool sending = false;
-
-  @override void initState() { super.initState(); _load(); }
-  @override void dispose() { text.dispose(); super.dispose(); }
-
-  Future<void> _load() async {
-    setState(() => loading = true);
-    try {
-      final repo = ref.read(engagementRepositoryProvider);
-      threadId = await repo.ensureSupportThread();
-      messages = await repo.supportMessages(threadId!);
-    } catch (e) { if (mounted) showSpikeToast(context, e.toString()); }
-    finally { if (mounted) setState(() => loading = false); }
-  }
-
-  Future<void> _send() async {
-    final body = text.text.trim();
-    if (body.isEmpty || threadId == null || sending) return;
-    setState(() => sending = true);
-    try {
-      final repo = ref.read(engagementRepositoryProvider);
-      await repo.sendSupportMessage(threadId!, body);
-      text.clear();
-      messages = await repo.supportMessages(threadId!);
-      if (mounted) setState(() {});
-    } catch (e) { if (mounted) showSpikeToast(context, e.toString()); }
-    finally { if (mounted) setState(() => sending = false); }
-  }
-
-  @override Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(backgroundColor: Colors.transparent, title: const Text('خدمة العملاء'), centerTitle: true),
-    body: loading
-        ? const SpikeLoading()
-        : Column(children: [
-            Expanded(
-              child: messages.isEmpty
-                  ? const SpikeEmptyState(message: 'ابدأ محادثتك مع الإدارة')
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(17),
-                      itemCount: messages.length,
-                      itemBuilder: (context, i) {
-                        final m = messages[i];
-                        final mine = '${m['sender_role'] ?? ''}' == 'customer';
-                        return Align(
-                          alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
-                          child: Container(
-                            constraints: const BoxConstraints(maxWidth: 290),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            decoration: BoxDecoration(color: mine ? spikeRed : spikePanel, borderRadius: BorderRadius.circular(16)),
-                            child: Text('${m['body'] ?? ''}', style: TextStyle(color: mine ? Colors.white : Colors.black)),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-                child: Row(children: [
-                  Expanded(child: TextField(controller: text, minLines: 1, maxLines: 4, decoration: InputDecoration(hintText: 'اكتب رسالتك...', filled: true, fillColor: spikeField, border: const OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(20)))))),
-                  const SizedBox(width: 8),
-                  IconButton.filled(style: IconButton.styleFrom(backgroundColor: spikeRed), onPressed: sending ? null : _send, icon: const Icon(Icons.send, color: Colors.white)),
-                ]),
-              ),
-            ),
-          ]),
-  );
-}
+class SupportChatScreen extends ConsumerStatefulWidget{const SupportChatScreen({super.key});@override ConsumerState<SupportChatScreen>createState()=>_SupportChatScreenState();}
+class _SupportChatScreenState extends ConsumerState<SupportChatScreen>{final text=TextEditingController(),scroll=ScrollController();String?threadId;List<Map<String,dynamic>>messages=[];bool loading=true,sending=false;@override void initState(){super.initState();_load();}@override void dispose(){text.dispose();scroll.dispose();super.dispose();}void _bottom(){WidgetsBinding.instance.addPostFrameCallback((_){if(scroll.hasClients)scroll.animateTo(scroll.position.maxScrollExtent,duration:const Duration(milliseconds:250),curve:Curves.easeOut);});}Future<void>_load()async{if(mounted)setState(()=>loading=true);try{final repo=ref.read(engagementRepositoryProvider);threadId=await repo.ensureSupportThread();messages=await repo.supportMessages(threadId!);_bottom();}catch(e){if(mounted)showSpikeToast(context,e.toString());}finally{if(mounted)setState(()=>loading=false);}}Future<void>_send()async{final body=text.text.trim();if(body.isEmpty||threadId==null||sending)return;setState(()=>sending=true);try{final repo=ref.read(engagementRepositoryProvider);await repo.sendSupportMessage(threadId!,body);text.clear();messages=await repo.supportMessages(threadId!);if(mounted)setState((){});_bottom();}catch(e){if(mounted)showSpikeToast(context,e.toString());}finally{if(mounted)setState(()=>sending=false);}}
+@override Widget build(BuildContext context){final dark=Theme.of(context).brightness==Brightness.dark;return Scaffold(body:SafeArea(child:Column(children:[Padding(padding:const EdgeInsets.fromLTRB(17,8,17,5),child:SizedBox(height:52,child:Stack(alignment:Alignment.center,children:[Column(mainAxisAlignment:MainAxisAlignment.center,children:[const Text('خدمة العملاء',style:TextStyle(fontSize:17,fontWeight:FontWeight.w900)),Row(mainAxisSize:MainAxisSize.min,children:[Container(width:6,height:6,decoration:const BoxDecoration(color:Colors.green,shape:BoxShape.circle)),const SizedBox(width:4),const Text('الدعم',style:TextStyle(fontSize:9,color:spikeMuted))])]),Align(alignment:Alignment.centerRight,child:IconButton(onPressed:()=>context.pop(),icon:const Icon(LucideIcons.arrowRight,size:22))),Align(alignment:Alignment.centerLeft,child:IconButton(onPressed:_load,icon:const Icon(LucideIcons.refreshCw,size:18))) ]))),Expanded(child:loading?const SpikeLoading():messages.isEmpty?const SpikeEmptyState(message:'ابدأ محادثتك مع الإدارة'):RefreshIndicator(onRefresh:_load,child:ListView.builder(controller:scroll,padding:const EdgeInsets.fromLTRB(17,14,17,20),itemCount:messages.length,itemBuilder:(context,i){final m=messages[i],mine='${m['sender_role']??''}'=='customer';return Align(alignment:mine?Alignment.centerRight:Alignment.centerLeft,child:Column(crossAxisAlignment:mine?CrossAxisAlignment.end:CrossAxisAlignment.start,children:[if(!mine)const Padding(padding:EdgeInsets.only(bottom:3),child:Text('فريق Spike',style:TextStyle(fontSize:9,color:spikeMuted,fontWeight:FontWeight.w700))),Container(constraints:const BoxConstraints(maxWidth:290),margin:const EdgeInsets.only(bottom:8),padding:const EdgeInsets.symmetric(horizontal:13,vertical:10),decoration:BoxDecoration(color:mine?spikeRed:(dark?spikeDarkPanel:spikePanel),borderRadius:BorderRadius.only(topLeft:const Radius.circular(17),topRight:const Radius.circular(17),bottomLeft:Radius.circular(mine?17:4),bottomRight:Radius.circular(mine?4:17))),child:Text('${m['body']??''}',style:TextStyle(fontSize:12,height:1.5,color:mine?Colors.white:null)))]));}))),Container(padding:const EdgeInsets.fromLTRB(12,8,12,10),decoration:BoxDecoration(color:Theme.of(context).scaffoldBackgroundColor,border:const Border(top:BorderSide(color:Color(0x11000000)))),child:SafeArea(top:false,child:Row(crossAxisAlignment:CrossAxisAlignment.end,children:[Expanded(child:TextField(controller:text,minLines:1,maxLines:4,textInputAction:TextInputAction.newline,decoration:const InputDecoration(hintText:'اكتب رسالتك...',filled:true,fillColor:spikeField,contentPadding:EdgeInsets.symmetric(horizontal:14,vertical:11),border:OutlineInputBorder(borderSide:BorderSide.none,borderRadius:BorderRadius.all(Radius.circular(20)))))),const SizedBox(width:8),IconButton.filled(style:IconButton.styleFrom(backgroundColor:spikeRed,minimumSize:const Size(45,45)),onPressed:sending?null:_send,icon:sending?const SizedBox.square(dimension:17,child:CircularProgressIndicator(strokeWidth:2,color:Colors.white)):const Icon(LucideIcons.send,color:Colors.white,size:19))]))) ])));}}
