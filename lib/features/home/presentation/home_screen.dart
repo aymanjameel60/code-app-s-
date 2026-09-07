@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -121,16 +122,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _openBanner(BannerItem item) {
-    if (item.actionType == 'none' || item.target.isEmpty) return;
     final t = item.actionType.toLowerCase();
-    if (t == 'product') {
+    if (t == 'product' && item.target.isNotEmpty) {
       context.push('/product/${item.target}');
-    } else if (t == 'category') {
+    } else if (t == 'category' && item.target.isNotEmpty) {
       context.push('/products?category=${Uri.encodeComponent(item.target)}');
-    } else if (t == 'collection') {
+    } else if (t == 'collection' && item.target.isNotEmpty) {
       context.push('/products?collection=${Uri.encodeComponent(item.target)}');
-    } else if (t == 'store') {
+    } else if (t == 'store' && item.target.isNotEmpty) {
       context.push('/store/${item.target}');
+    } else if (t == 'internal' && item.targetUrl.startsWith('/')) {
+      context.push(item.targetUrl);
     }
   }
 
@@ -266,39 +268,42 @@ class _AnnouncementCard extends StatelessWidget {
   );
 }
 
-class _BannerCarousel extends StatelessWidget {
+class _BannerCarousel extends StatefulWidget {
   const _BannerCarousel({required this.items, required this.controller, required this.index, required this.onPageChanged, required this.onTap});
   final List<BannerItem> items;
   final PageController controller;
   final int index;
   final ValueChanged<int> onPageChanged;
   final ValueChanged<BannerItem> onTap;
+  @override State<_BannerCarousel> createState()=>_BannerCarouselState();
+}
 
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(18, 16, 18, 0),
-    child: Column(children: [
-      SizedBox(height: 130, child: PageView.builder(controller: controller, itemCount: items.length, onPageChanged: onPageChanged, itemBuilder: (context, i) => GestureDetector(onTap: () => onTap(items[i]), child: ClipRRect(borderRadius: BorderRadius.circular(23), child: CachedNetworkImage(imageUrl: items[i].imageUrl, width: double.infinity, height: 130, fit: BoxFit.cover, errorWidget: (_, __, ___) => Container(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .08))))))),
-      SizedBox(
-        height: 22,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            items.length,
-            (i) => AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              width: i == index ? 17 : 7,
-              height: 7,
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                color: i == index ? Theme.of(context).colorScheme.onSurface.withValues(alpha: .4) : Theme.of(context).colorScheme.onSurface.withValues(alpha: .12),
-              ),
-            ),
-          ),
-        ),
-      ),
-    ]),
+class _BannerCarouselState extends State<_BannerCarousel> {
+  Timer? _timer;
+  @override void initState(){super.initState();_timer=Timer.periodic(const Duration(seconds:1),(_){if(mounted)setState((){});});}
+  @override void dispose(){_timer?.cancel();super.dispose();}
+  String _remaining(BannerItem item){
+    final end=item.endsAt;
+    if(!item.countdown||end==null)return '';
+    final d=end.toLocal().difference(DateTime.now());
+    if(d.isNegative)return '00:00:00';
+    final h=d.inHours.toString().padLeft(2,'0');
+    final m=(d.inMinutes%60).toString().padLeft(2,'0');
+    final s=(d.inSeconds%60).toString().padLeft(2,'0');
+    return '$h:$m:$s';
+  }
+  @override Widget build(BuildContext context)=>Padding(
+    padding:const EdgeInsets.fromLTRB(18,16,18,0),
+    child:Column(children:[
+      SizedBox(height:130,child:PageView.builder(controller:widget.controller,itemCount:widget.items.length,onPageChanged:widget.onPageChanged,itemBuilder:(context,i){
+        final item=widget.items[i],remaining=_remaining(item);
+        return GestureDetector(onTap:()=>widget.onTap(item),child:ClipRRect(borderRadius:BorderRadius.circular(23),child:Stack(fit:StackFit.expand,children:[
+          CachedNetworkImage(imageUrl:item.imageUrl,width:double.infinity,height:130,fit:BoxFit.cover,errorWidget:(_,__,___)=>Container(color:Theme.of(context).colorScheme.onSurface.withValues(alpha:.08))),
+          if(remaining.isNotEmpty)Positioned(left:10,bottom:10,child:Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:6),decoration:BoxDecoration(color:Colors.black.withValues(alpha:.72),borderRadius:BorderRadius.circular(14)),child:Row(mainAxisSize:MainAxisSize.min,children:[const Icon(LucideIcons.clock3,size:14,color:Colors.white),const SizedBox(width:5),Text(remaining,style:const TextStyle(color:Colors.white,fontWeight:FontWeight.w900,fontSize:12,fontFeatures:[FontFeature.tabularFigures()]))]))),
+        ])));
+      })),
+      SizedBox(height:22,child:Row(mainAxisAlignment:MainAxisAlignment.center,children:List.generate(widget.items.length,(i)=>AnimatedContainer(duration:const Duration(milliseconds:180),width:i==widget.index?17:7,height:7,margin:const EdgeInsets.symmetric(horizontal:2),decoration:BoxDecoration(borderRadius:BorderRadius.circular(5),color:i==widget.index?Theme.of(context).colorScheme.onSurface.withValues(alpha:.4):Theme.of(context).colorScheme.onSurface.withValues(alpha:.12))))))
+    ])
   );
 }
 
