@@ -17,6 +17,7 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
   int minDiscount = 0;
   String price = 'all';
   double minRating = 0;
+  final Set<String> _favoriteBusy = {};
 
   int _discount(ProductModel p) {
     final o = p.originalPrice, c = p.price;
@@ -36,6 +37,24 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
     else if (sort == 'rating') x.sort((a, b) => b.rating.compareTo(a.rating));
     else x.sort((a, b) => _discount(b).compareTo(_discount(a)));
     return x;
+  }
+
+  Future<void> _toggleFavorite(ProductModel p) async {
+    if (_favoriteBusy.contains(p.id)) return;
+    setState(() => _favoriteBusy.add(p.id));
+    final ids = ref.read(wishlistIdsProvider).valueOrNull ?? <String>{};
+    final active = ids.contains(p.id);
+    try {
+      if (active) await ref.read(engagementRepositoryProvider).removeWishlist(p.id);
+      else await ref.read(engagementRepositoryProvider).addWishlist(p.id);
+      ref.invalidate(wishlistIdsProvider);
+      ref.invalidate(favoritesProvider);
+      if (mounted) showSpikeToast(context, active ? 'تمت إزالة المنتج من المفضلة' : 'تمت إضافة المنتج إلى المفضلة');
+    } catch (e) {
+      if (mounted) showSpikeToast(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _favoriteBusy.remove(p.id));
+    }
   }
 
   void _filters() {
@@ -65,6 +84,7 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
 
   @override Widget build(BuildContext context) {
     final state = ref.watch(allProductsProvider);
+    final favorites = ref.watch(wishlistIdsProvider).valueOrNull ?? <String>{};
     return SafeArea(
       child: state.when(
         loading: () => const SpikeLoading(),
@@ -84,10 +104,11 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
                         final p = list[i];
                         return SpikeProductCard(
                           product: p,
+                          isFavorite: favorites.contains(p.id),
                           onTap: () => context.push('/product/${p.id}'),
                           onStore: p.storeId == null ? null : () => context.push('/store/${p.storeId}'),
                           onAdd: p.cheapestVariant == null ? null : () async { try { await ref.read(cartRepositoryProvider).add(variantId: p.cheapestVariant!.id); if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة'); } catch (e) { if (context.mounted) showSpikeToast(context, e.toString()); } },
-                          onFavorite: () async { try { await ref.read(engagementRepositoryProvider).addWishlist(p.id); if (context.mounted) showSpikeToast(context, 'تمت الإضافة إلى المفضلة'); } catch (e) { if (context.mounted) showSpikeToast(context, e.toString()); } },
+                          onFavorite: _favoriteBusy.contains(p.id) ? null : () => _toggleFavorite(p),
                         );
                       },
                     ),
