@@ -24,10 +24,12 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   bool _favorite = false;
   bool _favoriteBusy = false;
   String? _quotedAddressId, _quotedVariantId;
+  late Future<List<Map<String, dynamic>>> _reviewsFuture;
 
   @override
   void initState() {
     super.initState();
+    _reviewsFuture = ref.read(engagementRepositoryProvider).productReviews(widget.id);
     _loadFavorite();
   }
 
@@ -147,10 +149,48 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         ]),
         _deliveryBlock(context, addresses, selected),
         _block(children: [const Text('تفاصيل المنتج', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)), const SizedBox(height: 9), Text((product.description ?? '').trim().isEmpty ? 'لا توجد تفاصيل إضافية لهذا المنتج حالياً.' : product.description!, style: const TextStyle(fontSize: 12, height: 1.7)), if (product.returnable) const Padding(padding: EdgeInsets.only(top: 10), child: Row(children: [Icon(LucideIcons.rotateCcw, size: 16), SizedBox(width: 7), Expanded(child: Text('هذا المنتج قابل للإرجاع حسب سياسة المتجر.', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)))]))]),
+        _reviewsBlock(product),
       ]),
       Positioned(left: 0, right: 0, bottom: 0, child: SafeArea(top: false, child: Container(padding: const EdgeInsets.fromLTRB(17, 9, 17, 10), decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, border: const Border(top: BorderSide(color: Color(0x11000000)))), child: Row(children: [Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [const Text('السعر', style: TextStyle(fontSize: 9, color: spikeMuted)), Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900))])), SizedBox(height: 48, child: FilledButton.icon(style: FilledButton.styleFrom(backgroundColor: spikeRed, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))), onPressed: selected.id.isEmpty || selected.stock <= 0 ? null : () async { try { await ref.read(cartRepositoryProvider).add(variantId: selected.id); if (context.mounted) showSpikeToast(context, 'تمت إضافة المنتج إلى السلة'); } catch (e) { if (context.mounted) showSpikeToast(context, e.toString()); } }, icon: const Icon(LucideIcons.shoppingBag, size: 18), label: Text(selected.stock <= 0 ? 'غير متوفر' : 'إضافة إلى السلة', style: const TextStyle(fontWeight: FontWeight.w800))))])))),
     ]);
   }
+
+  Widget _reviewsBlock(ProductModel product) => _block(children: [
+    Row(children: [
+      const Expanded(child: Text('تقييمات العملاء', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800))),
+      if (product.reviewCount > 0) Text('${product.rating.toStringAsFixed(1)} / 5', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+    ]),
+    const SizedBox(height: 10),
+    FutureBuilder<List<Map<String, dynamic>>>(
+      future: _reviewsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) return const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: LinearProgressIndicator(minHeight: 2));
+        if (snapshot.hasError) return const Text('تعذر تحميل التقييمات حالياً.', style: TextStyle(fontSize: 11, color: spikeMuted));
+        final reviews = snapshot.data ?? const [];
+        if (reviews.isEmpty) return const Text('لا توجد تقييمات لهذا المنتج بعد.', style: TextStyle(fontSize: 11, color: spikeMuted));
+        return Column(children: [
+          for (final review in reviews.take(5)) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Expanded(child: Text('${review['name'] ?? 'عميل'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800))),
+                  Row(children: [const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF5B400)), const SizedBox(width: 3), Text('${review['rating'] ?? '—'}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800))]),
+                ]),
+                if ('${review['comment'] ?? ''}'.trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text('${review['comment']}', style: const TextStyle(fontSize: 11, height: 1.6)),
+                ],
+              ]),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ]);
+      },
+    ),
+  ]);
 
   Widget _round(IconData icon, VoidCallback onTap, {bool active = false, bool busy = false}) => Material(
     color: Theme.of(context).colorScheme.surface,
