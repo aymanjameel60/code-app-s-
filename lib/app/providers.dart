@@ -27,7 +27,8 @@ final storesProvider=FutureProvider<List<StoreModel>>((ref)=>ref.watch(catalogRe
 final allProductsProvider=FutureProvider<List<ProductModel>>((ref)=>ref.watch(catalogRepositoryProvider).products());
 final cartRepositoryProvider=Provider<CartRepository>((ref)=>CartRepository(ref.watch(apiClientProvider)));
 final engagementRepositoryProvider=Provider<EngagementRepository>((ref)=>EngagementRepository(ref.watch(apiClientProvider)));
-final favoritesProvider=FutureProvider<List<ProductModel>>((ref)async{final ids=await ref.watch(engagementRepositoryProvider).wishlistIds();final products=await ref.watch(allProductsProvider.future);final set=ids.toSet();return products.where((p)=>set.contains(p.id)).toList();});
+final wishlistIdsProvider=FutureProvider<Set<String>>((ref)async=>(await ref.watch(engagementRepositoryProvider).wishlistIds()).toSet());
+final favoritesProvider=FutureProvider<List<ProductModel>>((ref)async{final ids=await ref.watch(wishlistIdsProvider.future);final products=await ref.watch(allProductsProvider.future);return products.where((p)=>ids.contains(p.id)).toList();});
 final commerceRepositoryProvider=Provider<CommerceRepository>((ref)=>CommerceRepository(ref.watch(apiClientProvider)));
 final citiesProvider=FutureProvider<List<CityModel>>((ref)=>ref.watch(commerceRepositoryProvider).cities());
 final addressesProvider=FutureProvider<List<AddressModel>>((ref)=>ref.watch(commerceRepositoryProvider).addresses());
