@@ -1,4 +1,5 @@
 name: Flutter CI
+# Build trigger: Android artifacts requested.
 
 on:
   push:
