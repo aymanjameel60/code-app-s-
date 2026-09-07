@@ -21,11 +21,11 @@ class _StoreDetailsScreenState extends ConsumerState<StoreDetailsScreen> {
   final Set<String> _favoriteBusy = {};
 
   void _showSort() {
-    showModalBottomSheet<void>(context: context, showDragHandle: true, builder: (context) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
-      const Padding(padding: EdgeInsets.all(12), child: Text('الترتيب حسب', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
+    showModalBottomSheet<void>(context: context, showDragHandle: true, builder: (context) => SafeArea(child: Padding(padding: SpikeSpacing.sheet, child: Column(mainAxisSize: MainAxisSize.min, children: [
+      const Padding(padding: EdgeInsets.only(bottom: SpikeSpacing.sm), child: Text('الترتيب حسب', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
       for (final option in const [('relevance','الأكثر صلة'),('price-low','السعر: من الأقل للأعلى'),('price-high','السعر: من الأعلى للأقل'),('rating','الأعلى تقييماً')])
-        ListTile(title: Text(option.$2), trailing: _sort == option.$1 ? const Icon(Icons.check, color: spikeRed) : null, onTap: () { setState(() => _sort = option.$1); Navigator.pop(context); }),
-    ])));
+        ListTile(contentPadding: EdgeInsets.zero, title: Text(option.$2), trailing: _sort == option.$1 ? const Icon(Icons.check, color: spikeRed) : null, onTap: () { setState(() => _sort = option.$1); Navigator.pop(context); }),
+    ]))));
   }
 
   Future<void> _toggleFavorite(ProductModel p) async {
@@ -63,6 +63,7 @@ class _StoreDetailsScreenState extends ConsumerState<StoreDetailsScreen> {
     final products = ref.watch(allProductsProvider);
     final reviewsState = ref.watch(storeReviewsProvider(widget.id));
     final favorites = ref.watch(wishlistIdsProvider).valueOrNull ?? <String>{};
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent),
       body: stores.when(
@@ -103,50 +104,50 @@ class _StoreDetailsScreenState extends ConsumerState<StoreDetailsScreen> {
                 },
                 child: CustomScrollView(slivers: [
                   SliverToBoxAdapter(child: Padding(
-                    padding: const EdgeInsets.fromLTRB(17, 0, 17, 14),
+                    padding: const EdgeInsets.fromLTRB(SpikeSpacing.page, 0, SpikeSpacing.page, SpikeSpacing.lg),
                     child: Column(children: [
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(24)),
+                        padding: const EdgeInsets.all(SpikeSpacing.lg),
+                        decoration: BoxDecoration(color: dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(SpikeRadius.sheet)),
                         child: Row(children: [
-                          Container(width: 74, height: 74, clipBehavior: Clip.antiAlias, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(20)), child: store.logoUrl == null ? const Icon(Icons.storefront_outlined, size: 32) : CachedNetworkImage(imageUrl: store.logoUrl!, fit: BoxFit.contain, errorWidget: (_,__,___)=>const Icon(Icons.storefront_outlined,size:32))),
-                          const SizedBox(width: 14),
+                          Container(width: 74, height: 74, clipBehavior: Clip.antiAlias, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(SpikeRadius.card)), child: store.logoUrl == null ? const Icon(Icons.storefront_outlined, size: 32) : CachedNetworkImage(imageUrl: store.logoUrl!, fit: BoxFit.contain, errorWidget: (_,__,___)=>const Icon(Icons.storefront_outlined,size:32))),
+                          const SizedBox(width: SpikeSpacing.lg),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(store.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: SpikeSpacing.sm),
                             Text('${storeProducts.length} منتج', style: const TextStyle(fontWeight: FontWeight.w700)),
-                            const SizedBox(height: 5),
+                            const SizedBox(height: SpikeSpacing.xs),
                             reviewsState.when(
                               loading: () => const SizedBox(width: 80, child: LinearProgressIndicator(minHeight: 2)),
                               error: (_,__) => const SizedBox.shrink(),
-                              data: (_) => Row(children: [const Icon(Icons.star, size: 15, color: Colors.amber), const SizedBox(width: 3), Text(reviewsCount > 0 ? '${rating.toStringAsFixed(1)} ($reviewsCount تقييم)' : 'لا توجد تقييمات بعد', style: Theme.of(context).textTheme.bodySmall)]),
+                              data: (_) => Row(children: [const Icon(Icons.star, size: 15, color: Colors.amber), const SizedBox(width: SpikeSpacing.xs), Text(reviewsCount > 0 ? '${rating.toStringAsFixed(1)} ($reviewsCount تقييم)' : 'لا توجد تقييمات بعد', style: Theme.of(context).textTheme.bodySmall)]),
                             ),
                           ])),
                         ]),
                       ),
-                      const SizedBox(height: 12),
-                      TextField(onChanged: (v) => setState(() => _query = v.trim()), decoration: InputDecoration(hintText: 'ابحث داخل ${store.name}', filled: true, fillColor: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikeField, prefixIcon: const Icon(Icons.search), border: const OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(22))))),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: SpikeSpacing.md),
+                      SizedBox(height: 46, child: TextField(onChanged: (v) => setState(() => _query = v.trim()), decoration: InputDecoration(hintText: 'ابحث داخل ${store.name}', prefixIcon: const Icon(Icons.search)))),
+                      const SizedBox(height: SpikeSpacing.sm),
                       Row(children: [Expanded(child: OutlinedButton.icon(onPressed: _showSort, icon: const Icon(Icons.swap_vert), label: const Text('ترتيب')))]),
                       if (categories.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        SizedBox(height: 42, child: ListView(scrollDirection: Axis.horizontal, children: [
+                        const SizedBox(height: SpikeSpacing.sm),
+                        SizedBox(height: 44, child: ListView(scrollDirection: Axis.horizontal, children: [
                           ChoiceChip(label: const Text('الكل'), selected: _category == 'الكل', onSelected: (_) => setState(() => _category = 'الكل')),
-                          for (final category in categories) ...[const SizedBox(width: 7), ChoiceChip(label: Text(category), selected: _category == category, onSelected: (_) => setState(() => _category = category))],
+                          for (final category in categories) ...[const SizedBox(width: SpikeSpacing.sm), ChoiceChip(label: Text(category), selected: _category == category, onSelected: (_) => setState(() => _category = category))],
                         ])),
                       ],
                       if (reviews.isNotEmpty) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: SpikeSpacing.lg),
                         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[const Text('تقييمات العملاء',style:TextStyle(fontSize:16,fontWeight:FontWeight.w900)),Text('${reviews.length} تعليق',style:Theme.of(context).textTheme.bodySmall)]),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: SpikeSpacing.sm),
                         ...reviews.take(4).map((r){
                           final stars=int.tryParse('${r['rating']??0}')??0;
                           final comment='${r['comment']??''}'.trim();
-                          return Container(width:double.infinity,margin:const EdgeInsets.only(bottom:8),padding:const EdgeInsets.all(12),decoration:BoxDecoration(color:Theme.of(context).brightness==Brightness.dark?spikeDarkPanel:spikePanel,borderRadius:BorderRadius.circular(18)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[Expanded(child:Text('${r['name']??'عميل'}',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w800))),Row(children:List.generate(5,(i)=>Icon(Icons.star_rounded,size:14,color:i<stars?Colors.amber:Theme.of(context).colorScheme.onSurface.withValues(alpha:.15))))]),if(comment.isNotEmpty)Padding(padding:const EdgeInsets.only(top:6),child:Text(comment,style:const TextStyle(fontSize:11,height:1.5)))]));
+                          return Container(width:double.infinity,margin:const EdgeInsets.only(bottom:SpikeSpacing.sm),padding:const EdgeInsets.all(SpikeSpacing.md),decoration:BoxDecoration(color:dark?spikeDarkPanel:spikePanel,borderRadius:BorderRadius.circular(SpikeRadius.control)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[Expanded(child:Text('${r['name']??'عميل'}',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w800))),Row(children:List.generate(5,(i)=>Icon(Icons.star_rounded,size:14,color:i<stars?Colors.amber:Theme.of(context).colorScheme.onSurface.withValues(alpha:.15))))]),if(comment.isNotEmpty)Padding(padding:const EdgeInsets.only(top:SpikeSpacing.sm),child:Text(comment,style:const TextStyle(fontSize:11,height:1.5)))]));
                         }),
                       ],
-                      const SizedBox(height: 10),
+                      const SizedBox(height: SpikeSpacing.md),
                       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('منتجات المتجر', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)), Text('${list.length} منتج', style: Theme.of(context).textTheme.bodySmall)]),
                     ]),
                   )),
@@ -154,10 +155,10 @@ class _StoreDetailsScreenState extends ConsumerState<StoreDetailsScreen> {
                     const SliverToBoxAdapter(child: SpikeEmptyState(message: 'لا توجد منتجات مطابقة'))
                   else
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(17, 0, 17, 24),
+                      padding: const EdgeInsets.fromLTRB(SpikeSpacing.page, 0, SpikeSpacing.page, SpikeSpacing.xl),
                       sliver: SliverGrid.builder(
                         itemCount: list.length,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 11, mainAxisSpacing: 11, mainAxisExtent: 246),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: SpikeSpacing.md, mainAxisSpacing: SpikeSpacing.md, mainAxisExtent: 246),
                         itemBuilder: (context, i) {
                           final p = list[i];
                           return SpikeProductCard(product: p, isFavorite: favorites.contains(p.id), onTap: () => context.push('/product/${p.id}'), onAdd: p.purchasable && p.cheapestVariant != null ? () => _add(p) : null, onFavorite: _favoriteBusy.contains(p.id) ? null : () => _toggleFavorite(p));
