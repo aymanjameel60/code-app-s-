@@ -7,8 +7,9 @@ import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
-  const AuthScreen({super.key, required this.mode});
+  const AuthScreen({super.key, required this.mode, this.afterLoginRoute = '/profile'});
   final String mode;
+  final String afterLoginRoute;
   @override
   ConsumerState<AuthScreen> createState() => _AuthScreenState();
 }
@@ -46,9 +47,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       } else {
         await repo.login(email: _email.text, password: _password.text);
       }
-      await ref.read(cartRepositoryProvider).mergeGuestCart();
+      try {
+        await ref.read(cartRepositoryProvider).mergeGuestCart();
+      } catch (_) {
+        // Authentication succeeded; a temporary cart merge can be retried later.
+      }
       ref.invalidate(currentUserProvider);
-      if (mounted) context.go('/profile');
+      ref.invalidate(cartCountProvider);
+      if (mounted) context.go(widget.afterLoginRoute);
     } catch (e) {
       if (mounted) showSpikeToast(context, e.toString());
     } finally {
@@ -98,7 +104,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.go(signup ? '/login' : '/signup'),
+                  onPressed: () => context.go('${signup ? '/login' : '/signup'}?next=${Uri.encodeComponent(widget.afterLoginRoute)}'),
                   child: Text(signup ? 'تمتلك حساب؟ قم بتسجيل الدخول من هنا' : 'لا تملك حساباً؟ قم بإنشاء حساب من هنا', style: const TextStyle(fontSize: 12)),
                 ),
               ],
