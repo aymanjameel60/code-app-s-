@@ -138,19 +138,19 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: 14,
+                  bottom: 15,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       images.length,
                       (i) => AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
-                        width: i == _galleryIndex ? 14 : 6,
+                        width: i == _galleryIndex ? 18 : 6,
                         height: 6,
                         margin: const EdgeInsets.symmetric(horizontal: 2.5),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: i == _galleryIndex ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withValues(alpha: .18),
+                          borderRadius: BorderRadius.circular(99),
+                          color: i == _galleryIndex ? Theme.of(context).colorScheme.onSurface : const Color(0xFFD4D4D4),
                         ),
                       ),
                     ),
@@ -164,15 +164,15 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 InkWell(
                   onTap: () => context.push('/store/${product.storeId}'),
                   child: Row(children: [
-                    const Icon(LucideIcons.store, size: 17),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(product.storeName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
-                    const Icon(LucideIcons.arrowLeft, size: 16),
+                    const Icon(LucideIcons.store, size: 17, color: spikeMuted),
+                    const SizedBox(width: 6),
+                    Expanded(child: Text(product.storeName, style: const TextStyle(fontSize: 11, color: spikeMuted))),
+                    const Icon(LucideIcons.arrowLeft, size: 16, color: spikeMuted),
                   ]),
                 ),
-              if (product.storeId != null) const SizedBox(height: 10),
+              if (product.storeId != null) const SizedBox(height: 7),
               Text(product.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, height: 1.35)),
-              const SizedBox(height: 8),
+              const SizedBox(height: 14),
               Row(children: [
                 const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF5B400)),
                 const SizedBox(width: 4),
@@ -194,14 +194,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   ],
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 11),
               Row(children: [
-                Icon(selected.stock > 0 ? LucideIcons.checkCircle2 : LucideIcons.xCircle, size: 16, color: selected.stock > 0 ? const Color(0xFF2EAA49) : spikeRed),
-                const SizedBox(width: 7),
+                Icon(selected.stock > 0 ? LucideIcons.checkCircle2 : LucideIcons.xCircle, size: 16, color: selected.stock > 0 ? const Color(0xFF218A39) : spikeRed),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     selected.stock > 0 ? (selected.stock <= 5 ? 'متوفر — ${selected.stock} قطعة' : 'متوفر في المخزون') : 'غير متوفر حالياً',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: selected.stock > 0 ? const Color(0xFF218A39) : spikeRed),
                   ),
                 ),
               ]),
@@ -313,12 +313,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 12),
             decoration: BoxDecoration(color: blockColor, border: Border(top: BorderSide(color: Theme.of(context).dividerColor))),
             child: Row(children: [
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                  const Text('السعر', style: TextStyle(fontSize: 9, color: spikeMuted)),
-                  Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                ]),
-              ),
+              Expanded(child: Text(_money(selected.price, selected.currency), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
               SizedBox(
                 height: 48,
                 child: FilledButton.icon(
@@ -364,26 +359,19 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) return const LinearProgressIndicator(minHeight: 2);
               if (snapshot.hasError) return const Text('تعذر تحميل التقييمات حالياً.', style: TextStyle(fontSize: 11, color: spikeMuted));
               final reviews = snapshot.data ?? const [];
-              if (reviews.isEmpty) return const Text('لا توجد تقييمات لهذا المنتج بعد.', style: TextStyle(fontSize: 11, color: spikeMuted));
+              if (reviews.isEmpty) return const Text('لا توجد تقييمات من المشترين بعد', style: TextStyle(fontSize: 11, color: spikeMuted));
               return Column(children: [
-                for (final review in reviews.take(5)) ...[
+                for (final review in reviews.take(10)) ...[
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16)),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Row(children: [
-                        Expanded(child: Text('${review['name'] ?? 'عميل'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
-                        Row(children: [
-                          const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF5B400)),
-                          const SizedBox(width: 4),
-                          Text('${review['rating'] ?? '—'}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-                        ]),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('${review['name'] ?? 'عميل'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)), const Text('مشتري موثّق', style: TextStyle(fontSize: 9, color: spikeMuted))])),
+                        Row(children: [const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF5B400)), const SizedBox(width: 4), Text('${review['rating'] ?? '—'}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))]),
                       ]),
-                      if ('${review['comment'] ?? ''}'.trim().isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text('${review['comment']}', style: const TextStyle(fontSize: 11, height: 1.6)),
-                      ],
+                      if ('${review['comment'] ?? ''}'.trim().isNotEmpty) ...[const SizedBox(height: 8), Text('${review['comment']}', style: const TextStyle(fontSize: 11, height: 1.6))],
                     ]),
                   ),
                   const SizedBox(height: 8),
@@ -400,26 +388,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           const SizedBox(height: 14),
           addresses.when(
             loading: () => const LinearProgressIndicator(minHeight: 2),
-            error: (_, __) => _DeliveryAddress(
-              title: 'أضف عنواناً لمعرفة تكلفة التوصيل',
-              action: 'العناوين',
-              onTap: () => context.push('/addresses'),
-            ),
+            error: (_, __) => _DeliveryAddress(title: 'أضف عنواناً لمعرفة تكلفة التوصيل', action: 'العناوين', onTap: () => context.push('/addresses')),
             data: (list) {
-              if (list.isEmpty) {
-                return _DeliveryAddress(title: 'لا يوجد عنوان محفوظ', action: 'إضافة', onTap: () => context.push('/address-form'));
-              }
+              if (list.isEmpty) return _DeliveryAddress(title: 'لا يوجد عنوان محفوظ', action: 'إضافة', onTap: () => context.push('/address-form'));
               final active = list.firstWhere((a) => a.isActive, orElse: () => list.first);
               final stale = _quotedAddressId != active.id || _quotedVariantId != selected.id;
-              if (stale && !_quoting && selected.id.isNotEmpty) {
-                WidgetsBinding.instance.addPostFrameCallback((_) => _loadQuote(active.id, selected.id));
-              }
+              if (stale && !_quoting && selected.id.isNotEmpty) WidgetsBinding.instance.addPostFrameCallback((_) => _loadQuote(active.id, selected.id));
               return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                _DeliveryAddress(
-                  title: active.label.isEmpty ? '${active.cityName} - ${active.addressLine}' : '${active.label} - ${active.cityName}',
-                  action: 'تغيير',
-                  onTap: () => context.push('/addresses'),
-                ),
+                _DeliveryAddress(title: active.label.isEmpty ? '${active.cityName} - ${active.addressLine}' : '${active.label} - ${active.cityName}', action: 'تغيير', onTap: () => context.push('/addresses')),
                 if (_quoting) const Padding(padding: EdgeInsets.only(top: 10), child: LinearProgressIndicator(minHeight: 2)),
                 if (!_quoting && _deliveryQuote != null)
                   Container(
@@ -477,26 +453,28 @@ class _TopBar extends StatelessWidget {
   final VoidCallback onBack;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        height: 60,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 17),
-          child: Stack(alignment: Alignment.center, children: [
-            const Text('تفاصيل المنتج', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                width: 50,
-                height: 40,
-                child: Material(
-                  color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
-                  borderRadius: BorderRadius.circular(22),
-                  child: InkWell(onTap: onBack, borderRadius: BorderRadius.circular(22), child: const Icon(LucideIcons.arrowRight, size: 23)),
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(17, 8, 17, 0),
+        child: Column(children: [
+          SizedBox(
+            height: 92,
+            child: Stack(children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  width: 50,
+                  height: 40,
+                  child: Material(
+                    color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                    borderRadius: BorderRadius.circular(22),
+                    child: InkWell(onTap: onBack, borderRadius: BorderRadius.circular(22), child: const Icon(LucideIcons.arrowRight, size: 23)),
+                  ),
                 ),
               ),
-            ),
-          ]),
-        ),
+            ]),
+          ),
+          const SizedBox(height: 60, child: Align(alignment: Alignment.centerRight, child: Text('تفاصيل المنتج', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)))),
+        ]),
       );
 }
 
@@ -516,7 +494,6 @@ class _ReferenceBlock extends StatelessWidget {
 
 class _CircleAction extends StatelessWidget {
   const _CircleAction({required this.icon, required this.onTap, this.active = false, this.busy = false});
-
   final IconData icon;
   final VoidCallback onTap;
   final bool active;
@@ -529,20 +506,13 @@ class _CircleAction extends StatelessWidget {
         child: InkWell(
           onTap: busy ? null : onTap,
           customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 35,
-            height: 35,
-            child: busy
-                ? const Padding(padding: EdgeInsets.all(10), child: CircularProgressIndicator(strokeWidth: 2))
-                : Icon(icon, size: 20, color: active ? spikeRed : Theme.of(context).colorScheme.onSurface),
-          ),
+          child: SizedBox(width: 35, height: 35, child: busy ? const Padding(padding: EdgeInsets.all(10), child: CircularProgressIndicator(strokeWidth: 2)) : Icon(icon, size: 20, color: active ? spikeRed : Theme.of(context).colorScheme.onSurface)),
         ),
       );
 }
 
 class _DeliveryAddress extends StatelessWidget {
   const _DeliveryAddress({required this.title, required this.action, required this.onTap});
-
   final String title;
   final String action;
   final VoidCallback onTap;
