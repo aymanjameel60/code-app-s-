@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-const spikeRed=Color(0xFF94050A);
-const spikeBg=Color(0xFFF1F1F1);
-const spikePanel=Color(0xFFFFFFFF);
-const spikeProductCard=Color(0xFFEAEAEA);
-const spikeField=Color(0xFFE4E4E4);
-const spikeMuted=Color(0xFFA9A9A9);
+// Pixel-matched tokens from the current spikrfront customer UI.
+const spikeRed=Color(0xFFAD0009);
+const spikeBg=Color(0xFFF4F4F4);
+const spikePanel=Color(0xFFE9E9E9);
+const spikeProductCard=Color(0xFFE9E9E9);
+const spikeField=Color(0xFFE7E7E7);
+const spikeMuted=Color(0xFFBBBBBB);
 const spikeDarkBg=Color(0xFF111111);
 const spikeDarkPanel=Color(0xFF1D1D1D);
 
-/// Pixel-matched spacing tokens from the reference customer frontend.
 abstract final class SpikeSpacing {
   static const double xs=4;
   static const double sm=8;
@@ -26,16 +26,19 @@ abstract final class SpikeSpacing {
 }
 
 abstract final class SpikeRadius {
-  static const double control=25;
-  static const double card=16;
+  static const double control=22;
+  static const double card=22;
+  static const double hero=24;
   static const double sheet=24;
+  static const double banner=23;
+  static const double store=25;
 }
 
 TextTheme _textTheme(Brightness b)=>TextTheme(
   titleLarge:TextStyle(fontSize:21,fontWeight:FontWeight.w700,height:1.25,color:b==Brightness.dark?Colors.white:null),
   titleMedium:TextStyle(fontSize:14,fontWeight:FontWeight.w700,color:b==Brightness.dark?Colors.white:null),
   bodyMedium:TextStyle(fontSize:12,fontWeight:FontWeight.w700,height:1.45,color:b==Brightness.dark?Colors.white:null),
-  bodySmall:TextStyle(fontSize:11,fontWeight:FontWeight.w700,color:b==Brightness.dark?Colors.white70:spikeMuted),
+  bodySmall:TextStyle(fontSize:10,fontWeight:FontWeight.w600,color:b==Brightness.dark?Colors.white70:spikeMuted),
 );
 
 ThemeData _theme(Brightness brightness){
@@ -52,7 +55,7 @@ ThemeData _theme(Brightness brightness){
     fontFamilyFallback:const ['Tahoma','Arial'],
     splashFactory:InkRipple.splashFactory,
     textTheme:_textTheme(brightness),
-    iconTheme:IconThemeData(color:onSurface),
+    iconTheme:IconThemeData(color:onSurface,size:24),
     appBarTheme:AppBarTheme(backgroundColor:Colors.transparent,foregroundColor:onSurface,elevation:0,scrolledUnderElevation:0),
     navigationBarTheme:NavigationBarThemeData(height:76,backgroundColor:surface,indicatorColor:Colors.transparent,labelBehavior:NavigationDestinationLabelBehavior.alwaysShow),
     bottomSheetTheme:BottomSheetThemeData(backgroundColor:dark?spikeDarkBg:spikeBg,modalBackgroundColor:dark?spikeDarkBg:spikeBg,shape:const RoundedRectangleBorder(borderRadius:BorderRadius.vertical(top:Radius.circular(SpikeRadius.sheet)))),
@@ -62,17 +65,17 @@ ThemeData _theme(Brightness brightness){
       filled:true,
       fillColor:field,
       contentPadding:const EdgeInsets.symmetric(horizontal:14,vertical:8),
-      hintStyle:const TextStyle(color:spikeMuted,fontSize:12,fontWeight:FontWeight.w700),
-      labelStyle:TextStyle(color:onSurface.withValues(alpha:.70),fontSize:12,fontWeight:FontWeight.w700),
+      hintStyle:const TextStyle(color:spikeMuted,fontSize:12,fontWeight:FontWeight.w400),
+      labelStyle:TextStyle(color:onSurface.withValues(alpha:.70),fontSize:12,fontWeight:FontWeight.w600),
       enabledBorder:OutlineInputBorder(borderRadius:BorderRadius.circular(SpikeRadius.control),borderSide:BorderSide.none),
       focusedBorder:OutlineInputBorder(borderRadius:BorderRadius.circular(SpikeRadius.control),borderSide:const BorderSide(color:spikeRed,width:1.2)),
       errorBorder:OutlineInputBorder(borderRadius:BorderRadius.circular(SpikeRadius.control),borderSide:const BorderSide(color:spikeRed)),
       focusedErrorBorder:OutlineInputBorder(borderRadius:BorderRadius.circular(SpikeRadius.control),borderSide:const BorderSide(color:spikeRed,width:1.2)),
     ),
-    filledButtonTheme:FilledButtonThemeData(style:FilledButton.styleFrom(minimumSize:const Size(0,38),padding:const EdgeInsets.symmetric(horizontal:20),textStyle:const TextStyle(fontSize:12,fontWeight:FontWeight.w700),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(SpikeRadius.control)))),
-    outlinedButtonTheme:OutlinedButtonThemeData(style:OutlinedButton.styleFrom(minimumSize:const Size(0,38),padding:const EdgeInsets.symmetric(horizontal:16),textStyle:const TextStyle(fontSize:12,fontWeight:FontWeight.w700),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(SpikeRadius.control)))),
-    textButtonTheme:TextButtonThemeData(style:TextButton.styleFrom(textStyle:const TextStyle(fontSize:12,fontWeight:FontWeight.w500))),
-    snackBarTheme:SnackBarThemeData(backgroundColor:dark?Colors.white:Colors.black,contentTextStyle:TextStyle(color:dark?Colors.black:Colors.white,fontSize:12,fontWeight:FontWeight.w700),behavior:SnackBarBehavior.floating,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(SpikeRadius.control))),
+    filledButtonTheme:FilledButtonThemeData(style:FilledButton.styleFrom(minimumSize:const Size(0,39),padding:const EdgeInsets.symmetric(horizontal:22),textStyle:const TextStyle(fontSize:12,fontWeight:FontWeight.w700),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(SpikeRadius.control)))),
+    outlinedButtonTheme:OutlinedButtonThemeData(style:OutlinedButton.styleFrom(minimumSize:const Size(0,39),padding:const EdgeInsets.symmetric(horizontal:16),textStyle:const TextStyle(fontSize:12,fontWeight:FontWeight.w700),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(SpikeRadius.control)))),
+    textButtonTheme:TextButtonThemeData(style:TextButton.styleFrom(textStyle:const TextStyle(fontSize:12,fontWeight:FontWeight.w700))),
+    snackBarTheme:SnackBarThemeData(backgroundColor:dark?Colors.white:Colors.black,contentTextStyle:TextStyle(color:dark?Colors.black:Colors.white,fontSize:12,fontWeight:FontWeight.w700),behavior:SnackBarBehavior.floating,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(18))),
   );
 }
 
