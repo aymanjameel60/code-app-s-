@@ -62,7 +62,7 @@ class CategoriesScreen extends ConsumerWidget {
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
                           crossAxisSpacing: 11,
-                          mainAxisSpacing: 13,
+                          mainAxisSpacing: 16,
                           childAspectRatio: .75,
                         ),
                         itemBuilder: (context, i) {
