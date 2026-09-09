@@ -113,13 +113,13 @@ class SpikeProductCard extends StatelessWidget {
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                padding: const EdgeInsets.fromLTRB(12, 9, 12, 6),
                 child: Text(
                   product.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.right,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, height: 1.45),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, height: 1.45),
                 ),
               ),
               Padding(
@@ -127,28 +127,29 @@ class SpikeProductCard extends StatelessWidget {
                 child: current > 0
                     ? (hasDiscount
                         ? Row(
+                            textDirection: TextDirection.rtl,
                             children: [
                               Expanded(
                                 child: Text(
                                   _money(current, product.currency),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
                                 ),
                               ),
-                              const SizedBox(width: 5),
-                              Flexible(
-                                child: Text(
-                                  _money(old, product.currency),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.left,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 10,
-                                    color: spikeMuted,
-                                    decoration: TextDecoration.lineThrough,
-                                  ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _money(old, product.currency),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 8,
+                                  color: spikeRed,
+                                  decoration: TextDecoration.lineThrough,
+                                  decorationColor: spikeRed,
                                 ),
                               ),
                             ],
@@ -156,12 +157,12 @@ class SpikeProductCard extends StatelessWidget {
                         : Text(
                             _money(current, product.currency),
                             textAlign: TextAlign.right,
-                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
                           ))
                     : const Text(
                         'السعر غير متاح',
                         textAlign: TextAlign.right,
-                        style: TextStyle(fontSize: 11, color: spikeMuted, fontWeight: FontWeight.w700),
+                        style: TextStyle(fontSize: 11, color: Color(0xFF888888), fontWeight: FontWeight.w600),
                       ),
               ),
               const SizedBox(height: 7),
@@ -181,7 +182,7 @@ class SpikeProductCard extends StatelessWidget {
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                           ),
                           if (product.reviewCount > 0)
-                            Text(' (${product.reviewCount})', style: const TextStyle(fontSize: 10, color: spikeMuted, fontWeight: FontWeight.w700)),
+                            Text(' (${product.reviewCount})', style: const TextStyle(fontSize: 10, color: spikeMuted, fontWeight: FontWeight.w600)),
                         ],
                       ),
                       Flexible(
@@ -191,7 +192,7 @@ class SpikeProductCard extends StatelessWidget {
                           child: Text(
                             product.storeName,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: spikeMuted, fontSize: 10, fontWeight: FontWeight.w700),
+                            style: const TextStyle(color: Color(0xFFC2C2C2), fontSize: 10, fontWeight: FontWeight.w400),
                           ),
                         ),
                       ),
