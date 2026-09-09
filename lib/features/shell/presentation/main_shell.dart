@@ -28,7 +28,10 @@ class MainShell extends ConsumerWidget {
         top: false,
         child: Container(
           height: 76,
-          color: dark ? spikeDarkPanel : Colors.white,
+          decoration: BoxDecoration(
+            color: dark ? spikeDarkPanel : Colors.white,
+            border: Border(top: BorderSide(color: dark ? Colors.white10 : const Color(0xFFEEEEEE))),
+          ),
           child: Builder(builder: (shellContext) => Row(children: [
             _item(shellContext, 0, LucideIcons.userRound, '/profile'),
             _item(shellContext, 1, LucideIcons.badgePercent, '/offers'),
@@ -45,7 +48,7 @@ class MainShell extends ConsumerWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Expanded(
       child: InkWell(
-            onTap: () { if (!selected) context.go(route); },
+        onTap: () { if (!selected) context.go(route); },
         child: Center(
           child: SizedBox(
             width: 48,
@@ -54,11 +57,11 @@ class MainShell extends ConsumerWidget {
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
-                Icon(icon, size: 23, color: selected ? onSurface : onSurface.withValues(alpha: .38)),
+                Icon(icon, size: 24, color: selected ? onSurface : onSurface.withValues(alpha: .45)),
                 if (badge > 0)
                   Positioned(
-                    left: 2,
-                    top: 2,
+                    left: 1,
+                    top: 1,
                     child: Container(
                       constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
                       padding: const EdgeInsets.symmetric(horizontal: 3),
@@ -76,7 +79,6 @@ class MainShell extends ConsumerWidget {
   }
 }
 
-
 class _SpikeDrawer extends ConsumerWidget {
   const _SpikeDrawer();
   @override
@@ -87,7 +89,7 @@ class _SpikeDrawer extends ConsumerWidget {
     return Drawer(backgroundColor: dark ? spikeDarkPanel : Colors.white, child: SafeArea(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Padding(padding: const EdgeInsets.fromLTRB(20, 14, 14, 20), child: Row(children: [IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(LucideIcons.x, size: 22)), const Spacer(), const Text('SPIKE', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -.5))])),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
-      if (user == null) Padding(padding: const EdgeInsets.fromLTRB(20, 12, 20, 16), child: SizedBox(height: 38, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: () { Navigator.pop(context); context.push('/login'); }, child: const Text('تسجيل الدخول')))) else const SizedBox(height: 16),
+      if (user == null) Padding(padding: const EdgeInsets.fromLTRB(20, 12, 20, 16), child: SizedBox(height: 39, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: () { Navigator.pop(context); context.push('/login'); }, child: const Text('تسجيل الدخول')))) else const SizedBox(height: 16),
       Divider(color: Theme.of(context).dividerColor, height: 1), const SizedBox(height: 8),
       _DrawerItem(icon: LucideIcons.home, label: 'الرئيسية', onTap: () => _go(context, '/')),
       _DrawerItem(icon: LucideIcons.store, label: 'المتاجر', onTap: () => _go(context, '/stores')),
@@ -109,5 +111,12 @@ class _DrawerItem extends StatelessWidget {
   const _DrawerItem({required this.icon, required this.label, required this.onTap});
   final IconData icon; final String label; final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => ListTile(leading: Icon(icon, size: 21), title: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)), onTap: onTap, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.symmetric(horizontal: 22));
+  Widget build(BuildContext context) => ListTile(
+    leading: Icon(icon, size: 21),
+    title: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+    onTap: onTap,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 22),
+    minTileHeight: 39,
+  );
 }
