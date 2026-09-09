@@ -38,7 +38,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       return;
     }
     final route = '${payload['route'] ?? notification['route'] ?? ''}';
-    if (route.startsWith('/')) context.push(route);
+    final known = RegExp(r'^/(order|orders|product|products|store|stores|categories|offers|cart|profile|favorites|notifications|reviews|support|settings|privacy|personal-data|returns-refunds|search|checkout)(/|$|\?)');
+    if (known.hasMatch(route)) {
+      context.push(route);
+    } else {
+      context.push('/orders');
+    }
   }
 
   Future<void> _readAll() async {

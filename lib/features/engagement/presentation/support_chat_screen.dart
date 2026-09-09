@@ -58,7 +58,7 @@ class _SupportChatScreenState extends ConsumerState<SupportChatScreen> {
   }
 
   Future<void> _openService(String scheme, String value) async {
-    final cleaned = scheme == 'tel' ? value.replaceAll(RegExp(r'\\s+'), '') : value.replaceAll(RegExp(r'[^0-9]'), '');
+    final cleaned = scheme == 'tel' ? value.replaceAll(RegExp(r'\s+'), '') : value.replaceAll(RegExp(r'[^0-9]'), '');
     final uri = Uri.parse(scheme == 'tel' ? 'tel:$cleaned' : 'https://wa.me/$cleaned');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication) && mounted) {
       showSpikeToast(context, 'تعذر فتح وسيلة التواصل');

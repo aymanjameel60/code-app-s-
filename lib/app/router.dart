@@ -29,7 +29,7 @@ import '../features/stores/presentation/stores_screen.dart';
 final appRouter = GoRouter(
   routes: [
     ShellRoute(
-      builder: (context, state, child) => MainShell(child: child, location: state.uri.path),
+      builder: (context, state, child) => MainShell(location: state.uri.path, child: child),
       routes: [
         GoRoute(path: '/', builder: (_, __) => const HomeScreen()),
         GoRoute(path: '/offers', builder: (_, __) => const OffersScreen()),

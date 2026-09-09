@@ -156,7 +156,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
             const Text('تقييم المنتج', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             DropdownButtonFormField<int>(
-              value: rating,
+              initialValue: rating,
               items: [5, 4, 3, 2, 1].map((v) => DropdownMenuItem(value: v, child: Text('${'★' * v}${'☆' * (5 - v)}'))).toList(),
               onChanged: (v) => setSheetState(() => rating = v ?? 5),
             ),
@@ -191,7 +191,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
       child: SafeArea(top: false, child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text('تقييم متجر ${store['store_name'] ?? ''}', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),
-        DropdownButtonFormField<int>(value: rating, items: [5, 4, 3, 2, 1].map((v) => DropdownMenuItem(value: v, child: Text('${'★' * v}${'☆' * (5 - v)}'))).toList(), onChanged: (v) => setSheetState(() => rating = v ?? 5)),
+        DropdownButtonFormField<int>(initialValue: rating, items: [5, 4, 3, 2, 1].map((v) => DropdownMenuItem(value: v, child: Text('${'★' * v}${'☆' * (5 - v)}'))).toList(), onChanged: (v) => setSheetState(() => rating = v ?? 5)),
         const SizedBox(height: 10),
         TextField(controller: comment, maxLines: 3, decoration: const InputDecoration(hintText: 'تعليقك - اختياري')),
         const SizedBox(height: 12),
@@ -322,7 +322,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
               _sectionTitle(LucideIcons.route, 'تتبع الطلب'),
               timeline.when(
                 loading: () => const Padding(padding: EdgeInsets.all(SpikeSpacing.md), child: SpikeLoading()),
-                error: (e, _) => Text(e.toString()),
+                error: (e, _) => const Text('تعذر تحميل تحديثات الطلب'),
                 data: (rows) => rows.isEmpty
                     ? const _MiniEmpty('لا توجد تحديثات بعد')
                     : Column(children: List.generate(rows.length, (i) {

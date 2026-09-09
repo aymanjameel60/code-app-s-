@@ -23,7 +23,7 @@ class CategoriesScreen extends ConsumerWidget {
             child: SizedBox(
               height: 60,
               child: Row(children: [
-                IconButton(onPressed: () => context.pop(), icon: const Icon(LucideIcons.arrowRight, size: 22)),
+                IconButton(onPressed: () => context.canPop() ? context.pop() : context.go('/'), icon: const Icon(LucideIcons.arrowRight, size: 22)),
                 const Spacer(),
                 const Text('تسوق حسب الفئة', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
                 const Spacer(),
