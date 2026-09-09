@@ -93,8 +93,53 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 }
 
 class _CheckoutHead extends StatelessWidget{
-  const _CheckoutHead({required this.title});final String title;
-  @override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.fromLTRB(17,8,17,0),child:Column(children:[SizedBox(height:92,child:Stack(children:[Align(alignment:Alignment.centerRight,child:SizedBox(width:50,height:40,child:Material(color:Theme.of(context).brightness==Brightness.dark?spikeDarkPanel:const Color(0xFFE8E8E8),borderRadius:BorderRadius.circular(22),child:InkWell(borderRadius:BorderRadius.circular(22),onTap:()=>context.canPop()?context.pop():context.go('/cart'),child:const Icon(LucideIcons.arrowRight,size:23)))))]),SizedBox(height:60,child:Align(alignment:Alignment.centerRight,child:Text(title,style:const TextStyle(fontSize:21,fontWeight:FontWeight.w700))))]));
+  const _CheckoutHead({required this.title});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(17, 8, 17, 0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 92,
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: 50,
+                    height: 40,
+                    child: Material(
+                      color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                      borderRadius: BorderRadius.circular(22),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(22),
+                        onTap: () => context.canPop() ? context.pop() : context.go('/cart'),
+                        child: const Icon(LucideIcons.arrowRight, size: 23),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 60,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                title,
+                style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _InvoiceLine extends StatelessWidget{
