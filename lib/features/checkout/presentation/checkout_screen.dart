@@ -50,8 +50,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Future<void> _submit() async {
-    if(busy||cart==null||address==null||payment==null||currency==null)return;setState(()=>busy=true);
-    try{final order=await ref.read(commerceRepositoryProvider).createOrder(cart:cart!,addressId:address!.id,paymentMethod:payment!.method,currencyCode:currency!.code);ref.invalidate(cartCountProvider);ref.invalidate(ordersProvider);if(mounted){showSpikeToast(context,'تم إنشاء الطلب بنجاح');context.go('/order/${order.id}');}}catch(e){if(mounted)showSpikeToast(context,e.toString());}finally{if(mounted)setState(()=>busy=false);}
+    if(busy||cart==null||address==null||payment==null||currency==null)return;
+    final selectedPayment=payment!.method;
+    setState(()=>busy=true);
+    try{
+      await ref.read(commerceRepositoryProvider).createOrder(cart:cart!,addressId:address!.id,paymentMethod:selectedPayment,currencyCode:currency!.code);
+      ref.invalidate(cartCountProvider);
+      ref.invalidate(ordersProvider);
+      if(mounted){
+        showSpikeToast(context,'تم إنشاء الطلب بنجاح');
+        context.go('/success?payment=${Uri.encodeComponent(selectedPayment)}');
+      }
+    }catch(e){if(mounted)showSpikeToast(context,e.toString());}finally{if(mounted)setState(()=>busy=false);}
   }
 
   @override Widget build(BuildContext context){
