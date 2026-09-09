@@ -50,15 +50,6 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
     return x;
   }
 
-  void _reset() {
-    setState(() {
-      sort = 'discount_desc';
-      minDiscount = 0;
-      price = 'all';
-      minRating = 0;
-    });
-  }
-
   Future<void> _toggleFavorite(ProductModel p) async {
     if (_favoriteBusy.contains(p.id)) return;
     setState(() => _favoriteBusy.add(p.id));
@@ -277,8 +268,6 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
       ),
     );
   }
-
-  void _noop() {}
 }
 
 class _FilterGroup extends StatelessWidget {

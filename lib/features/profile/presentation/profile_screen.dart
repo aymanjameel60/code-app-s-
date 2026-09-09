@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
-import '../../../core/api_config.dart';
+import '../../../core/media_url.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 
@@ -22,7 +22,7 @@ class ProfileScreen extends ConsumerWidget {
           final current = u ?? <String, dynamic>{};
 
           final raw = '${current['avatar_url'] ?? current['avatarUrl'] ?? ''}';
-          final avatar = raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw;
+          final avatar = resolveMediaUrl(raw) ?? '';
           final name = '${current['name'] ?? ''}';
           final phone = '${current['phone'] ?? ''}';
           final email = '${current['email'] ?? ''}';
@@ -121,5 +121,5 @@ class _SimpleTitle extends StatelessWidget {
   final String title;
 
   @override
-  Widget build(BuildContext context) => const SizedBox(height: 60, child: Center(child: Text('الملف الشخصي', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700))));
+  Widget build(BuildContext context) => SizedBox(height: 60, child: Center(child: Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700))));
 }

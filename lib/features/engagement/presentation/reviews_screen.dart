@@ -132,7 +132,11 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
                                     const SizedBox(height: 3),
                                     Text('${x['store_name'] ?? ''}', style: const TextStyle(fontSize: 9, color: spikeMuted)),
                                     const SizedBox(height: 7),
-                                    Row(textDirection: TextDirection.ltr, mainAxisSize: MainAxisSize.min, children: List.generate(5, (_) => const Icon(Icons.star_rounded, size: 15, color: Color(0xFFF5B400)))),
+                                    Builder(builder: (context) {
+                                      final rating = double.tryParse('${x['rating'] ?? x['product_rating'] ?? 0}') ?? 0;
+                                      final dim = Theme.of(context).colorScheme.onSurface.withValues(alpha: .2);
+                                      return Row(textDirection: TextDirection.ltr, mainAxisSize: MainAxisSize.min, children: List.generate(5, (i) => Icon(Icons.star_rounded, size: 15, color: i < rating.round() ? const Color(0xFFF5B400) : dim)));
+                                    }),
                                   ])),
                                 ]),
                                 if (x['can_review_product'] == true || x['can_review_store'] == true) ...[

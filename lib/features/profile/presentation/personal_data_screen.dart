@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
-import '../../../core/api_config.dart';
+import '../../../core/media_url.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 
@@ -194,10 +194,7 @@ class _PersonalDataScreenState extends ConsumerState<PersonalDataScreen> {
     );
   }
 
-  String _avatarUrl(String raw) {
-    if (raw.startsWith('/uploads/')) return '${ApiConfig.assetBaseUrl}$raw';
-    return raw;
-  }
+  String _avatarUrl(String raw) => resolveMediaUrl(raw) ?? raw;
 
   @override
   Widget build(BuildContext context) {
@@ -244,17 +241,6 @@ class _PersonalDataScreenState extends ConsumerState<PersonalDataScreen> {
                   Text('${u['name'] ?? ''}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 3),
                   Text('${u['email'] ?? ''}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, color: spikeMuted)),
-                  const SizedBox(height: 10),
-                  Container(
-                    height: 30,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(16)),
-                    child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(Icons.verified_outlined, size: 16),
-                      SizedBox(width: 5),
-                      Text('تم التحقق', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
-                    ]),
-                  ),
                 ]),
               ),
               const SizedBox(height: 12),
@@ -277,7 +263,6 @@ class _PersonalDataScreenState extends ConsumerState<PersonalDataScreen> {
                     icon: LucideIcons.phone,
                     label: 'الجوال',
                     value: '${u['phone'] ?? '—'}',
-                    verified: true,
                     onEdit: busy ? null : _showPhoneSheet,
                   ),
                   Divider(height: 1, indent: 56, endIndent: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .08)),
@@ -293,12 +278,11 @@ class _PersonalDataScreenState extends ConsumerState<PersonalDataScreen> {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.label, required this.value, this.verified = false, this.onEdit});
+  const _InfoRow({required this.icon, required this.label, required this.value, this.onEdit});
 
   final IconData icon;
   final String label;
   final String value;
-  final bool verified;
   final VoidCallback? onEdit;
 
   @override
@@ -321,12 +305,6 @@ class _InfoRow extends StatelessWidget {
               ],
             ),
           ),
-          if (verified) ...[
-            const Icon(Icons.verified_outlined, size: 16),
-            const SizedBox(width: 4),
-            const Text('تم التحقق', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
-            const SizedBox(width: 6),
-          ],
           if (onEdit != null) IconButton(onPressed: onEdit, icon: const Icon(LucideIcons.pencil, size: 17)),
         ]),
       ),

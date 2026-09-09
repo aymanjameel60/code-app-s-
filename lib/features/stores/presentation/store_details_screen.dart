@@ -125,7 +125,7 @@ class _StoreDetailsScreenState extends ConsumerState<StoreDetailsScreen> {
                               padding:const EdgeInsets.fromLTRB(17,8,17,12),
                               child:Row(
                                 children:[
-                                  SizedBox(width:50,height:42,child:IconButton.filledTonal(onPressed:()=>context.pop(),icon:const Icon(Icons.arrow_forward,size:23))),
+                                  SizedBox(width:50,height:42,child:IconButton.filledTonal(onPressed:()=>context.canPop()?context.pop():context.go('/'),icon:const Icon(Icons.arrow_forward,size:23))),
                                   const SizedBox(width:9),
                                   Expanded(
                                     child:Container(
@@ -173,7 +173,7 @@ class _StoreDetailsScreenState extends ConsumerState<StoreDetailsScreen> {
                                                   Text(store.name,style:const TextStyle(fontSize:18,fontWeight:FontWeight.w700)),
                                                   const SizedBox(height:3),
                                                   if((store.categoryName??'').isNotEmpty)Text(store.categoryName!,style:const TextStyle(fontSize:9,color:spikeMuted)),
-                                                  const Text('متجر موثوق على Spike',style:TextStyle(fontSize:9,color:spikeMuted)),
+                                                  if(store.isVerified)const Text('متجر موثوق على Spike',style:TextStyle(fontSize:9,color:spikeMuted)),
                                                 ],
                                               ),
                                             ),

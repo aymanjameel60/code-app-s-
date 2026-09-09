@@ -100,12 +100,16 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     }
   }
 
+  List<String> _chipsFor(List<ProductModel> products) {
+    final present = <String>{for (final p in products) if ((p.categoryName ?? '').trim().isNotEmpty) p.categoryName!.trim()}.toList()..sort();
+    return <String>['الكل', ...present, if (products.any((p) => _discount(p) > 0)) 'عروض'];
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(productsProvider((widget.categoryId, widget.collectionId)));
-    final categories = ref.watch(categoriesProvider).valueOrNull ?? const [];
     final favorites = ref.watch(wishlistIdsProvider).valueOrNull ?? <String>{};
-    final chips = <String>['الكل', ...categories.map((e) => e.name), 'عروض'];
+    final chips = _chipsFor(state.valueOrNull ?? const []);
     final dark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -187,6 +191,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               loading: () => const SpikeLoading(),
               error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(productsProvider((widget.categoryId, widget.collectionId)))),
               data: (products) {
+                if (_category != 'الكل' && !chips.contains(_category)) _category = 'الكل';
                 final list = products.where((p) {
                   if (_category == 'الكل') return true;
                   if (_category == 'عروض') return _discount(p) > 0;

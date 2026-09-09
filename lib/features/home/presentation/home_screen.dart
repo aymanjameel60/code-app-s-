@@ -50,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(homeDataProvider)),
         data: (data) {
           final offers = data.products.where(_hasOffer).toList();
+          final bannerIndex = _bannerIndex < data.banners.length ? _bannerIndex : 0;
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(homeDataProvider);
@@ -83,7 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   _BannerCarousel(
                     items: data.banners,
                     controller: _bannerController,
-                    index: _bannerIndex,
+                    index: bannerIndex,
                     onPageChanged: (i) => setState(() => _bannerIndex = i),
                     onTap: _openBanner,
                   )
@@ -450,7 +451,9 @@ class _BannerCarouselState extends State<_BannerCarousel> {
   void initState() {
     super.initState();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
+      final now = DateTime.now();
+      final ticking = widget.items.any((e) => e.countdown && e.endsAt != null && e.endsAt!.isAfter(now));
+      if (mounted && ticking) setState(() {});
     });
   }
 
@@ -465,10 +468,12 @@ class _BannerCarouselState extends State<_BannerCarousel> {
     if (!item.countdown || end == null) return '';
     final d = end.toLocal().difference(DateTime.now());
     if (d.isNegative) return '00:00:00';
-    final h = d.inHours.toString().padLeft(2, '0');
-    final m = (d.inMinutes % 60).toString().padLeft(2, '0');
-    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
-    return '$h:$m:$s';
+    String two(int v) => v.toString().padLeft(2, '0');
+    final days = d.inDays;
+    final h = two(d.inHours % 24);
+    final m = two(d.inMinutes % 60);
+    final s = two(d.inSeconds % 60);
+    return days > 0 ? '$days يوم $h:$m:$s' : '$h:$m:$s';
   }
 
   @override

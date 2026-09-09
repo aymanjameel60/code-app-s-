@@ -28,7 +28,7 @@ class SpikeEmptyState extends StatelessWidget {
   final String message;
   @override Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 28),
-    child: Center(child: Text(message, style: const TextStyle(color: Colors.black54))),
+    child: Center(child: Text(message, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .55)))),
   );
 }
 
