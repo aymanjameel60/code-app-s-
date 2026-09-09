@@ -32,6 +32,8 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   void _showSort() {
     showModalBottomSheet<void>(
       context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(26))),
       builder: (sheetContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(17, 20, 17, 25),
@@ -115,51 +117,61 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     return Scaffold(
       body: SafeArea(
         child: Column(children: [
-          SizedBox(
-            height: 60,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 17),
-              child: Stack(alignment: Alignment.center, children: [
-                Text(widget.title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: SizedBox(
-                    width: 50,
-                    height: 40,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(17, 8, 17, 0),
+            child: Column(children: [
+              SizedBox(
+                height: 92,
+                child: Stack(children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SizedBox(
+                      width: 50,
+                      height: 40,
+                      child: Material(
+                        color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                        borderRadius: BorderRadius.circular(22),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(22),
+                          onTap: () => context.canPop() ? context.pop() : context.go('/'),
+                          child: const Icon(LucideIcons.arrowRight, size: 23),
+                        ),
+                      ),
+                    ),
+                  ),
+                ]),
+              ),
+              SizedBox(
+                height: 60,
+                child: Stack(alignment: Alignment.centerRight, children: [
+                  Text(widget.title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+                  Align(
+                    alignment: Alignment.centerLeft,
                     child: Material(
                       color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
                       borderRadius: BorderRadius.circular(22),
                       child: InkWell(
+                        onTap: _showSort,
                         borderRadius: BorderRadius.circular(22),
-                        onTap: () => context.canPop() ? context.pop() : context.go('/'),
-                        child: const Icon(LucideIcons.arrowRight, size: 23),
+                        child: const SizedBox(
+                          height: 40,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.arrowUpDown, size: 16), SizedBox(width: 6), Text('ترتيب حسب', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700))]),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Material(
-                    color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
-                    borderRadius: BorderRadius.circular(20),
-                    child: InkWell(
-                      onTap: _showSort,
-                      borderRadius: BorderRadius.circular(20),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.slidersHorizontal, size: 16), SizedBox(width: 6), Text('ترتيب حسب', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700))]),
-                      ),
-                    ),
-                  ),
-                ),
-              ]),
-            ),
+                ]),
+              ),
+            ]),
           ),
           Container(
             padding: const EdgeInsets.fromLTRB(17, 8, 17, 14),
             color: Theme.of(context).scaffoldBackgroundColor,
             child: SizedBox(
-              height: 40,
+              height: 36,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 reverse: true,
@@ -170,14 +182,13 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   final active = _category == item;
                   return InkWell(
                     onTap: () => setState(() => _category = item),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: active ? spikeRed : (dark ? const Color(0xFF24252A) : const Color(0xFFE8E8E8)),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: active ? spikeRed : Theme.of(context).dividerColor),
+                        color: active ? Theme.of(context).colorScheme.onSurface : (dark ? const Color(0xFF24252A) : const Color(0xFFE8E8E8)),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(item, style: TextStyle(fontSize: 12, color: active ? Theme.of(context).colorScheme.surface : null)),
                     ),
@@ -206,12 +217,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 return GridView.builder(
                   padding: const EdgeInsets.fromLTRB(17, 4, 17, 24),
                   itemCount: list.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 11,
-                    mainAxisSpacing: 11,
-                    mainAxisExtent: 246,
-                  ),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 11, mainAxisSpacing: 11, mainAxisExtent: 246),
                   itemBuilder: (context, i) {
                     final p = list[i];
                     return SpikeProductCard(
