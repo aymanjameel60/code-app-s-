@@ -9,6 +9,7 @@ import '../features/catalog/presentation/products_screen.dart';
 import '../features/checkout/data/commerce_repository.dart';
 import '../features/checkout/presentation/addresses_screen.dart';
 import '../features/checkout/presentation/checkout_screen.dart';
+import '../features/checkout/presentation/payment_success_screen.dart';
 import '../features/engagement/presentation/notifications_screen.dart';
 import '../features/engagement/presentation/reviews_screen.dart';
 import '../features/engagement/presentation/support_chat_screen.dart';
@@ -40,6 +41,7 @@ final appRouter = GoRouter(
         GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
         GoRoute(path: '/favorites', builder: (_, __) => const FavoritesScreen()),
         GoRoute(path: '/checkout', builder: (_, __) => const CheckoutScreen()),
+        GoRoute(path: '/success', builder: (_, state) => PaymentSuccessScreen(paymentMethod: state.uri.queryParameters['payment'] ?? '')),
         GoRoute(path: '/orders', builder: (_, __) => const OrdersScreen()),
         GoRoute(path: '/order/:id', builder: (_, state) => OrderDetailsScreen(id: state.pathParameters['id']!)),
         GoRoute(path: '/returns-refunds', builder: (_, __) => const ReturnsRefundsScreen()),
