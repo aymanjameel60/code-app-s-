@@ -128,8 +128,9 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
   void initState() {
     super.initState();
     final a = widget.address;
-    name = TextEditingController(text: a?.recipientName ?? '');
-    phone = TextEditingController(text: a?.phone ?? '');
+    final user = ref.read(currentUserProvider).valueOrNull;
+    name = TextEditingController(text: a?.recipientName ?? '${user?['name'] ?? ''}');
+    phone = TextEditingController(text: a?.phone ?? '${user?['phone'] ?? ''}');
     line = TextEditingController(text: a?.addressLine ?? '');
     maps = TextEditingController(text: a?.googleMapsUrl ?? '');
     cityId = a?.cityId;
@@ -160,7 +161,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
 
   Future<void> save() async {
     if (busy) return;
-    if (cityId == null || name.text.trim().isEmpty || phone.text.trim().isEmpty || line.text.trim().isEmpty || maps.text.trim().isEmpty) {
+    if (cityId == null || name.text.trim().isEmpty || phone.text.trim().isEmpty || line.text.trim().isEmpty) {
       showSpikeToast(context, 'أكمل جميع الحقول المطلوبة');
       return;
     }
@@ -240,13 +241,11 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
                     ]),
                   ),
                   const SizedBox(height: 12),
-                  _ReferenceField(controller: maps, icon: LucideIcons.mapPin, hint: 'رابط Google Maps للموقع *', keyboard: TextInputType.url, ltr: true),
+                  _ReferenceField(controller: maps, icon: LucideIcons.mapPin, hint: 'رابط Google Maps (اختياري)', keyboard: TextInputType.url, ltr: true),
                   const SizedBox(height: 7),
-                  const Text('انسخ رابط موقعك من Google Maps والصقه هنا. النظام يحدد الإحداثيات تلقائياً بدون إدخالها يدوياً.', style: TextStyle(fontSize: 10, color: spikeMuted, height: 1.45)),
+                  const Text('لحساب أجور التوصيل بدقة أكبر يفضّل إضافة رابط Google Maps.', style: TextStyle(fontSize: 10, color: spikeMuted, height: 1.45)),
                   const SizedBox(height: 20),
                   const Text('تفاصيل الاتصال', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 12),
-                  _ReferenceField(controller: name, icon: LucideIcons.user, hint: 'اسم المستلم *'),
                   const SizedBox(height: 12),
                   _ReferenceField(controller: phone, icon: LucideIcons.phone, hint: 'رقم الجوال *', keyboard: TextInputType.phone, ltr: true, height: 64),
                   const SizedBox(height: 20),
@@ -311,26 +310,28 @@ class _AddressHead extends StatelessWidget {
   final VoidCallback onBack;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        height: 60,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 17),
-          child: Stack(alignment: Alignment.center, children: [
-            Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                width: 50,
-                height: 40,
-                child: Material(
-                  color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
-                  borderRadius: BorderRadius.circular(22),
-                  child: InkWell(onTap: onBack, borderRadius: BorderRadius.circular(22), child: const Icon(LucideIcons.arrowRight, size: 23)),
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(17, 8, 17, 0),
+        child: Column(children: [
+          SizedBox(
+            height: 92,
+            child: Stack(children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  width: 50,
+                  height: 40,
+                  child: Material(
+                    color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                    borderRadius: BorderRadius.circular(22),
+                    child: InkWell(onTap: onBack, borderRadius: BorderRadius.circular(22), child: const Icon(LucideIcons.arrowRight, size: 23)),
+                  ),
                 ),
               ),
-            ),
-          ]),
-        ),
+            ]),
+          ),
+          SizedBox(height: 60, child: Align(alignment: Alignment.centerRight, child: Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)))),
+        ]),
       );
 }
 
@@ -388,9 +389,9 @@ class _AddressType extends StatelessWidget {
             border: Border.all(color: selected ? const Color(0xFFF0AD14) : Theme.of(context).dividerColor, width: selected ? 2 : 1),
           ),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(icon, size: 23, color: selected ? const Color(0xFFEFaa0A) : null),
+            Icon(icon, size: 23, color: selected ? const Color(0xFFEFAA0A) : null),
             const SizedBox(height: 7),
-            Text(title, style: TextStyle(fontSize: 12, color: selected ? const Color(0xFFEFaa0A) : null)),
+            Text(title, style: TextStyle(fontSize: 12, color: selected ? const Color(0xFFEFAA0A) : null)),
           ]),
         ),
       );
