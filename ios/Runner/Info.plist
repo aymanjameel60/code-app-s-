@@ -12,6 +12,7 @@
   <key>CFBundleShortVersionString</key><string>$(FLUTTER_BUILD_NAME)</string>
   <key>CFBundleVersion</key><string>$(FLUTTER_BUILD_NUMBER)</string>
   <key>LSRequiresIPhoneOS</key><true/>
+  <key>NSLocationWhenInUseUsageDescription</key><string>يستخدم Spike موقعك لتحديد عنوان التوصيل وحساب أجور التوصيل بدقة.</string>
   <key>NSPhotoLibraryUsageDescription</key><string>يحتاج Spike للوصول إلى صورك لاختيار صورة الحساب أو سند الحوالة.</string>
   <key>NSPhotoLibraryAddUsageDescription</key><string>يستخدم Spike مكتبة الصور عند اختيار صور الحساب أو سندات الدفع.</string>
   <key>UIApplicationSupportsIndirectInputEvents</key><true/>
