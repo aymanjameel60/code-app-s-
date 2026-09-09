@@ -1,7 +1,7 @@
-import '../core/api_config.dart';
+import '../core/media_url.dart';
 
 class StoreModel {
-  const StoreModel({required this.id, required this.name, this.logoUrl, this.bannerUrl, this.categoryName, this.rating = 0, this.reviewCount = 0});
+  const StoreModel({required this.id, required this.name, this.logoUrl, this.bannerUrl, this.categoryName, this.rating = 0, this.reviewCount = 0, this.isVerified = false});
   final String id;
   final String name;
   final String? logoUrl;
@@ -9,14 +9,9 @@ class StoreModel {
   final String? categoryName;
   final double rating;
   final int reviewCount;
+  final bool isVerified;
 
-  static String? _asset(dynamic value) {
-    final raw = '${value ?? ''}'.trim();
-    if (raw.isEmpty) return null;
-    if (raw.startsWith('http')) return raw;
-    if (raw.startsWith('/uploads/')) return '${ApiConfig.assetBaseUrl}$raw';
-    return raw;
-  }
+  static String? _asset(dynamic value) => resolveMediaUrl(value);
 
   factory StoreModel.fromJson(Map<String, dynamic> j) {
     return StoreModel(
@@ -27,6 +22,7 @@ class StoreModel {
       categoryName: '${j['category_name'] ?? j['category'] ?? ''}'.trim().isEmpty ? null : '${j['category_name'] ?? j['category']}',
       rating: double.tryParse('${j['review_average'] ?? j['rating'] ?? 0}') ?? 0,
       reviewCount: int.tryParse('${j['review_count'] ?? j['reviews'] ?? 0}') ?? 0,
+      isVerified: j['is_verified'] == true,
     );
   }
 }

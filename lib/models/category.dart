@@ -1,4 +1,4 @@
-import '../core/api_config.dart';
+import '../core/media_url.dart';
 
 class CategoryModel {
   const CategoryModel({required this.id, required this.name, this.imageUrl, this.enabled = true, this.sortOrder = 0});
@@ -9,8 +9,7 @@ class CategoryModel {
   final int sortOrder;
 
   factory CategoryModel.fromJson(Map<String, dynamic> j) {
-    final raw = '${j['image_url'] ?? ''}'.trim();
-    final image = raw.isEmpty ? null : (raw.startsWith('http') ? raw : raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw);
+    final image = resolveMediaUrl(j['image_url']);
     return CategoryModel(
       id: '${j['id'] ?? ''}',
       name: '${j['name'] ?? ''}',

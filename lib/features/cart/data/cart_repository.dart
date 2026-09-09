@@ -1,17 +1,11 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/api_config.dart';
+import '../../../core/media_url.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../models/product.dart';
 import '../../../core/network/api_client.dart';
 
-String? _absoluteImage(Object? value) {
-  final raw = '${value ?? ''}'.trim();
-  if (raw.isEmpty) return null;
-  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
-  if (raw.startsWith('/uploads/')) return '${ApiConfig.assetBaseUrl}$raw';
-  return raw;
-}
+String? _absoluteImage(Object? value) => resolveMediaUrl(value);
 
 class CartItemModel {
   const CartItemModel({required this.id, required this.variantId, required this.quantity, required this.productId, required this.productName, required this.storeId, required this.storeName, required this.variantTitle, required this.unitPrice, required this.originalPrice, required this.stock, this.imageUrl});
@@ -84,7 +78,7 @@ class CartRepository {
   }
 
   Future<CartSnapshot> update({required String variantId,required int quantity}) async {
-    if(!await _guest)return CartSnapshot.fromJson(await _api.put('/cart/items/'+variantId,auth:true,data:{'quantity':quantity}));
+    if(!await _guest)return CartSnapshot.fromJson(await _api.put('/cart/items/$variantId',auth:true,data:{'quantity':quantity}));
     final old=await _readGuest();
     final items=<CartItemModel>[];
     for(final x in old.items) {

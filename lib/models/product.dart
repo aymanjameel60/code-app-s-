@@ -1,12 +1,6 @@
-import '../core/api_config.dart';
+import '../core/media_url.dart';
 
-String? _absoluteImage(Object? value) {
-  final raw = '${value ?? ''}'.trim();
-  if (raw.isEmpty) return null;
-  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
-  if (raw.startsWith('/uploads/')) return '${ApiConfig.assetBaseUrl}$raw';
-  return raw;
-}
+String? _absoluteImage(Object? value) => resolveMediaUrl(value);
 
 class ProductVariant {
   const ProductVariant({required this.id, required this.title, required this.price, this.originalPrice, required this.stock, this.currency = 'USD'});

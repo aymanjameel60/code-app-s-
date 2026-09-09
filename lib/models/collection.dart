@@ -1,3 +1,5 @@
+import '../core/media_url.dart';
+
 class CollectionModel {
   const CollectionModel({required this.id, required this.name, this.imageUrl, this.destinationType, this.destinationId, this.sortOrder = 0});
   final String id;
@@ -10,7 +12,7 @@ class CollectionModel {
   factory CollectionModel.fromJson(Map<String, dynamic> json) => CollectionModel(
     id: '${json['id'] ?? ''}',
     name: '${json['name'] ?? ''}',
-    imageUrl: json['image_url']?.toString(),
+    imageUrl: resolveMediaUrl(json['image_url']),
     destinationType: json['destination_type']?.toString(),
     destinationId: json['destination_id']?.toString(),
     sortOrder: int.tryParse('${json['sort_order'] ?? 0}') ?? 0,
