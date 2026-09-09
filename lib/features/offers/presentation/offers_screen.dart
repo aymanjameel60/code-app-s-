@@ -79,16 +79,15 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(26))),
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setLocal) => SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(18, 22, 18, MediaQuery.viewInsetsOf(sheetContext).bottom + 26),
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Center(child: Container(width: 42, height: 4, decoration: BoxDecoration(color: Theme.of(sheetContext).dividerColor, borderRadius: BorderRadius.circular(5)))),
-              const SizedBox(height: 16),
               Row(children: [
                 const Expanded(child: Text('فلترة وترتيب العروض', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
-                IconButton(onPressed: () => Navigator.pop(sheetContext), icon: const Icon(LucideIcons.x, size: 20)),
                 TextButton(
                   onPressed: () => setLocal(() {
                     localSort = 'discount_desc';
@@ -98,6 +97,7 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
                   }),
                   child: const Text('مسح الكل', style: TextStyle(fontSize: 10, color: spikeRed)),
                 ),
+                IconButton(onPressed: () => Navigator.pop(sheetContext), icon: const Icon(LucideIcons.x, size: 20)),
               ]),
               const SizedBox(height: 14),
               _FilterGroup(
@@ -134,11 +134,11 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
                   _Chip('4.5 نجوم فأعلى', localRating == 4.5, () => setLocal(() => localRating = 4.5)),
                 ],
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 8),
               SizedBox(
-                height: 39,
+                height: 46,
                 child: FilledButton(
-                  style: FilledButton.styleFrom(backgroundColor: spikeRed, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22))),
+                  style: FilledButton.styleFrom(backgroundColor: spikeRed, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                   onPressed: () {
                     setState(() {
                       sort = localSort;
@@ -171,49 +171,59 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
         data: (all) {
           final list = _apply(all);
           return Column(children: [
-            SizedBox(
-              height: 60,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 17),
-                child: Stack(alignment: Alignment.center, children: [
-                  const Text('العروض والخصومات', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: SizedBox(
-                      width: 50,
-                      height: 40,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(17, 8, 17, 0),
+              child: Column(children: [
+                SizedBox(
+                  height: 92,
+                  child: Stack(children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        width: 50,
+                        height: 40,
+                        child: Material(
+                          color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                          borderRadius: BorderRadius.circular(22),
+                          child: InkWell(
+                            onTap: () => context.canPop() ? context.pop() : context.go('/'),
+                            borderRadius: BorderRadius.circular(22),
+                            child: const Icon(LucideIcons.arrowRight, size: 23),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ]),
+                ),
+                SizedBox(
+                  height: 60,
+                  child: Stack(alignment: Alignment.centerRight, children: [
+                    const Text('العروض والخصومات', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+                    Align(
+                      alignment: Alignment.centerLeft,
                       child: Material(
                         color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
                         borderRadius: BorderRadius.circular(22),
                         child: InkWell(
-                          onTap: () => context.canPop() ? context.pop() : context.go('/'),
+                          onTap: _filters,
                           borderRadius: BorderRadius.circular(22),
-                          child: const Icon(LucideIcons.arrowRight, size: 23),
+                          child: const SizedBox(
+                            height: 40,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(LucideIcons.slidersHorizontal, size: 16),
+                                SizedBox(width: 6),
+                                Text('فلترة وترتيب', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                              ]),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Material(
-                      color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
-                      borderRadius: BorderRadius.circular(20),
-                      child: InkWell(
-                        onTap: _filters,
-                        borderRadius: BorderRadius.circular(20),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                          child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            Icon(LucideIcons.slidersHorizontal, size: 16),
-                            SizedBox(width: 6),
-                            Text('ترتيب حسب', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-                          ]),
-                        ),
-                      ),
-                    ),
-                  ),
-                ]),
-              ),
+                  ]),
+                ),
+              ]),
             ),
             Expanded(
               child: list.isEmpty
@@ -234,12 +244,7 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
                   : GridView.builder(
                       padding: const EdgeInsets.fromLTRB(17, 4, 17, 24),
                       itemCount: list.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 11,
-                        mainAxisSpacing: 11,
-                        mainAxisExtent: 246,
-                      ),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 11, mainAxisSpacing: 11, mainAxisExtent: 246),
                       itemBuilder: (context, i) {
                         final p = list[i];
                         return SpikeProductCard(
@@ -278,14 +283,11 @@ class _FilterGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Container(
-          padding: const EdgeInsets.all(13),
-          decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(16)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
           const SizedBox(height: 9),
           Wrap(spacing: 8, runSpacing: 8, children: children),
-        ])),
+        ]),
       );
 }
 
@@ -302,9 +304,9 @@ class _Chip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
           decoration: BoxDecoration(
-            color: selected ? spikeRed : (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF24252A) : const Color(0xFFF1F1F1)),
+            color: selected ? Theme.of(context).colorScheme.onSurface : (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF24252A) : spikePanel),
             borderRadius: BorderRadius.circular(17),
-            border: Border.all(color: selected ? spikeRed : Theme.of(context).dividerColor),
+            border: Border.all(color: selected ? Theme.of(context).colorScheme.onSurface : Theme.of(context).dividerColor),
           ),
           child: Text(label, style: TextStyle(fontSize: 10, color: selected ? Theme.of(context).colorScheme.surface : null)),
         ),
