@@ -18,7 +18,14 @@ class CommerceRepository{
   Future<void> deleteAddress(String id)async{await _api.delete('/addresses/$id',auth:true);}
   Future<List<PaymentMethodModel>> paymentMethods()async{final d=await _api.get('/payment-methods');return (d['methods'] as List? ?? const []).whereType<Map>().map((e)=>PaymentMethodModel.fromJson(Map<String,dynamic>.from(e))).toList();}
   Future<List<CurrencyModel>> currencies()async{final d=await _api.get('/currencies');return (d['currencies'] as List? ?? const []).whereType<Map>().map((e)=>CurrencyModel.fromJson(Map<String,dynamic>.from(e))).toList();}
-  Future<DeliveryQuote> quote({required String addressId,required CartSnapshot cart})async=>DeliveryQuote.fromJson(await _api.post('/checkout/delivery-quote-v2',auth:true,data:{'address_id':addressId,'coupon_code':cart.couponCode,'items':cart.items.map((e)=>{'variant_id':e.variantId,'quantity':e.quantity}).toList()}));
+  Future<DeliveryQuote> quote({required String addressId,CartSnapshot? cart,List<String>? variantIds})async{
+    final items=cart!=null
+        ? cart.items.map((e)=>{'variant_id':e.variantId,'quantity':e.quantity}).toList()
+        : (variantIds??const <String>[]).map((id)=>{'variant_id':id,'quantity':1}).toList();
+    if(items.isEmpty)throw const ApiException('لا توجد منتجات لحساب التوصيل');
+    final d=await _api.post('/checkout/delivery-quote-v2',auth:true,data:{'address_id':addressId,'coupon_code':cart?.couponCode,'items':items});
+    return DeliveryQuote.fromJson(d);
+  }
   Future<OrderModel> createOrder({required CartSnapshot cart,required String addressId,required String paymentMethod,required String currencyCode})async{final d=await _api.post('/checkout/orders-v2',auth:true,data:{'address_id':addressId,'payment_method':paymentMethod,'currency_code':currencyCode,'coupon_code':cart.couponCode,'items':cart.items.map((e)=>{'variant_id':e.variantId,'quantity':e.quantity}).toList()});return OrderModel.fromJson(Map<String,dynamic>.from(d['order'] as Map));}
   Future<List<OrderModel>> orders()async{final d=await _api.get('/orders',auth:true);return (d['orders'] as List? ?? const []).whereType<Map>().map((e)=>OrderModel.fromJson(Map<String,dynamic>.from(e))).toList();}
   Future<Map<String,dynamic>> orderDetails(String id)=>_api.get('/customer-orders/$id',auth:true);
