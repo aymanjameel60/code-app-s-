@@ -27,6 +27,7 @@ class FavoritesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(favoritesProvider);
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: SafeArea(
         child: state.when(
@@ -34,35 +35,50 @@ class FavoritesScreen extends ConsumerWidget {
           error: (e, _) => SpikeErrorState(message: e.toString(), onRetry: () => ref.invalidate(favoritesProvider)),
           data: (products) => Column(children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.sm, SpikeSpacing.page, SpikeSpacing.xs),
-              child: SizedBox(
-                height: 60,
-                child: Stack(alignment: Alignment.center, children: [
-                  const Text('المفضلة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-                  Align(alignment: Alignment.centerRight, child: IconButton(onPressed: () => context.pop(), icon: const Icon(LucideIcons.arrowRight, size: 22))),
-                  if (products.isNotEmpty)
+              padding: const EdgeInsets.fromLTRB(17, 8, 17, 0),
+              child: Column(children: [
+                SizedBox(
+                  height: 92,
+                  child: Stack(children: [
                     Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton(
-                        onPressed: () => _clearAll(context, ref, products),
-                        child: const Text('إفراغ المفضلة', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        width: 50,
+                        height: 40,
+                        child: Material(
+                          color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                          borderRadius: BorderRadius.circular(22),
+                          child: InkWell(borderRadius: BorderRadius.circular(22), onTap: () => context.canPop() ? context.pop() : context.go('/profile'), child: const Icon(LucideIcons.arrowRight, size: 23)),
+                        ),
                       ),
                     ),
-                ]),
-              ),
+                  ]),
+                ),
+                SizedBox(
+                  height: 60,
+                  child: Stack(alignment: Alignment.centerRight, children: [
+                    const Text('المفضلة', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+                    if (products.isNotEmpty)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(onPressed: () => _clearAll(context, ref, products), child: const Text('إفراغ المفضلة', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700))),
+                      ),
+                  ]),
+                ),
+              ]),
             ),
             Expanded(
               child: products.isEmpty
                   ? Padding(
-                      padding: SpikeSpacing.pageHorizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 17),
                       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Container(width: 76, height: 76, decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? spikeDarkPanel : spikePanel, shape: BoxShape.circle), child: const Icon(LucideIcons.heart, size: 38)),
-                        const SizedBox(height: SpikeSpacing.md),
-                        const Text('المفضلة فارغة', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
-                        const SizedBox(height: SpikeSpacing.sm),
+                        const Icon(LucideIcons.heart, size: 38),
+                        const SizedBox(height: 14),
+                        const Text('المفضلة فارغة', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 8),
                         const Text('احفظ المنتجات التي أعجبتك لتجدها هنا بسرعة.', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: spikeMuted)),
-                        const SizedBox(height: SpikeSpacing.lg),
-                        SizedBox(height: 43, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: scheme.onSurface, foregroundColor: scheme.surface), onPressed: () => context.go('/'), child: const Text('استكشف المنتجات'))),
+                        const SizedBox(height: 18),
+                        SizedBox(height: 43, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed, foregroundColor: Colors.white), onPressed: () => context.go('/'), child: const Text('استكشف المنتجات'))),
                       ]),
                     )
                   : RefreshIndicator(
@@ -72,7 +88,7 @@ class FavoritesScreen extends ConsumerWidget {
                         await ref.read(favoritesProvider.future);
                       },
                       child: GridView.builder(
-                        padding: const EdgeInsets.fromLTRB(SpikeSpacing.page, SpikeSpacing.sm, SpikeSpacing.page, SpikeSpacing.xl),
+                        padding: const EdgeInsets.fromLTRB(17, 4, 17, 24),
                         itemCount: products.length,
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 11, mainAxisSpacing: 11, mainAxisExtent: 246),
                         itemBuilder: (context, i) {
