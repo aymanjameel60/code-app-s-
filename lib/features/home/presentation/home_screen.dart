@@ -90,27 +90,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   )
                 else
                   const _BannerPlaceholder(),
-                const SizedBox(height: 32),
+                const SizedBox(height: 18),
                 _SectionTitle(title: 'تسوق حسب الفئة', showAll: data.categories.isNotEmpty, onShowAll: () => context.push('/categories')),
                 _CategoriesGrid(
                   categories: data.categories.take(8).toList(),
                   onTap: (c) => context.push('/products?category=${Uri.encodeComponent(c.id)}&title=${Uri.encodeComponent(c.name)}'),
                 ),
-                const SizedBox(height: 32),
-                _SectionTitle(title: 'مختارة لك', showAll: data.products.isNotEmpty, onShowAll: () => context.push('/products')),
+                const SizedBox(height: 18),
+                _SectionTitle(title: 'المنتجات', showAll: data.products.isNotEmpty, onShowAll: () => context.push('/products')),
                 _productsStrip(products: data.products, emptyMessage: 'لا توجد منتجات منشورة بعد'),
-                if (data.bestSellers.isNotEmpty) ...[
-                  const SizedBox(height: 32),
-                  const _SectionTitle(title: 'الأكثر مبيعًا', showAll: false),
-                  _productsStrip(products: data.bestSellers, emptyMessage: 'لا توجد مبيعات مكتملة بعد'),
-                ],
                 if (offers.isNotEmpty) ...[
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 18),
                   _SectionTitle(title: 'العروض والخصومات', showAll: true, onShowAll: () => context.push('/offers')),
                   _productsStrip(products: offers, emptyMessage: 'لا توجد عروض حالياً'),
                 ],
                 if (data.collections.isNotEmpty) ...[
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 18),
                   const _SectionTitle(title: 'المجموعات', showAll: false),
                   _CollectionsStrip(
                     collections: data.collections,
@@ -128,7 +123,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                   ),
                 ],
-                const SizedBox(height: 32),
+                const SizedBox(height: 18),
                 _SectionTitle(title: 'المتاجر', showAll: data.stores.isNotEmpty, onShowAll: () => context.push('/stores')),
                 _StoresStrip(stores: data.stores, onTap: (s) => context.push('/store/${s.id}')),
                 const SizedBox(height: 24),
@@ -582,7 +577,7 @@ class _CategoriesGrid extends StatelessWidget {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
           crossAxisSpacing: 11,
-          mainAxisSpacing: 16,
+          mainAxisSpacing: 13,
           childAspectRatio: .75,
         ),
         itemBuilder: (context, i) {
@@ -601,7 +596,7 @@ class _CategoriesGrid extends StatelessWidget {
                     : CachedNetworkImage(imageUrl: c.imageUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => Icon(LucideIcons.image, color: placeholderColor)),
               ),
               const SizedBox(height: 7),
-              Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, height: 1.2)),
+              Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, height: 1.25, fontWeight: FontWeight.w600)),
             ]),
           );
         },
@@ -630,7 +625,7 @@ class _CollectionsStrip extends StatelessWidget {
             return GestureDetector(
               onTap: () => onTap(c),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
                   width: 153,
                   height: 101,
@@ -667,20 +662,21 @@ class _StoresStrip extends StatelessWidget {
           final store = stores[i];
           return InkWell(
             onTap: () => onTap(store),
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(25),
             child: Container(
-              width: 154,
+              width: 153,
               height: 69,
               alignment: Alignment.center,
-              decoration: BoxDecoration(color: dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(22)),
+              decoration: BoxDecoration(color: dark ? spikeDarkPanel : spikePanel, borderRadius: BorderRadius.circular(25)),
               child: store.logoUrl == null
                   ? Text(store.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700))
-                  : Padding(
-                      padding: const EdgeInsets.all(12),
+                  : FractionallySizedBox(
+                      widthFactor: .72,
+                      heightFactor: .66,
                       child: CachedNetworkImage(
                         imageUrl: store.logoUrl!,
                         fit: BoxFit.contain,
-                        errorWidget: (_, __, ___) => Text(store.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                        errorWidget: (_, __, ___) => Center(child: Text(store.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700))),
                       ),
                     ),
             ),
