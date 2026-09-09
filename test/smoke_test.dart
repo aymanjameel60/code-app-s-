@@ -17,10 +17,12 @@ void main() {
     expect(spikeDarkTheme.scaffoldBackgroundColor, spikeDarkBg);
   });
 
-  test('shared spacing and radius system matches reference values', () {
+  test('shared spacing and radius system matches current spikrfront values', () {
     expect(SpikeSpacing.page, 17);
     expect(SpikeSpacing.xxl, 32);
-    expect(SpikeRadius.card, 16);
-    expect(SpikeRadius.control, 25);
+    expect(SpikeRadius.card, 22);
+    expect(SpikeRadius.control, 22);
+    expect(SpikeRadius.banner, 23);
+    expect(SpikeRadius.hero, 24);
   });
 }
