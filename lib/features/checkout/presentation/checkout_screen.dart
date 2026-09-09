@@ -89,7 +89,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         _Step(
           number:'2',
           title:'التوصيل',
-          child:Container(minHeight:39,padding:const EdgeInsets.symmetric(horizontal:16,vertical:10),decoration:BoxDecoration(color:panel,borderRadius:BorderRadius.circular(22)),child:Row(children:[const Icon(LucideIcons.truck,size:18),const SizedBox(width:10),const Expanded(child:Text('مكتب التوصيل محدد لكل منتج من التاجر',style:TextStyle(fontSize:11))),if(quote!=null)Text(money(deliveryUsd),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700))])),
+          child:Container(constraints:const BoxConstraints(minHeight:39),padding:const EdgeInsets.symmetric(horizontal:16,vertical:10),decoration:BoxDecoration(color:panel,borderRadius:BorderRadius.circular(22)),child:Row(children:[const Icon(LucideIcons.truck,size:18),const SizedBox(width:10),const Expanded(child:Text('مكتب التوصيل محدد لكل منتج من التاجر',style:TextStyle(fontSize:11))),if(quote!=null)Text(money(deliveryUsd),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700))])),
         ),
         const SizedBox(height:16),
         _Step(
