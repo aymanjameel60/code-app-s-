@@ -4,21 +4,31 @@ import '../../../core/storage/token_storage.dart';
 class AuthRepository{
   AuthRepository(this._api,this._tokens);final ApiClient _api;final TokenStorage _tokens;
 
-  Future<Map<String,dynamic>> login({required String email,required String password})async{
-    final d=await _api.post('/auth/login',data:{'email':email.trim(),'password':password});
+  String _normalizePhone(String value)=>value.replaceAll(RegExp(r'\D'),'');
+
+  Future<Map<String,dynamic>> login({required String phone,required String password})async{
+    final normalized=_normalizePhone(phone);
+    if(normalized.isEmpty)throw const ApiException('أدخل رقم الجوال');
+    final d=await _api.post('/auth/login-phone',data:{'phone':normalized,'password':password});
     final token='${d['token']??''}';
     if(token.isEmpty)throw const ApiException('تعذر حفظ جلسة تسجيل الدخول');
     final user=Map<String,dynamic>.from(d['user'] as Map? ?? const {});
+    if(user['role']!=null&&'${user['role']}'!='customer')throw const ApiException('هذا الحساب ليس حساب عميل');
     await _tokens.writeToken(token);
     if(user.isNotEmpty)await _tokens.writeCachedUser(user);
     return user;
   }
 
-  Future<Map<String,dynamic>> register({required String name,required String email,required String password,String? phone})async{
-    final d=await _api.post('/auth/register',data:{'name':name.trim(),'email':email.trim(),'password':password,if(phone!=null&&phone.trim().isNotEmpty)'phone':phone.trim()});
+  Future<Map<String,dynamic>> register({required String name,required String phone,required String password})async{
+    final normalized=_normalizePhone(phone);
+    if(name.trim().isEmpty)throw const ApiException('أدخل اسمك');
+    if(normalized.isEmpty)throw const ApiException('أدخل رقم الجوال');
+    if(password.length<8)throw const ApiException('يجب أن لا تقل كلمة المرور عن 8 أحرف');
+    final d=await _api.post('/auth/register-phone',data:{'name':name.trim(),'phone':normalized,'password':password});
     final token='${d['token']??''}';
     if(token.isEmpty)throw const ApiException('تعذر حفظ جلسة الحساب');
     final user=Map<String,dynamic>.from(d['user'] as Map? ?? const {});
+    if(user['role']!=null&&'${user['role']}'!='customer')throw const ApiException('تعذر إنشاء حساب العميل');
     await _tokens.writeToken(token);
     if(user.isNotEmpty)await _tokens.writeCachedUser(user);
     return user;
