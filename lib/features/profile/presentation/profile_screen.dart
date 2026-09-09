@@ -24,7 +24,8 @@ class ProfileScreen extends ConsumerWidget {
           final avatar = resolveMediaUrl(raw) ?? '';
           final name = '${current['name'] ?? ''}';
           final phone = '${current['phone'] ?? ''}';
-          final email = '${current['email'] ?? ''}';
+          final rawEmail = '${current['email'] ?? ''}';
+          final email = rawEmail.endsWith('@customer.spike.local') ? '' : rawEmail;
           final logged = u != null;
 
           return ListView(
@@ -58,7 +59,7 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _row(context, LucideIcons.store, 'المتاجر', () => context.push('/stores')),
                   const SizedBox(height: 12),
-                  _row(context, LucideIcons.walletCards, 'محفظتي', () => showSpikeToast(context, 'المحفظة غير مفعلة في التطبيق حالياً')),
+                  _row(context, LucideIcons.walletCards, 'محفظتي', () => logged ? context.push('/wallet') : context.push('/login')),
                   const SizedBox(height: 12),
                   _row(context, LucideIcons.heart, 'المفضلة', () => context.push('/favorites')),
                   const SizedBox(height: 12),
@@ -70,7 +71,7 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _row(context, LucideIcons.settings2, 'الإعدادات المتقدمة', () => context.push('/settings')),
                   const SizedBox(height: 12),
-                  _row(context, LucideIcons.store, 'سجّل كتاجر', () => showSpikeToast(context, 'تسجيل التاجر غير مفعّل داخل التطبيق حالياً'), featured: true),
+                  _row(context, LucideIcons.store, 'سجّل كتاجر', () => context.push('/vendor-registration'), featured: true),
                   const SizedBox(height: 12),
                   _row(
                     context,
