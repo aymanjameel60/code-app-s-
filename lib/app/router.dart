@@ -18,6 +18,7 @@ import '../features/home/presentation/home_screen.dart';
 import '../features/offers/presentation/offers_screen.dart';
 import '../features/orders/presentation/orders_screen.dart';
 import '../features/orders/presentation/returns_refunds_screen.dart';
+import '../features/profile/presentation/marketplace_screens.dart';
 import '../features/profile/presentation/personal_data_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/profile/presentation/privacy_screen.dart';
@@ -39,6 +40,8 @@ final appRouter = GoRouter(
         GoRoute(path: '/personal-data', builder: (_, __) => const PersonalDataScreen()),
         GoRoute(path: '/privacy', builder: (_, __) => const PrivacyScreen()),
         GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+        GoRoute(path: '/wallet', builder: (_, __) => const WalletScreen()),
+        GoRoute(path: '/vendor-registration', builder: (_, __) => const VendorRegistrationScreen()),
         GoRoute(path: '/favorites', builder: (_, __) => const FavoritesScreen()),
         GoRoute(path: '/checkout', builder: (_, __) => const CheckoutScreen()),
         GoRoute(path: '/success', builder: (_, state) => PaymentSuccessScreen(paymentMethod: state.uri.queryParameters['payment'] ?? '')),
