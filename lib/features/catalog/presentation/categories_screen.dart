@@ -20,16 +20,30 @@ class CategoriesScreen extends ConsumerWidget {
         child: Column(children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(17, 8, 17, 0),
-            child: SizedBox(
-              height: 60,
-              child: Row(children: [
-                IconButton(onPressed: () => context.canPop() ? context.pop() : context.go('/'), icon: const Icon(LucideIcons.arrowRight, size: 22)),
-                const Spacer(),
-                const Text('تسوق حسب الفئة', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-                const Spacer(),
-                const SizedBox(width: 48),
-              ]),
-            ),
+            child: Column(children: [
+              SizedBox(
+                height: 92,
+                child: Stack(children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SizedBox(
+                      width: 50,
+                      height: 40,
+                      child: Material(
+                        color: dark ? spikeDarkPanel : const Color(0xFFE8E8E8),
+                        borderRadius: BorderRadius.circular(22),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(22),
+                          onTap: () => context.canPop() ? context.pop() : context.go('/'),
+                          child: const Icon(LucideIcons.arrowRight, size: 23),
+                        ),
+                      ),
+                    ),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 60, child: Align(alignment: Alignment.centerRight, child: Text('تسوق حسب الفئة', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)))),
+            ]),
           ),
           Expanded(
             child: state.when(
@@ -67,7 +81,7 @@ class CategoriesScreen extends ConsumerWidget {
                                     : CachedNetworkImage(imageUrl: c.imageUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => Icon(LucideIcons.image, color: mutedIcon)),
                               ),
                               const SizedBox(height: 7),
-                              Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, height: 1.2)),
+                              Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, height: 1.25)),
                             ]),
                           );
                         },
