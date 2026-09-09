@@ -112,7 +112,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       onTap: () => context.push('/product/${p.id}'),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
-                        minHeight: 72,
+                        constraints: const BoxConstraints(minHeight: 72),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         decoration: BoxDecoration(color: dark ? spikeDarkPanel : Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Theme.of(context).dividerColor)),
                         child: Row(children: [
