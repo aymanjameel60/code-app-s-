@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
-import '../../../core/api_config.dart';
+import '../../../core/media_url.dart';
+import '../../../core/money.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 import '../data/cart_repository.dart';
@@ -18,7 +19,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   final _coupon = TextEditingController();
   CartSnapshot? _cart;
   bool _loading = true;
-  bool _guest = false;
   String? _error;
 
   @override
@@ -34,7 +34,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; _guest = false; });
+    setState(() { _loading = true; _error = null; });
     try {
       final c = await ref.read(cartRepositoryProvider).load();
       ref.invalidate(cartCountProvider);
@@ -62,12 +62,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   String _money(double value, String currency) {
-    final code = currency.trim().toUpperCase();
-    final symbol = switch (code) { 'USD' => r'$', 'SAR' => 'ر.س', 'YER' => 'ر.ي', 'TRY' => '₺', _ => code };
-    return '${value.toStringAsFixed(2)} $symbol'.trim();
+    final rates = ref.watch(currencyRatesProvider).valueOrNull ?? const <String, double>{};
+    return formatMoney(value, code: currency, rate: rates[currency.trim().toUpperCase()] ?? 1);
   }
 
-  String _asset(String raw) => raw.startsWith('/uploads/') ? '${ApiConfig.assetBaseUrl}$raw' : raw;
+  String _asset(String raw) => resolveMediaUrl(raw) ?? '';
 
   void _openBanner(Map<String, dynamic> b) {
     final type = '${b['target_type'] ?? ''}';
@@ -269,9 +268,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         final c = await ref.read(cartRepositoryProvider).updateMeta(couponCode: _coupon.text);
                         if (!mounted) return;
                         setState(() => _cart = c);
+                        if (!context.mounted) return;
                         showSpikeToast(context, _coupon.text.trim().isEmpty ? 'تم إزالة الكوبون' : 'تم تطبيق الكوبون');
                       } catch (e) {
-                        if (mounted) showSpikeToast(context, e.toString());
+                        if (!context.mounted) return;
+                        showSpikeToast(context, e.toString());
                       }
                     },
                     child: const Text('تطبيق', style: TextStyle(fontWeight: FontWeight.w700)),
@@ -416,23 +417,4 @@ class _Item extends StatelessWidget {
       ),
     );
   }
-}
-
-
-class _GuestCart extends StatelessWidget {
-  const _GuestCart({required this.onLogin});
-  final VoidCallback onLogin;
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(24),
-    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Icon(LucideIcons.shoppingBag, size: 52),
-      const SizedBox(height: 16),
-      const Text('سجّل الدخول لعرض حقيبة التسوق', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-      const SizedBox(height: 7),
-      const Text('سيتم حفظ منتجاتك ومتابعة طلبك من حسابك.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: spikeMuted)),
-      const SizedBox(height: 24),
-      SizedBox(width: double.infinity, height: 38, child: FilledButton(style: FilledButton.styleFrom(backgroundColor: spikeRed), onPressed: onLogin, child: const Text('تسجيل الدخول'))),
-    ]),
-  );
 }

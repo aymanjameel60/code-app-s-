@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../app/providers.dart';
 import '../../../core/settings/app_settings.dart';
+import '../../../core/money.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/async_state_widgets.dart';
 import '../../cart/data/cart_repository.dart';
@@ -69,12 +70,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Future<void> _chooseAddress() async {
     await context.push('/addresses');
-    final list = await ref.read(commerceRepositoryProvider).addresses();
-    final selected = list.where((a) => a.isActive).cast<AddressModel?>().firstOrNull;
-    if (selected == null) return;
-    setState(() => address = selected);
-    quote = await ref.read(commerceRepositoryProvider).quote(addressId: selected.id, variantIds: cart!.items.map((e) => e.variantId).toList());
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    try {
+      final list = await ref.read(commerceRepositoryProvider).addresses();
+      final selected = list.where((a) => a.isActive).cast<AddressModel?>().firstOrNull;
+      if (selected == null) return;
+      if (cart == null || cart!.items.isEmpty) return;
+      quote = await ref.read(commerceRepositoryProvider).quote(addressId: selected.id, variantIds: cart!.items.map((e) => e.variantId).toList());
+      if (!mounted) return;
+      setState(() => address = selected);
+    } catch (e) {
+      if (mounted) showSpikeToast(context, e.toString());
+    }
   }
 
   Future<void> _submit() async {
@@ -124,8 +131,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final panel = dark ? spikeDarkPanel : spikePanel;
     final card = dark ? const Color(0xFF1D1D1D) : Colors.white;
     final ready = address != null && payment != null && currency != null && !busy;
-    final delivery = quote?.shippingYerOld ?? 0;
-    final grand = cart!.subtotal + delivery;
+    final rates = ref.watch(currencyRatesProvider).valueOrNull ?? const <String, double>{};
+    final rate = rates[cart!.currencyCode.trim().toUpperCase()] ?? 1;
+    final yerOldRate = rates['YER_OLD'] ?? 530;
+    final deliveryUsd = quote == null ? 0.0 : quote!.shippingYerOld / yerOldRate;
+    final grandUsd = cart!.subtotal + deliveryUsd;
+    String money(double usd) => formatMoney(usd, code: cart!.currencyCode, rate: rate);
 
     return Scaffold(
       body: SafeArea(
@@ -166,7 +177,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     const Icon(LucideIcons.truck, size: 18),
                     const SizedBox(width: 9),
                     const Expanded(child: Text('مكتب التوصيل محدد لكل منتج من التاجر', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600))),
-                    if (quote != null) Text('${delivery.round()} ر.ي قديم', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+                    if (quote != null) Text(money(deliveryUsd), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
                   ]),
                 ),
                 const SizedBox(height: 14),
@@ -219,15 +230,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(color: panel, borderRadius: BorderRadius.circular(22)),
                   child: Column(children: [
-                    _InvoiceLine(label: 'المنتجات بعد الخصومات', value: _money(cart!.subtotal, cart!.currencyCode)),
-                    _InvoiceLine(label: 'رسوم مكتب التوصيل', value: quote == null ? 'تحسب عند التأكيد' : '${delivery.round()} ر.ي قديم'),
+                    _InvoiceLine(label: 'المنتجات بعد الخصومات', value: money(cart!.subtotal)),
+                    _InvoiceLine(label: 'رسوم مكتب التوصيل', value: quote == null ? 'تحسب عند التأكيد' : money(deliveryUsd)),
                     Container(
                       constraints: const BoxConstraints(minHeight: 48),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(border: Border(top: BorderSide(color: Theme.of(context).dividerColor))),
                       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                         const Text('الإجمالي مع التوصيل', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                        Text(_money(grand, cart!.currencyCode), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                        Text(money(grandUsd), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                       ]),
                     ),
                   ]),
@@ -249,15 +260,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ]),
       ),
     );
-  }
-
-  String _money(double amount, String code) {
-    final c = code.toUpperCase();
-    if (c == 'USD') return '\$${amount.toStringAsFixed(2)}';
-    if (c == 'SAR') return '${amount.toStringAsFixed(2)} ر.س';
-    if (c.startsWith('YER')) return '${amount.round()} ر.ي';
-    if (c == 'TRY') return '${amount.toStringAsFixed(2)} ₺';
-    return '${amount.toStringAsFixed(2)} $c';
   }
 }
 

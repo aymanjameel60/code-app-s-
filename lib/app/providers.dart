@@ -48,6 +48,7 @@ final activeAddressProvider=Provider<AsyncValue<AddressModel?>>((ref){
 });
 final paymentMethodsProvider=FutureProvider<List<PaymentMethodModel>>((ref)=>ref.watch(commerceRepositoryProvider).paymentMethods());
 final currenciesProvider=FutureProvider<List<CurrencyModel>>((ref)=>ref.watch(commerceRepositoryProvider).currencies());
+final currencyRatesProvider=FutureProvider<Map<String,double>>((ref)async{final list=await ref.watch(currenciesProvider.future);return {for(final c in list)c.code:c.rateFromUsd};});
 final ordersProvider=FutureProvider.autoDispose<List<OrderModel>>((ref)=>ref.watch(commerceRepositoryProvider).orders());
 final orderDetailsProvider=FutureProvider.autoDispose.family<Map<String,dynamic>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderDetails(id));
 final orderTimelineProvider=FutureProvider.autoDispose.family<List<Map<String,dynamic>>,String>((ref,id)=>ref.watch(commerceRepositoryProvider).orderTimeline(id));
