@@ -13,7 +13,7 @@ class MainShell extends ConsumerWidget {
   int get _index {
     if (location.startsWith('/offers')) return 1;
     if (location.startsWith('/cart') || location.startsWith('/checkout') || location.startsWith('/success')) return 3;
-    if (const ['/profile', '/personal-data', '/privacy', '/settings', '/favorites', '/orders', '/order/', '/returns-refunds', '/support', '/login', '/signup'].any(location.startsWith)) return 0;
+    if (const ['/profile', '/personal-data', '/privacy', '/settings', '/wallet', '/vendor-registration', '/favorites', '/orders', '/order/', '/returns-refunds', '/support', '/login', '/signup'].any(location.startsWith)) return 0;
     return 2;
   }
 
